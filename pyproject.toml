@@ -3,7 +3,7 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pygameengine"
+name = "maxpygame"
 version = '0.1.0'
 description = "A simple pygame engine"
 readme = "README.md"

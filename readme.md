@@ -1,4 +1,4 @@
-# PyGameEngine
+# MaxPyGame
 *A Engine made in Python, with Python & PyGame for PyGame*
 
 # Requirements
@@ -42,4 +42,15 @@ pip install . --update
 # Send to testPyPi
 twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 twine upload --repository testpypi dist/*
+twine upload --repository-url https://test.pypi.org/legacy/ dist/* -u%username% -p%password%
+
 ```
+
+# Contacts
+[YouTube](https://www.youtube.com/@mrjuaumbr)
+
+[GitHub](https://github.com/MrJuaumBR)
+
+[TestPyPi](https://test.pypi.org/user/MrJuaumBR/)
+
+[Discord](https://discord.gg/fb84sHDX7R)
