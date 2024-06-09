@@ -50,13 +50,15 @@ py -m build
 # Src Build
 py -m build --sdist
 
+# Local Install
+pip install .
+
 # Local Update
 pip install . --update
 
 # Send to testPyPi
 twine upload --repository-url https://test.pypi.org/legacy/ dist/*
 twine upload --repository testpypi dist/*
-twine upload --repository-url https://test.pypi.org/legacy/ dist/* -u%username% -p%password%
 
 ```
 
