@@ -1,12 +1,37 @@
 from .widgets import *
 from .objects import color as reqColor
+import requests, json
 import random
+
+Git_Colors_JS = 'https://mrjuaumbr.github.io/data/colors.json'
 
 # Colors
 class Colors:
+    aliases:list[str,] = []
     def __init__(self):
         self.colors_add()
+        self.add_colors_from_json()
         print(f'Built in: {self.number_of_colors()} colors')
+    
+    def get(self, color_name:str) -> reqColor:
+        return getattr(self, color_name)
+    
+    def add_colors_from_json(self):
+        colors = requests.get(Git_Colors_JS).json()
+        for color in colors.keys():
+            setattr(self, color.upper(), reqColor(*colors[color])) # Default
+            
+        self.add_aliases()
+            
+    def add_aliases(self):
+        colors = self.__dict__.copy()
+        for color in colors.keys():
+            if type(self.__dict__[color]) == reqColor:
+                setattr(self, color.capitalize(), self.__dict__[color])
+                setattr(self, color.lower(), self.__dict__[color])
+                
+                self.aliases.append(color.capitalize())
+                self.aliases.append(color.lower())
     
     def colors_add(self):
         self.WHITE = reqColor(255, 255, 255)
@@ -66,4 +91,10 @@ class Colors:
         return x
 
     def number_of_colors(self) -> int:
-        return len(self.__dict__.keys())
+        x = 0
+        for color in self.__dict__.keys():
+            if color in self.aliases:
+                continue
+            else:
+                x +=1
+        return x

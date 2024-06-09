@@ -15,7 +15,8 @@ arial24 = pge.createSysFont('Arial', 24)
 # Create widgets
 Button = pge.create_widget(pyge.Button, (15, 400), arial24, 'Im a Button!', [pge.Colors.DARKGRAY, pge.Colors.WHITE, pge.Colors.LIGHTGRAY], id='button1')
 Check = pge.create_widget('Checkbox', (190,400), arial24, 'Im a Checkbox!', [pge.Colors.WHITE, pge.Colors.RED, pge.Colors.GREEN, pge.Colors.DARKGRAY], id='checkbox1')
-Slider = pge.create_widget('Slider', (15, 450), (300, 20), [pge.Colors.WHITE, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY], id='slider1', value=0)
+Slider = pge.create_widget('Slider', (15, 450), (300, 20), [pge.Colors.WHITE, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY], value=0, id='slider1')
+Select = pge.create_widget('Select', (25, 500), arial24, [pge.Colors.HOTPING, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY], items=['Item 1', 'Item 2', 'Item 3'],textBg=True)
 
 # Game Loop
 while True:
@@ -27,11 +28,11 @@ while True:
     
     # Draw a text
     if Button.value:
-        pge.draw_text('Button Pressed', arial24, (15, 15), pge.Colors.WHITE)
+        pge.draw_text((15, 15),'Button Pressed', arial24, pge.Colors.WHITE)
     if Check.value:
-        pge.draw_text('Checkbox Checked', arial24, (15, 36), pge.Colors.WHITE)
+        pge.draw_text( (15, 36), 'Checkbox Checked', arial24, pge.Colors.WHITE)
         
-    pge.draw_text(f'Slider: {Slider.value*100}', arial24, (15, 60), pge.Colors.WHITE)
+    pge.draw_text((15, 60),f'Slider: {Slider.value*100}', arial24, pge.Colors.WHITE)
     
     # Detect events
     for ev in pge.getEvents():

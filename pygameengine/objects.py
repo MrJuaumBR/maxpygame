@@ -4,8 +4,9 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.0.1"
+    version = "0.1.1"
     description = "A simple pygame engine"
+    
 
 # Time
 class TimeSys:
@@ -29,6 +30,7 @@ class RGB:
     r:int
     g:int
     b:int
+    brightness:float = 0
     def __init__(self, r:int, g:int, b:int):
         self.r = r
         self.g = g
@@ -47,6 +49,8 @@ class RGB:
             self.b = 255
         if self.b < 0:
             self.b = 0
+            
+        self.brightness = round((self.r + self.g + self.b) / 765, 3)
         
     def random(self):
         self.r = random.randint(0, 255)
@@ -76,6 +80,7 @@ class HEX:
 class color():
     rgb:RGB
     hex:HEX
+    brightness:float = 0
     def __init__(self, r:int, g:int, b:int,hex:str=None):
         if hex is not None:
             self.rgb = RGB(*hex_to_rgb(hex)) # Convert hex to rgb, and validate color(limit > 0 & < 255)
@@ -83,3 +88,4 @@ class color():
         else:
             self.rgb = RGB(r, g, b) # Validate color
             self.hex = HEX(self.rgb.hex()) # Convert rgb to hex after validating
+        self.brightness = self.rgb.brightness

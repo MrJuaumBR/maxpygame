@@ -88,7 +88,7 @@ class PyGameEngine:
             if flags == FULLSCREEN: # If fullscreen
                 flags = FULLSCREEN|SCALED
             self.screen = pg.display.set_mode((width, height), flags)
-            
+            return self.screen
     def setScreenTitle(self, title:str):
         """
         Set the title of the screen if there is one
@@ -124,7 +124,9 @@ class PyGameEngine:
             list[pg.event.Event,]
         """
         return pg.event.get()
-    
+    def getKeys(self) -> list[bool]:
+        return pg.key.get_pressed()
+        
     def hasKeyPressed(self, key:int) -> bool:
         """
         Check if a key is pressed
@@ -134,7 +136,7 @@ class PyGameEngine:
         Returns:
             bool
         """
-        return pg.key.get_pressed()[key]
+        return self.getKeys()[key]
     
     def exit(self):
         """
@@ -300,7 +302,19 @@ class PyGameEngine:
             widget = getattr(sys.modules[__name__], str(widget_type).capitalize())
         if widget:
             aargs = args
-            return widget(self, *aargs)
+            return widget(self, *aargs, **kwargs)
+
+    # Image System
+    def loadImage(self, path:str) -> pg.SurfaceType:
+        """
+        Load an image from a path
+        
+        Parameters:
+            path:str
+        Returns:
+            pg.SurfaceType
+        """
+        return pg.image.load(path)
 
     # Draw System
     def draw_widgets(self, widgets:list[Widget,]=None):
@@ -380,7 +394,7 @@ class PyGameEngine:
             
             return rr
 
-    def draw_text(self, text:str, font:pg.font.FontType, position:tuple[int,int], color:reqColor,screen:pg.SurfaceType=None, bgColor:reqColor=None, alpha:int=255):
+    def draw_text(self, position:tuple[int,int],text:str, font:pg.font.FontType, color:reqColor,screen:pg.SurfaceType=None, bgColor:reqColor=None, alpha:int=255):
         """
         Draw text on the screen
         
@@ -397,6 +411,7 @@ class PyGameEngine:
         """
         if self.hasScreen():
             color = self.getColor(color)
+            bgColor = self.getColor(bgColor) if bgColor is not None else None
             
             render = font.render(text, True, color, bgColor)
             render.set_alpha(alpha)

@@ -35,7 +35,7 @@ class Widget(pg.sprite.Sprite):
         self.engine = engine
         self.engine.addWidget(self)
         
-        if id == None:
+        if id in [' ','',None,'None']:
             self._id = f'{self._type}{len(self.engine.widgets)}'
     
     def build_widget_display(self):
@@ -63,7 +63,7 @@ class Button(Widget):
     def __init__(self,engine, position:pg.Vector2, font:int or pg.font.FontType, text:str, colors:list[reqColor,reqColor,],id:str=None,alpha:int=255): # type: ignore
         super().__init__(engine,id)
         self.position = position
-        self.font = font
+        self.font:pg.font.FontType = self.engine.fonts[self.engine._findFont(font)]
         self.text = text
         self.colors = colors
         self.alpha = alpha
@@ -75,11 +75,11 @@ class Button(Widget):
         
         self.image = pg.Surface(self.size, (pg.SRCALPHA if (self.alpha < 255 or self.alpha != None) else 0))
         if len(self.colors) < 3: # Has only 2 colors
-            self.engine.draw_rect((0,0), self.size, self.colors[0], screen=self.image, alpha=self.alpha)
+            self.engine.draw_rect((0,0), self.size, self.colors[1], screen=self.image, alpha=self.alpha)
         elif len(self.colors) == 3: # Has 3 colors
-            self.engine.draw_rect((0,0), self.size, self.colors[0], border_width=3, border_color=self.colors[2], screen=self.image, alpha=self.alpha)
+            self.engine.draw_rect((0,0), self.size, self.colors[1], border_width=3, border_color=self.colors[2], screen=self.image, alpha=self.alpha)
             
-        self.engine.draw_text(self.text, self.font, (0,0), self.colors[1], screen=self.image, alpha=self.alpha)
+        self.engine.draw_text((0,0),self.text, self.font, self.colors[0], screen=self.image, alpha=self.alpha)
         self.rect = pg.Rect(*self.position,*self.size)
         
     def update(self):
@@ -121,15 +121,14 @@ class Checkbox(Widget):
     def __init__(self,engine, position:pg.Vector2, font:int or pg.font.FontType, text:str, colors:list[reqColor,reqColor,reqColor,],id:str=None,alpha:int=255): # type: ignore
         super().__init__(engine,id)
         self.position = position
-        self.font = font
+        self.font:pg.font.FontType = self.engine.fonts[self.engine._findFont(font)]
         self.text = text
         self.colors = colors
         self.alpha = alpha
         
     def build_widget_display(self):
         # Colors: 0(Font),1(Disable), 2(Enable), 3(Background),4(Border)
-        font:pg.font.FontType = self.engine.fonts[self.engine._findFont(self.font)]
-        self.size = pg.math.Vector2(*font.size(self.text))
+        self.size = pg.math.Vector2(*self.font.size(self.text))
         
         # Add Box Size
         self.box_size = int(self.size.x / 4)
@@ -139,7 +138,7 @@ class Checkbox(Widget):
         self.image = pg.Surface(self.size, pg.SRCALPHA)
         
         # Insert Text
-        self.engine.draw_text(self.text, font, (int(self.box_size * 1.15),0), self.colors[0], screen=self.image, alpha=self.alpha)
+        self.engine.draw_text((int(self.box_size * 1.15),0),self.text, self.font, self.colors[0], screen=self.image, alpha=self.alpha)
         
         # Defines
         self.rect = pg.Rect(*self.position,*self.size)
@@ -235,5 +234,63 @@ class Slider(Widget):
             self.engine.screen.blit(self.image, self.rect)
             
             self.circle = self.engine.draw_circle(self.currentPosition,self.ball_size, self.colors[0], alpha=self.alpha)
+        
+        return super().draw()
+
+class Select(Widget):
+    _type:str = 'select'
+    
+    leftButton:Button = None
+    rightButton:Button = None
+    
+    items:list=[]
+    value:int=0
+    textBg:bool = False
+    
+    def __init__(self, engine, position: [int, int], font: int or pg.font.FontType,colors: list[reqColor, reqColor,], items: list ,value:int=0, textBg:bool = False,id: str = None, alpha: int = 255,): # type: ignore
+        super().__init__(engine, id)
+        self.position = position
+        self.font:pg.font.FontType = self.engine.fonts[self.engine._findFont(font)]
+        self.colors = colors
+        self.items = items
+        self.value = value
+        self.alpha = alpha
+        self.textBg = textBg
+        
+    def build_widget_display(self):
+        self.size = self.font.size(self.items[self.value])
+        
+        self.leftButton = Button(self.engine, (self.position[0],self.position[1]), self.font, '<', self.colors, alpha=self.alpha, id=f'{self._id}_left')
+        self.rightButton = Button(self.engine, (self.position[0],self.position[1]), self.font, '>', self.colors, alpha=self.alpha, id=f'{self._id}_right')
+        
+        self.rect = pg.Rect(*self.position,*self.size)
+        
+        self.image = pg.Surface(self.size, pg.SRCALPHA)
+        
+    
+    def update(self):
+        if self.leftButton and self.rightButton:
+            if self.leftButton.value:
+                self.value -= 1
+                if self.value < 0:
+                    self.value = len(self.items) - 1
+                
+            if self.rightButton.value:
+                self.value += 1
+                if self.value >= len(self.items):
+                    self.value = 0
+                
+            
+            self.size = self.font.size(str(self.items[self.value]))
+            self.rect = pg.Rect(*self.position,*self.size)
+        return super().update()
+    
+    def draw(self):
+        
+        if self.leftButton and self.rightButton:
+            self.leftButton.rect.right = self.rect.left * .85
+            self.rightButton.rect.left = self.rect.right * 1.05
+            
+            self.engine.draw_text((self.rect.left,self.rect.top),str(self.items[self.value]), self.font, self.colors[0],bgColor=self.colors[1], alpha=self.alpha)
         
         return super().draw()
