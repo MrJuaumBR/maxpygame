@@ -22,27 +22,6 @@ max_x = 600
 
 zoom = 0.5
 
-# def setup_colors():
-#     sc = (per_line*size_add, (pge.Colors.number_of_colors()/per_line)*(size_add*2))
-#     colors_surf = pyge.pg.Surface(sc)
-#     x,y = 0,0
-#     ii = 0
-#     for color in pge.Colors.__dict__.keys():
-#         if not (color in pge.Colors.aliases):
-#             ii += 1
-#             size = arial12.size(str(color))
-#             r = pge.draw_rect((x,y), (size_add if size[0]-5 < size_add else size[0]+10,size_add), pge.Colors.__dict__[color], screen=colors_surf)
-#             c = pge.Colors.WHITE if pge.Colors.__dict__[color] != pge.Colors.WHITE else pge.Colors.BLACK
-#             pge.draw_text(str(color), arial12,(x+2,y+2), c, screen=colors_surf)
-#             x += r.width
-#             if ii >= per_line:
-#                 x = 0
-#                 ii = 0
-#                 y += size_add
-                
-#     return colors_surf
-            
-# colors_surf =setup_colors()
 
 while True:
     # Detect events

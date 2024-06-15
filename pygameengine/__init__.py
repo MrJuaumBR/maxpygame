@@ -315,6 +315,17 @@ class PyGameEngine:
             pg.SurfaceType
         """
         return pg.image.load(path)
+    
+    def createSpritesheet(self, image_path:str) -> spritesheet:
+        """
+        Create a spritesheet from an image
+        
+        Parameters:
+            image_path:str
+        Returns:
+            spritesheet
+        """
+        return spritesheet(self, image_path)
 
     # Draw System
     def draw_widgets(self, widgets:list[Widget,]=None):
