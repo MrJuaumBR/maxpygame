@@ -18,6 +18,7 @@ class PyGameEngine:
     
     # Engine Variables
     fps:int=60
+    _rfps:float=0
     widgets:list[Widget,] = []
     fonts:list[pg.font.FontType,] = []
     
@@ -166,6 +167,18 @@ class PyGameEngine:
     
     def fpsw(self):
         self.clock.tick(self.fps)
+        self._rfps = self.clock.get_fps()
+        
+    def getFPS(self) -> float:
+        """
+        Get the FPS of the screen if there is one
+        
+        Parameters:
+            None
+        Returns:
+            float
+        """
+        return self._rfps
     
     def setFPS(self, fps:int):
         """

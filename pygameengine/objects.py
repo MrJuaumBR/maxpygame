@@ -4,7 +4,7 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.1.2"
+    version = "0.1.3"
     description = "A simple pygame engine"
     
 

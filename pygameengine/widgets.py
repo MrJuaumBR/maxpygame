@@ -272,7 +272,7 @@ class Slider(Widget):
             # Value is between 0 and 1
             # make the cur position beetween min pos and max pos using the value as percentage
             # Value only will interact with the X vector
-            self.currentPosition = [(self.rect.x + self.ball_size//2) * self.value, self.rect.y - self.ball_size//4]
+            self.currentPosition = [self.rect.x + self._value * (self.rect.width - self.ball_size), self.rect.y - self.ball_size//4] # Fixed.
         else:
             self.currentPosition = [self.rect.x + self.ball_size//2, self.rect.y - self.ball_size//4]
     
@@ -392,7 +392,9 @@ class Select(Widget):
             self.rightButton.rect.left = self.rect.right * 1.05
             
             self.engine.draw_text((self.rect.left,self.rect.top),str(self.items[self.value]), self.font, self.colors[0],bgColor=self.colors[1], alpha=self.alpha)
-        
+            # Draw buttons independant of list widgets // Fix
+            self.leftButton.draw()
+            self.rightButton.draw()        
         return super().draw()
     
 class LongText(Widget):

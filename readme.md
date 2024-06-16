@@ -28,6 +28,9 @@ pip install -i https://test.pypi.org/simple/ maxpygame
 - [x] [Engine Default Icon](#icon);
 - [x] Colors aliases;
 - [x] Fix Icon for PyPi users;
+- [x] Fix Set Value Widget of Slider;
+- [x] Fix Select Widget don't draw buttons;
+- [x] FPS Control;
 - [ ] TextArea Widget;
 - [ ] Optimization;
 - [ ] Text Border;
