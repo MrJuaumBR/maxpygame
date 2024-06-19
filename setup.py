@@ -11,6 +11,6 @@ All credits to PyGame Owners
 """
 
 setup(
-    long_description='Long description',
+    long_description=Description_MD,
     long_description_content_type='text/markdown',
 )

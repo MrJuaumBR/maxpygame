@@ -1,6 +1,8 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
 # MaxPyGame
+
 *A Engine made in Python, with Python & PyGame for PyGame*
 
 <img src="https://img.shields.io/github/v/release/MrJuaumBR/maxpygame">
@@ -8,6 +10,8 @@
 <button style="background-color: #232323; color: #C7C1C1; border-radius: 10px">[<i class="bi bi-window"></i> Test PyPi](https://test.pypi.org/project/maxpygame/)</button>
 
 [<img src="https://raw.githubusercontent.com/MrJuaumBR/maxpygame/main/engine-icon.png" id="icon" width="256px" height="256px" style="margin-left: 50%; margin-right: 50%;" alt="Logo" title="Logo">](https://raw.githubusercontent.com/MrJuaumBR/maxpygame/main/engine-icon.png)
+
+*A bug found? A Tip? A Idea? Please make a issue in this Github page*
 
 # Requirements
 ```shell
@@ -31,9 +35,17 @@ pip install -i https://test.pypi.org/simple/ maxpygame
 - [x] Fix Set Value Widget of Slider;
 - [x] Fix Select Widget don't draw buttons;
 - [x] FPS Control;
+- [x] Readme Fix;
+- [x] Change Delay Time of Some Widgets;
+- [x] Progress Bar widget;
+- [x] Fix Slider Widget Fill(A Little Space beetween Circle & Filled area);
+- [x] Removed Longtext Widget print(Forgot to remove in before release);
+- [x] Make all Widgets lower case(In case of 2 Words in one, e.g.: LongText → Longtext, ProgressBar → Progressbar)
+- [x] Rect Border fix;
+- [x] Select Widget Spacement fix;
+- [x] Text Border;
 - [ ] TextArea Widget;
 - [ ] Optimization;
-- [ ] Text Border;
 - [ ] Dropdown Widget;
 - [ ] Music Support;
 - [ ] Sounds Support;
@@ -56,6 +68,7 @@ Currently the engine has some widgets
 - Slider;
 - Select;
 - LongText;
+- PrgressBar;
 
 # Prompts
 ```shell

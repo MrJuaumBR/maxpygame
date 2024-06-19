@@ -4,8 +4,14 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.1.3"
+    version = "0.1.4"
     description = "A simple pygame engine"
+    github = "https://github.com/MrJuaumBR/maxpygame"
+    testpypi = "https://test.pypi.org/project/maxpygame/"
+    def splitver(self) -> int:
+        x = ''
+        for number in self.version.split("."): x += str(number)
+        return int(x)
     
 
 # Time
@@ -129,7 +135,7 @@ class spritesheet(object):
         image = pg.Surface(rect.size).convert()
         image.blit(self.sheet, (0,0), rect)
         if colorkey is not None:
-            if colorkey is -1:
+            if colorkey == -1:
                 colorkey = image.get_at((0,0))
             image.set_colorkey(colorkey, pg.RLEACCEL)
         return image

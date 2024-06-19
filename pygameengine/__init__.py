@@ -25,6 +25,8 @@ class PyGameEngine:
     def __init__(self,screen:pg.SurfaceType=None):
         pg.init()
         print(f"{self.meta.name} - {self.meta.version}\n\t - {self.meta.author}")
+        if self.meta.splitver() >= 14:
+            print(f'\t - Any issues, please go to: {self.meta.github}')
         self.screen = screen
         self.clock = pg.time.Clock()
         self.Colors = ccc()
@@ -378,12 +380,12 @@ class PyGameEngine:
             if border_width > 0 and border_color is not None:
                 b_color = self.getColor(border_color)
                 pg.draw.rect(screen, b_color, rect, border_width)
-            s = pg.Surface((rect.size[0]-border_width, rect.size[1]-border_width), pg.SRCALPHA if (alpha < 255 or alpha != None) else 0)
+            s = pg.Surface((rect.size[0]+border_width, rect.size[1]+border_width), pg.SRCALPHA if (alpha < 255 or alpha != None) else 0)
             s.fill(color)
             s.set_alpha(alpha)
             
             r = s.get_rect()
-            r.topleft = (rect.x+(border_width//2), rect.y+(border_width//2))
+            r.topleft = (rect.left-border_width/2, rect.top-border_width/2)
             
             screen.blit(s, r)
             
@@ -418,7 +420,7 @@ class PyGameEngine:
             
             return rr
 
-    def draw_text(self, position:tuple[int,int],text:str, font:pg.font.FontType, color:reqColor,screen:pg.SurfaceType=None, bgColor:reqColor=None, alpha:int=255):
+    def draw_text(self, position:tuple[int,int],text:str, font:pg.font.FontType, color:reqColor,screen:pg.SurfaceType=None, bgColor:reqColor=None,border_width:int=0,border_color:reqColor=None, alpha:int=255):
         """
         Draw text on the screen
         
@@ -433,15 +435,20 @@ class PyGameEngine:
         Returns:
             Rect
         """
+        HasBorder = border_width > 0 and border_color is not None
         if self.hasScreen():
             color = self.getColor(color)
             bgColor = self.getColor(bgColor) if bgColor is not None else None
             
-            render = font.render(text, True, color, bgColor)
+            render = font.render(text, True, color, None if HasBorder else bgColor)
             render.set_alpha(alpha)
             
             render_rect = render.get_rect()
             render_rect.topleft = position
+            
+            if HasBorder:
+                b_color = self.getColor(border_color)
+                self.draw_rect(render_rect.topleft, render_rect.size, bgColor, border_width, border_color, screen, alpha)
             
             if screen is None:
                 self.screen.blit(render, render_rect)

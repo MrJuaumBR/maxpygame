@@ -7,6 +7,7 @@ A File designed to work in Widgets for the engine.
 - Slider;
 - Textbox;
 - Dropdown;
+- ProgressBar;
 - Image;
 """
 
@@ -74,7 +75,7 @@ class Button(Widget):
     _type:str = 'button'
     
     
-    click_time:int = 0.15 # Default -> 0.15s
+    click_time:int = 0.06 # Default -> 0.06s
     click_time_counter:int = 0
     
     value:bool = False
@@ -151,7 +152,7 @@ class Checkbox(Widget):
     """
     _type:str = 'checkbox'
     
-    click_time:int =0.5 # Default -> 0.5s
+    click_time:int =0.2 # Default -> 0.2s
     click_time_counter:int = 0
     
     box_size:int # Default -> 1/4 of wid
@@ -310,7 +311,8 @@ class Slider(Widget):
             # Fill passed
             
             if self.fill_passed:
-                self.engine.draw_rect((self.rect.x, self.rect.y), ((self.rect.width * self.value)+5, self.rect.height), self.colors[0] if len(self.colors) < 4 else self.colors[3], alpha=self.alpha)
+                w = self.currentPosition[0]-self.rect.x
+                self.engine.draw_rect((self.rect.x, self.rect.y), (0 if w < 0 else w+self.ball_size/2, self.rect.height), self.colors[0] if len(self.colors) < 4 else self.colors[3], alpha=self.alpha)
             
             self.circle = self.engine.draw_circle(self.currentPosition,self.ball_size, self.colors[0], alpha=self.alpha)
         
@@ -388,16 +390,16 @@ class Select(Widget):
     def draw(self):
         
         if self.leftButton and self.rightButton:
-            self.leftButton.rect.right = self.rect.left * .85
-            self.rightButton.rect.left = self.rect.right * 1.05
+            self.leftButton.rect.right = self.rect.left - 5
+            self.rightButton.rect.left = self.rect.right + 5
             
-            self.engine.draw_text((self.rect.left,self.rect.top),str(self.items[self.value]), self.font, self.colors[0],bgColor=self.colors[1], alpha=self.alpha)
+            self.engine.draw_text((self.rect.left,self.rect.top),str(self.items[self.value]), self.font, self.colors[0],bgColor=self.colors[1],border_width=3,border_color=self.colors[2], alpha=self.alpha)
             # Draw buttons independant of list widgets // Fix
             self.leftButton.draw()
             self.rightButton.draw()        
         return super().draw()
     
-class LongText(Widget):
+class Longtext(Widget):
     """
     LongText Widget.
     
@@ -462,11 +464,56 @@ class LongText(Widget):
         self.rect = pg.Rect(*self.position,*self.size)
         if len(self.colors) > 1:
             self.engine.draw_rect((0,0), self.size, self.colors[1], border_width=3 if len(self.colors) > 2 else 0, border_color=self.colors[2] if len(self.colors) > 2 else None,alpha=self.alpha, screen=self.image)
-            print('Draw Backgroun with border')
         for i, line in enumerate(self.text):
             self.engine.draw_text((0,(i*pg.font.Font.size(self.font, 'W')[1])),line, self.font, self.colors[0],alpha=self.alpha, screen=self.image)
             
     def draw(self):
         if self.image and self.rect:
             self.engine.screen.blit(self.image, self.rect)
+        return super().draw()
+    
+class Progressbar(Widget):
+    _type:str = 'progressbar'
+    
+    colors:list[reqColor,reqColor,reqColor,] = []
+    text:str = None
+    font:pg.font.FontType = None
+    
+    value:float = 0
+    def __init__(self, engine,position:tuple[int,int],size:tuple[int,int],colors:list[reqColor,reqColor,reqColor,],value:float=0,text:str=None,font:pg.font.FontType=None, id: str = None):
+        """
+        engine (any): The engine that the widget is in
+        position (pg.Vector2): The position of the widget
+        size (tuple[int,int]): The size of the widget
+        colors (list[reqColor,reqColor,reqColor,]): The colors of the widget
+        value (float, optional): The value of the widget. Defaults to 0.
+        text (str, optional): The text of the widget. Defaults to None.
+        id (str, optional): The id of the widget. Defaults to None.
+        """
+        super().__init__(engine, id)
+        self.position = position
+        self.size = size
+        self.colors = colors
+        self.text = text
+        self.value = value
+        self.font = font
+        
+    def build_widget_display(self):
+        self.rect = pg.Rect(*self.position,*self.size)
+        self.image = pg.Surface(self.size, pg.SRCALPHA)
+        
+    def draw(self):
+        if self.image and self.rect:
+            if self.value < 0:
+                self.value = 0
+            elif self.value > 1:
+                self.value = 1
+            # Background with border
+            self.engine.draw_rect(self.rect.topleft, self.rect.size, self.colors[1], border_width=3, border_color=self.colors[2])
+            
+            # Fill bar
+            self.engine.draw_rect(self.rect.topleft, (self.rect.width * self.value, self.rect.height), self.colors[0])
+            
+            if self.text and (self.font and len(self.colors) > 3):
+                self.engine.draw_text((self.rect.left+1, self.rect.top+1),str(self.text), self.font, self.colors[3])
         return super().draw()
