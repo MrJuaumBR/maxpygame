@@ -44,12 +44,19 @@ pip install -i https://test.pypi.org/simple/ maxpygame
 - [x] Rect Border fix;
 - [x] Select Widget Spacement fix;
 - [x] Text Border;
+- [x] Widgets Fix Custom Id;
+- [x] Widgets Delete;
+- [x] Time support to FPS Variability;
+- [x] Time Settings(Easier to change);
+- [x] New logo;
+- [x] Engine Apply Default Icon(May be ignored);
+- [x] Rework Colors System;
+- [ ] Opacity on hover widgets;
 - [ ] TextArea Widget;
 - [ ] Optimization;
 - [ ] Dropdown Widget;
 - [ ] Music Support;
-- [ ] Sounds Support;
-- [ ] Engine Apply Default Icon(May be ignored).
+- [ ] Sounds Support.
 
 # Colors
 The engine has 67 Built-in colors!
@@ -59,6 +66,17 @@ and some aliases, in capitalized(Starts with ther *first* letter in UPPER, and i
 pygameengine.Colors.BLACK
 pygameengine.Colors.Black
 pygameengine.Colors.black
+```
+To get color RGB or Hex:
+
+```py
+# RGB
+pygameengine.Colors.BLACK.rgb # → Tuple[int,int,int] = 0,0,0
+pygameengine.Colors.BLACK._rgb.rgb() # → Tuple[int,int,int] = 0,0,0
+
+# Hex
+pygameengine.Colors.WHITE.hex # → String = '#fff'
+pygameengine.Colors.WHITE._hex.ghex() # → String = '#fff'
 ```
 
 # Widgets

@@ -11,7 +11,7 @@ from .l_colors import reqColor
 class PyGameEngine:
     meta:Metadata = Metadata()
     Colors:ccc
-    TimeSys:any
+    TimeSys:TTimeSys = None
     # PyGame Functions
     screen:pg.SurfaceType=None # Screen
     clock:pg.time.Clock=None # Clock
@@ -21,6 +21,7 @@ class PyGameEngine:
     _rfps:float=0
     widgets:list[Widget,] = []
     fonts:list[pg.font.FontType,] = []
+    icon:Icon = None
     
     def __init__(self,screen:pg.SurfaceType=None):
         pg.init()
@@ -30,7 +31,10 @@ class PyGameEngine:
         self.screen = screen
         self.clock = pg.time.Clock()
         self.Colors = ccc()
-        self.TimeSys = TimeSys()
+        self.TimeSys = TTimeSys(self)
+        
+    def loadIcon(self):
+        self.icon=Icon(self)
     
     # Color System
     def getColor(self, color:reqColor or tuple) -> tuple[int,int,int]: # type: ignore
@@ -45,10 +49,10 @@ class PyGameEngine:
         if type(color) in [tuple, list]:
             return color
         elif type(color) == str:
-            return reqColor(hex=color).rgb.rgb()
+            return reqColor(hex=color).rgb
         else:
             try:
-                return color.rgb.rgb()
+                return color.rgb
             except: print(f'The {color} is a type that cannot be converted to a rgb color.')
     
     # Screen System
@@ -91,6 +95,10 @@ class PyGameEngine:
             if flags == FULLSCREEN: # If fullscreen
                 flags = FULLSCREEN|SCALED
             self.screen = pg.display.set_mode((width, height), flags)
+            if self.icon is None:
+                self.loadIcon()
+                self.setScreenIcon(self.icon.surf)
+            else: self.setScreenIcon(self.icon)
             return self.screen
     def setScreenTitle(self, title:str):
         """
@@ -170,7 +178,15 @@ class PyGameEngine:
     def fpsw(self):
         self.clock.tick(self.fps)
         self._rfps = self.clock.get_fps()
+    
+    def enableFPS_unstable(self, state:bool = True):
+        """
+        Adds a support for low perfomance PCs
         
+        using a system that will no longer delay too much clicks(Widgets problem)
+        """
+        self.TimeSys.unstable_fps = state
+    
     def getFPS(self) -> float:
         """
         Get the FPS of the screen if there is one
@@ -193,6 +209,7 @@ class PyGameEngine:
         """
         if self.hasScreen():
             self.fps = fps
+            self.TimeSys.time = pg.time.get_ticks() # Updates.
      
     def fill(self, fill_color:reqColor):
         """
@@ -205,8 +222,9 @@ class PyGameEngine:
         """
         if self.hasScreen():
             if not (type(color) in [tuple, list]):
-                fill_color:reqColor = fill_color.rgb.rgb()
-            self.screen.fill(fill_color)
+                clr = self.getColor(fill_color)
+            else: clr = fill_color
+            self.screen.fill(clr)
     
     def flip(self):
         """
@@ -307,6 +325,16 @@ class PyGameEngine:
         self.widgets.append(widget)
         
     def create_widget(self, widget_type:str, *args, **kwargs) -> Widget:
+        """
+        Create a widget from a type
+        
+        Parameters:
+            widget_type:str or WidgetClass
+            *args
+            **kwargs
+        Returns:
+            Widget
+        """
         # Get the widget
         if type(widget_type) != str:
             if inspect.isclass(widget_type):
@@ -318,6 +346,27 @@ class PyGameEngine:
         if widget:
             aargs = args
             return widget(self, *aargs, **kwargs)
+        
+    def findWidgetById(self, id:str) -> Widget:
+        """
+        Find a widget by its id
+        
+        Parameters:
+            id:str
+        Returns:
+            Widget
+        """
+        for widget in self.widgets:
+            if widget._id == id:
+                return self.widgets.index(widget)
+        
+        return None
+
+    def DeleteWidget(self, id:str):
+        """
+        Delete a widget from the list of widgets
+        """
+        self.widgets.pop(self.findWidgetById(id))
 
     # Image System
     def loadImage(self, path:str) -> pg.SurfaceType:

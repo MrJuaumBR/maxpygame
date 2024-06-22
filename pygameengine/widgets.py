@@ -13,6 +13,7 @@ A File designed to work in Widgets for the engine.
 
 from .required import pg
 from .l_colors import reqColor
+from .objects import cfgtimes
 
 class Widget(pg.sprite.Sprite):
     """
@@ -50,6 +51,8 @@ class Widget(pg.sprite.Sprite):
         
         if id in [' ','',None,'None']:
             self._id = f'{self._type}{len(self.engine.widgets)}'
+        else:
+            self._id = id
     
     def build_widget_display(self):
         pass
@@ -61,6 +64,9 @@ class Widget(pg.sprite.Sprite):
         if self.image is None:
             self.build_widget_display() # First run of the draw, then create the draw object
         if self._UpdateWhenDraw: self.update()
+    
+    def delete(self):
+        self.engine.DeleteWidget(self._id)
     
     def update(self):
         self.cooldown_refresh()
@@ -75,7 +81,7 @@ class Button(Widget):
     _type:str = 'button'
     
     
-    click_time:int = 0.06 # Default -> 0.06s
+    click_time:int = cfgtimes.WD_BTN_CLICK_TIME
     click_time_counter:int = 0
     
     value:bool = False
@@ -152,7 +158,7 @@ class Checkbox(Widget):
     """
     _type:str = 'checkbox'
     
-    click_time:int =0.2 # Default -> 0.2s
+    click_time:int = cfgtimes.WD_CKBX_CLICK_TIME
     click_time_counter:int = 0
     
     box_size:int # Default -> 1/4 of wid
@@ -328,6 +334,7 @@ class Select(Widget):
     
     leftButton:Button = None
     rightButton:Button = None
+    button_click_time = cfgtimes.WD_SLCT_CLICK_TIME
     
     items:list=[]
     value:int=0
@@ -364,6 +371,9 @@ class Select(Widget):
         
         self.leftButton = Button(self.engine, (self.position[0],self.position[1]), self.font, '<', self.colors, alpha=self.alpha, id=f'{self._id}_left')
         self.rightButton = Button(self.engine, (self.position[0],self.position[1]), self.font, '>', self.colors, alpha=self.alpha, id=f'{self._id}_right')
+        
+        self.leftButton.click_time = self.button_click_time
+        self.rightButton.click_time = self.button_click_time
         
         self.rect = pg.Rect(*self.position,*self.size)
         

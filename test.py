@@ -25,6 +25,11 @@ longtexttest = """This is a long text made for test the LongText widget\ndo you 
 
 LongText = pge.create_widget(pyge.Longtext, (10,300), arial24, longtexttest, [pge.Colors.WHITE, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY], id='longtext1')
 
+# FPS Variability
+pge.enableFPS_unstable()
+
+pge.loadIcon()
+
 # Game Loop
 while True:
     # Draw a text
@@ -55,6 +60,7 @@ while True:
     # Update the screen
     pge.draw_text((0,0), f'FPS: {int(pge.getFPS())}', arial16, pge.Colors.WHITE)
     pge.draw_widgets()
+    pge.screen.blit(pge.icon.surf, (896, 592))
     pge.update()
     pge.fpsw()
     # Clear the screen
