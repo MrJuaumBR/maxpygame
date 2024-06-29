@@ -26,16 +26,30 @@ class PyGameEngine:
     
     def __init__(self,screen:pg.SurfaceType=None):
         pg.init()
-        print(f"{self.meta.name} - {self.meta.version}\n\t - {self.meta.author}")
-        if self.meta.splitver() >= 14:
-            print(f'\t - Any issues, please go to: {self.meta.github}')
+        print(f"{self.meta.name} - {self.meta.version}\n\t - By {self.meta.author}")
         try:
+            print(f'\t - [!] Any issues, please go to: {self.meta.github}')
             data_online = requests.get('https://raw.githubusercontent.com/MrJuaumBR/maxpygame/main/data.json').json()
             if 'version' in data_online.keys():
-                if data_online['version'] > self.meta.splitver():
-                    print(f'\t - New version available, please go to: {self.meta.github}')
-                elif data_online['version'] < self.meta.splitver():
-                    print(f'\t - You are using an unknown version, please go to: {self.meta.github}')
+                # Check if metadata version can be converted to int
+                try:
+                    int(self.meta.splitver())
+                    ver = self.meta.splitver2int()
+                    if data_online['version'] > ver:
+                        print(f'\t - [!] New version available, please go to: {self.meta.github}')
+                    elif data_online['version'] < ver:
+                        print(f'\t - [!] You are using an unknown version, please go to: {self.meta.github}')
+                    else:
+                        print(f'\t - Updated version.')
+                except: # Cant convert to int
+                    if 'fix' in self.meta.version:
+                        ver = int(self.meta.splitver().replace('fix',''))
+                        if data_online['version'] > ver:
+                            print(f'\t - [!] New version available, please go to: {self.meta.github}')
+                        elif data_online['version'] < ver:
+                            print(f'\t - [!] You are using an unknown version, please go to: {self.meta.github}')
+                        else:
+                            print(f'\t - Updated version.')
         except: pass
         self.screen = screen
         self.clock = pg.time.Clock()

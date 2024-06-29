@@ -11,7 +11,7 @@ class Colors:
     def __init__(self):
         self.colors_add()
         self.add_colors_from_json()
-        print(f'Built in: {self.number_of_colors()} colors')
+        print(f'\t - [!] Built in: {self.number_of_colors()} colors')
     
     def get(self, color_name:str) -> reqColor:
         return getattr(self, color_name)

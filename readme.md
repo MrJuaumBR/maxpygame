@@ -95,23 +95,21 @@ Currently the engine has some widgets
 - TextBox;
 
 # Prompts
+*pre-build setup.py*
 ```shell
-# pre-build setup.py
 py setup.py build
-
-# Build Packages
+```
+*Build Packages*
+```shell
 py -m build
-
-# Src Build
-py -m build --sdist
-
-# Local Install
+```
+*Local Install*
+```shell
 pip install .
-
-# Send to testPyPi
-twine upload --repository-url https://test.pypi.org/legacy/ dist/*
+```
+*Send to Test PyPi*
+```shell
 twine upload --repository testpypi dist/*
-
 ```
 
 # Credits

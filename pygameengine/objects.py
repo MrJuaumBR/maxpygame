@@ -4,13 +4,16 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.1.6"
+    version = "0.1.6fix"
     description = "A simple pygame engine"
     github = "https://github.com/MrJuaumBR/maxpygame"
     testpypi = "https://test.pypi.org/project/maxpygame/"
-    def splitver(self) -> int:
+    def splitver(self) -> str:
         x = ''
         for number in self.version.split("."): x += str(number)
+        return x
+    def splitver2int(self) -> int:
+        x = self.splitver()
         return int(x)
 
 class Icon:
@@ -68,11 +71,7 @@ class TTimeSys:
     unstable_fps:bool = False
     def __init__(self, engine):
         self.engine = engine
-        self.time = pg.time.get_ticks()
         self.fps = engine.fps
-        
-    def f2s(self , fps:int) -> int:
-        return int(self.time / fps) # Return how frames to seconds
     
     def s2f(self , seconds:int) -> int:
         """
@@ -82,8 +81,8 @@ class TTimeSys:
         """
         if self.unstable_fps:
             x = round(self.engine._rfps / self.fps,2)
-            return int((x*self.time)*seconds)
-        else: return int(seconds*self.time)
+            return int((x*self.fps)*seconds)
+        else: return int(seconds*self.fps)
 
 class cfgtimes:
     """
@@ -91,12 +90,12 @@ class cfgtimes:
     """
     
     # Widgets
-    WD_BTN_CLICK_TIME = 0.05 # Default -> 0.05s
-    WD_CKBX_CLICK_TIME = 0.06 # Default -> 0.06s
-    WD_SLCT_CLICK_TIME = 0.1 # Default -> 0.1s
-    WD_TXBX_DEL_TIME = 0.05 # Default -> 0.05s
-    WD_TXBX_KEYP_TIME = 0.01 # Default -> 0.05s
-    WD_TXBX_CLICK_TIME = 0.1 # Default -> 0.1s
+    WD_BTN_CLICK_TIME = 0.1 # Default -> 0.1s
+    WD_CKBX_CLICK_TIME = 0.35 # Default -> 0.35s
+    WD_SLCT_CLICK_TIME = 0.45 # Default -> 0.45s
+    WD_TXBX_DEL_TIME = 0.2 # Default -> 0.2s
+    WD_TXBX_KEYP_TIME = 0.075 # Default -> 0.075s
+    WD_TXBX_CLICK_TIME = 0.15 # Default -> 0.15s
 
 # Color
 def hex_to_rgb(hex:str) -> tuple[int,int,int]:
