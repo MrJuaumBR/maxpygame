@@ -22,12 +22,21 @@ class PyGameEngine:
     widgets:list[Widget,] = []
     fonts:list[pg.font.FontType,] = []
     icon:Icon = None
+    events:list[pg.event.Event,] = []
     
     def __init__(self,screen:pg.SurfaceType=None):
         pg.init()
         print(f"{self.meta.name} - {self.meta.version}\n\t - {self.meta.author}")
         if self.meta.splitver() >= 14:
             print(f'\t - Any issues, please go to: {self.meta.github}')
+        try:
+            data_online = requests.get('https://raw.githubusercontent.com/MrJuaumBR/maxpygame/main/data.json').json()
+            if 'version' in data_online.keys():
+                if data_online['version'] > self.meta.splitver():
+                    print(f'\t - New version available, please go to: {self.meta.github}')
+                elif data_online['version'] < self.meta.splitver():
+                    print(f'\t - You are using an unknown version, please go to: {self.meta.github}')
+        except: pass
         self.screen = screen
         self.clock = pg.time.Clock()
         self.Colors = ccc()
@@ -135,7 +144,7 @@ class PyGameEngine:
             list[pg.event.Event,]
         """
         return pg.event.get()
-    def getKeys(self) -> list[bool]:
+    def getKeys(self) -> pg.key.ScancodeWrapper:
         return pg.key.get_pressed()
         
     def hasKeyPressed(self, key:int) -> bool:
@@ -172,6 +181,7 @@ class PyGameEngine:
         """
         if self.hasScreen() and target is None:
             pg.display.update(self.screen)
+            self.events = self.getEvents()
         elif target:
             pg.display.update(target)
     
@@ -239,17 +249,17 @@ class PyGameEngine:
             self.screen.flip()
             
     # Font System
-    def _findFont(self, font:pg.font.FontType) -> int:
+    def _findFont(self, font:pg.font.FontType) -> pg.font.FontType:
         """
         Find the font in the list of fonts
         
         Parameters:
             font:pg.font.FontType
         Returns:
-            int
+            pg.font.FontType
         """
         if type(font) != int:
-            return self.fonts.index(font)
+            return self.fonts[self.fonts.index(font)]
         else:
             return self.fonts[font]
     

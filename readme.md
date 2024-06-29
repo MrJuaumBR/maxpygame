@@ -9,6 +9,8 @@
 
 <button style="background-color: #232323; color: #C7C1C1; border-radius: 10px">[<i class="bi bi-window"></i> Test PyPi](https://test.pypi.org/project/maxpygame/)</button>
 
+<button style="background-color: #232323; color: #C7C1C1; border-radius: 10px">[<i class="bi bi-window"></i> GitHub](https://github.com/MrJuaumBR/maxpygame)</button>
+
 [<img src="https://raw.githubusercontent.com/MrJuaumBR/maxpygame/main/engine-icon.png" id="icon" width="256px" height="256px" style="margin-left: 50%; margin-right: 50%;" alt="Logo" title="Logo">](https://raw.githubusercontent.com/MrJuaumBR/maxpygame/main/engine-icon.png)
 
 *A bug found? A Tip? A Idea? Please make a issue in this Github page*
@@ -51,6 +53,9 @@ pip install -i https://test.pypi.org/simple/ maxpygame
 - [x] New logo;
 - [x] Engine Apply Default Icon(May be ignored);
 - [x] Rework Colors System;
+- [x] Text Box Widget;
+- [x] New Events System;
+- [x] Verify Version Online;
 - [ ] Opacity on hover widgets;
 - [ ] TextArea Widget;
 - [ ] Optimization;
@@ -86,7 +91,8 @@ Currently the engine has some widgets
 - Slider;
 - Select;
 - LongText;
-- PrgressBar;
+- ProgressBar;
+- TextBox;
 
 # Prompts
 ```shell

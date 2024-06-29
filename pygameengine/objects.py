@@ -4,7 +4,7 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.1.5"
+    version = "0.1.6"
     description = "A simple pygame engine"
     github = "https://github.com/MrJuaumBR/maxpygame"
     testpypi = "https://test.pypi.org/project/maxpygame/"
@@ -94,6 +94,9 @@ class cfgtimes:
     WD_BTN_CLICK_TIME = 0.05 # Default -> 0.05s
     WD_CKBX_CLICK_TIME = 0.06 # Default -> 0.06s
     WD_SLCT_CLICK_TIME = 0.1 # Default -> 0.1s
+    WD_TXBX_DEL_TIME = 0.05 # Default -> 0.05s
+    WD_TXBX_KEYP_TIME = 0.01 # Default -> 0.05s
+    WD_TXBX_CLICK_TIME = 0.1 # Default -> 0.1s
 
 # Color
 def hex_to_rgb(hex:str) -> tuple[int,int,int]:

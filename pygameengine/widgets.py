@@ -100,14 +100,14 @@ class Button(Widget):
         """
         super().__init__(engine,id)
         self.position = position
-        self.font:pg.font.FontType = self.engine.fonts[self.engine._findFont(font)]
+        self.font:pg.font.FontType = self.engine._findFont(font)
         self.text = text
         self.colors = colors
         self.alpha = alpha
         
     def build_widget_display(self):
         # First get the size of the text
-        font:pg.font.FontType = self.engine.fonts[self.engine._findFont(self.font)]
+        font:pg.font.FontType = self.engine._findFont(self.font)
         self.size = pg.math.Vector2(*font.size(self.text))
         
         self.image = pg.Surface(self.size, (pg.SRCALPHA if (self.alpha < 255 or self.alpha != None) else 0))
@@ -179,7 +179,7 @@ class Checkbox(Widget):
         """
         super().__init__(engine,id)
         self.position = position
-        self.font:pg.font.FontType = self.engine.fonts[self.engine._findFont(font)]
+        self.font:pg.font.FontType = self.engine._findFont(font)
         self.text = text
         self.colors = colors
         self.alpha = alpha
@@ -359,7 +359,7 @@ class Select(Widget):
         """
         super().__init__(engine, id)
         self.position = position
-        self.font:pg.font.FontType = self.engine.fonts[self.engine._findFont(font)]
+        self.font:pg.font.FontType = self.engine._findFont(font)
         self.colors = colors
         self.items = items
         self.value = value
@@ -423,7 +423,7 @@ class Longtext(Widget):
     def __init__(self, engine, position: [int,int], font: int or pg.font.FontType,text:str,colors: list[reqColor,],size: [int, int] = None,id: str = None, alpha: int = 255): # type: ignore
         super().__init__(engine, id)
         self.position = position
-        self.font:pg.font.FontType = self.engine.fonts[self.engine._findFont(font)]
+        self.font:pg.font.FontType = self.engine._findFont(font)
         self.colors = colors
         if size == None:
             self.auto_size = True
@@ -527,3 +527,122 @@ class Progressbar(Widget):
             if self.text and (self.font and len(self.colors) > 3):
                 self.engine.draw_text((self.rect.left+1, self.rect.top+1),str(self.text), self.font, self.colors[3])
         return super().draw()
+    
+class Textbox(Widget):
+    _type:str = 'textbox'
+    
+    colors:list[reqColor,reqColor,reqColor,] = []
+    text:str = None
+    font:pg.font.FontType = None
+    height:int = 0
+    max_width:int = 0
+    active = False
+    
+    del_press_time:int = cfgtimes.WD_TXBX_DEL_TIME
+    del_press_counter:int = 0
+    
+    key_press_time:int = cfgtimes.WD_TXBX_KEYP_TIME
+    key_press_counter:int = 0
+    
+    click_time:int = cfgtimes.WD_TXBX_CLICK_TIME
+    click_counter:int = 0
+    
+    blacklist = [
+        pg.K_BACKSPACE,
+        pg.K_DELETE,
+        pg.K_LEFT,
+        pg.K_RIGHT,
+        pg.K_UP,
+        pg.K_DOWN,
+        pg.K_LCTRL, pg.K_RCTRL,
+        pg.K_LALT, pg.K_RALT,
+    ]
+    def __init__(self, engine,position:tuple[int,int],height:int,colors:list[reqColor,reqColor,reqColor,],font:pg.font.FontType,text:str=None,alpha:int=255, id: str = None):
+        """
+        engine (any): The engine that the widget is in
+        position (pg.Vector2): The position of the widget
+        height (int): The height of the widget
+        colors (list[reqColor,reqColor,reqColor,]): The colors of the widget (Background Unactive, Background Active, Text, Border)
+        font (pg.font.FontType): The font of the widget. Defaults to None.
+        text (str, optional): The text of the widget. Defaults to None.
+        alpha (int, optional): The alpha of the widget. Defaults to 255.
+        id (str, optional): The id of the widget. Defaults to None.
+        """
+        super().__init__(engine, id)
+        self.position:tuple[int,int] = position
+        self.height:int = height
+        self.colors:list[reqColor,reqColor,] = colors
+        self.text:str = text
+        self.font:pg.font.FontType = self.engine._findFont(font)
+        self.alpha:int = alpha
+        
+    def build_widget_display(self):
+        self.max_width = self.engine.screen.get_width() - self.position[0]
+        self.image = pg.Surface((0,0))
+        self.rect = pg.Rect(*self.position,self.max_width,self.height)
+        
+    def update(self):
+        # Update Size
+        size = self.font.size(self.text)
+        w,h = size[0]+5,size[1]
+        if h > self.height:
+            self.height = h+2
+        self.rect.size = (self.font.size('WW')[0] if w < self.font.size('WW')[0] else w,h+2)
+        
+        # Update Value
+        self.value = self.text
+        
+        # Get mouse and update if is active or no
+        # m_pos = self.engine.getMousePos()
+        # if self.rect.collidepoint(m_pos):
+        #     if self.engine.getMousePressed()[0]:
+        #         if self.key_press_counter <= 0:
+        #             self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time) # Reset Timer
+        #             self.active = True
+        #         else:
+        #             self.active = False
+        if self.engine.getMousePressed()[0]:
+            if self.click_counter <= 0:
+                m_pos = self.engine.getMousePos()
+                if self.rect.collidepoint(m_pos):
+                    if not self.active:
+                        self.click_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
+                        self.active = True
+                else:
+                    self.active = False
+        
+        if self.active:
+            if self.key_press_counter <= 0 or self.del_press_counter <= 0:    
+                keys:pg.key.ScancodeWrapper = self.engine.getKeys() # Get Keys pressed
+                if keys[pg.K_BACKSPACE] and self.del_press_counter <= 0:
+                    self.text = self.text[:-1] # Remove last character
+                    self.del_press_counter = self.engine.TimeSys.s2f(self.del_press_time)
+                elif keys[pg.K_RETURN] and self.key_press_counter <= 0:
+                    self.active = False
+                    self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
+                elif self.key_press_counter <= 0:
+                    for ev in self.engine.events:
+                        if ev.type == pg.KEYDOWN:
+                            if not (ev.key in self.blacklist):
+                                self.text += ev.unicode
+                            self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
+                            
+        
+        
+        return super().update()
+    
+    def cooldown_refresh(self):
+        if self.key_press_counter > 0:
+            self.key_press_counter -= 1
+        if self.click_counter > 0:
+            self.click_counter -= 1
+        if self.del_press_counter > 0:
+            self.del_press_counter -= 1
+        return super().cooldown_refresh()
+    
+    def draw(self):
+        if self.image:
+            self.engine.draw_rect(self.rect.topleft, self.rect.size, self.colors[0] if not self.active else self.colors[1], border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None,alpha=self.alpha)
+            self.engine.draw_text((self.rect.left+2.5, self.rect.top+1),self.text, self.font, self.colors[2],alpha=self.alpha)
+        return super().draw()
+        
