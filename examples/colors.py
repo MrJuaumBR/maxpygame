@@ -25,7 +25,7 @@ zoom = 0.5
 
 while True:
     # Detect events
-    for ev in pge.getEvents():
+    for ev in pge.events:
         # Quit if the user closes the window
         if ev.type == pyge.QUIT:
             pge.exit()
@@ -61,8 +61,10 @@ while True:
     # Add colors_surf
     x,y = 0,0
     ii = 0
+    ind = 0
     for color in pge.Colors.__dict__.keys():
-        if not (color in pge.Colors.aliases):
+        if not (color in pge.Colors.aliases) and type(pge.Colors.__dict__[color]) == pyge.reqColor:
+            ind += 1
             text_c = pge.Colors.get(color)
             if text_c.brightness > 0.4: text_c = pge.Colors.BLACK
             else: text_c = pge.Colors.WHITE
@@ -73,7 +75,7 @@ while True:
             # Draw Rect
             color_rect = pge.draw_rect(((x+zoom)+X_SHIFT,(y+zoom)+Y_SHIFT),(rect_size[0]*zoom,rect_size[1]*zoom), pge.Colors.get(color), border_color=text_c, border_width=int(2*zoom))
             # Draw Text
-            pge.draw_text((color_rect.x+3, color_rect.y+3),str(color),arial12, text_c, screen=screen)
+            pge.draw_text((color_rect.x+3, color_rect.y+3),str(color) + f' {ind}',arial12, text_c, screen=screen)
             
             x += color_rect.width
             ii += 1

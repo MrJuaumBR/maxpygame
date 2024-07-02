@@ -261,7 +261,10 @@ class PyGameEngine:
         """
         if self.hasScreen():
             self.screen.flip()
-            
+    
+    def createSurface(self, width:int, height:int, flags:int=0) -> pg.SurfaceType:
+        return pg.Surface((width, height), flags)
+    
     # Font System
     def _findFont(self, font:pg.font.FontType) -> pg.font.FontType:
         """
@@ -370,6 +373,7 @@ class PyGameEngine:
         if widget:
             aargs = args
             return widget(self, *aargs, **kwargs)
+        return None
         
     def findWidgetById(self, id:str) -> Widget:
         """
@@ -382,7 +386,7 @@ class PyGameEngine:
         """
         for widget in self.widgets:
             if widget._id == id:
-                return self.widgets.index(widget)
+                return self.widgets[self.widgets.index(widget)]
         
         return None
 
