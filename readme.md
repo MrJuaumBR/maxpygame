@@ -68,6 +68,7 @@ pip install -U -i https://test.pypi.org/simple/ maxpygame
 - [x] Updated [colors example](./examples/colors.py) for work better in newer versions;
 - [x] Returns None when not found for some functions;
 - [x] Fix Time System(0.1.6 → 0.1.6fix(.1) → 0.1.7)
+- [x] Fixed Spritesheet System(How i don't recognize this later?);
 - [ ] Opacity on hover widgets;
 - [ ] TextArea Widget;
 - [ ] Optimization;
@@ -92,8 +93,8 @@ pygameengine.Colors.BLACK.rgb # → Tuple[int,int,int] = 0,0,0
 pygameengine.Colors.BLACK._rgb.rgb() # → Tuple[int,int,int] = 0,0,0
 
 # Hex
-pygameengine.Colors.WHITE.hex # → String = '#fff'
-pygameengine.Colors.WHITE._hex.ghex() # → String = '#fff'
+pygameengine.Colors.WHITE.hex # → String = '#fff' or 'fff'
+pygameengine.Colors.WHITE._hex.ghex() # → String = '#fff' or 'fff'
 ```
 
 # Widgets

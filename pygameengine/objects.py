@@ -4,7 +4,7 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.1.7"
+    version = "0.1.7fix"
     description = "A simple pygame engine"
     github = "https://github.com/MrJuaumBR/maxpygame"
     testpypi = "https://test.pypi.org/project/maxpygame/"
@@ -234,7 +234,7 @@ class spritesheet(object):
             pg.SurfaceType
         """
         image = pg.Surface(rect.size).convert()
-        image.blit(self.sheet, (0,0), rect)
+        image.blit(self.image, (0,0), rect)
         if colorkey is not None:
             if colorkey == -1:
                 colorkey = image.get_at((0,0))
