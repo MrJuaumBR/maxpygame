@@ -69,6 +69,8 @@ pip install -U -i https://test.pypi.org/simple/ maxpygame
 - [x] Returns None when not found for some functions;
 - [x] Fix Time System(0.1.6 → 0.1.6fix(.1) → 0.1.7)
 - [x] Fixed Spritesheet System(How i don't recognize this later?);
+- [x] Is Running Variable for detect if the game stills running;
+- [x] Threading Example(Really cool for multiplayer games);
 - [ ] Opacity on hover widgets;
 - [ ] TextArea Widget;
 - [ ] Optimization;

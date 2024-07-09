@@ -23,6 +23,7 @@ class PyGameEngine:
     fonts:list[pg.font.FontType,] = []
     icon:Icon = None
     events:list[pg.event.Event,] = []
+    is_running:bool = False
     
     def __init__(self,screen:pg.SurfaceType=None):
         pg.init()
@@ -122,6 +123,7 @@ class PyGameEngine:
                 self.loadIcon()
                 self.setScreenIcon(self.icon.surf)
             else: self.setScreenIcon(self.icon)
+            self.is_running = True
             return self.screen
     def setScreenTitle(self, title:str):
         """
@@ -181,6 +183,7 @@ class PyGameEngine:
         Returns:
             None
         """
+        self.is_running = False
         pg.quit()
         sys.exit()
         
@@ -193,13 +196,19 @@ class PyGameEngine:
         Returns:
             None
         """
+        self.is_running = True
         if self.hasScreen() and target is None:
             pg.display.update(self.screen)
             self.events = self.getEvents()
-        elif target:
+        elif self.hasScreen() and target:
             pg.display.update(target)
     
     def fpsw(self):
+        """
+        Wait fps(Frames Per Second)
+        
+        Defines the FPS to wait using → setFPS()
+        """
         self.clock.tick(self.fps)
         self._rfps = self.clock.get_fps()
     
