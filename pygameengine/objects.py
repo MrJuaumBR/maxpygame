@@ -4,7 +4,7 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.1.7fix2"
+    version = "0.1.8"
     description = "A simple pygame engine"
     github = "https://github.com/MrJuaumBR/maxpygame"
     testpypi = "https://test.pypi.org/project/maxpygame/"
@@ -83,19 +83,6 @@ class TTimeSys:
             x = round(self.engine._rfps / self.fps,2)
             return int((x*self.fps)*seconds)
         else: return int(seconds*self.fps)
-
-class cfgtimes:
-    """
-    settings the delay time for the engine
-    """
-    
-    # Widgets
-    WD_BTN_CLICK_TIME = 0.1 # Default -> 0.1s
-    WD_CKBX_CLICK_TIME = 0.35 # Default -> 0.35s
-    WD_SLCT_CLICK_TIME = 0.45 # Default -> 0.45s
-    WD_TXBX_DEL_TIME = 0.2 # Default -> 0.2s
-    WD_TXBX_KEYP_TIME = 0.075 # Default -> 0.075s
-    WD_TXBX_CLICK_TIME = 0.15 # Default -> 0.15s
 
 # Color
 def hex_to_rgb(hex:str) -> tuple[int,int,int]:
@@ -243,3 +230,30 @@ class spritesheet(object):
     
     def images_at(self, rects:list[tuple[int,int,int,int]], colorkey=None):
         return [self.image_at(rect, colorkey) for rect in rects]
+    
+class cfgtimes:
+    """
+    settings the delay time for the engine
+    """
+    
+    # Widgets
+    WD_BTN_CLICK_TIME = 0.1 # Default -> 0.1s
+    WD_CKBX_CLICK_TIME = 0.35 # Default -> 0.35s
+    WD_SLCT_CLICK_TIME = 0.45 # Default -> 0.45s
+    WD_TXBX_DEL_TIME = 0.2 # Default -> 0.2s
+    WD_TXBX_KEYP_TIME = 0.075 # Default -> 0.075s
+    WD_TXBX_CLICK_TIME = 0.15 # Default -> 0.15s
+    
+class cfgtips:
+    """
+    settings for the tips
+    """
+    
+    mouse_distance:tuple[int,int] = (10,10)
+    
+    background_color:color = color(255,192,128)
+    border_color:color = color(192, 128, 64)
+    text_color:color = color(0,0,0)
+    border_width:int = 2
+    alpha:int = 200
+    refresh_time = 0.05 # Default -> 0.05s

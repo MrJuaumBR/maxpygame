@@ -1,11 +1,15 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
+<img src="https://img.shields.io/github/v/release/MrJuaumBR/maxpygame">
+
 # MaxPyGame
 
 *A Engine made in Python, with Python & PyGame for PyGame*
 
-<img src="https://img.shields.io/github/v/release/MrJuaumBR/maxpygame">
+The idea for creating this project is to make more easier to develop in PyGame without having to make multiples "widgets" and some functions every time when you will create a project.<br>
+Currently we have multiple functions for use, like: CreateSreen, CreateSysFont, CreateFont and etc...<br>
+for the future we want to improve perfomance and have how many functions that you can imagine!<br>
 
 <button style="background-color: #232323; color: #C7C1C1; border-radius: 10px">[<i class="bi bi-window"></i> Test PyPi](https://test.pypi.org/project/maxpygame/)</button>
 
@@ -71,6 +75,10 @@ pip install -U -i https://test.pypi.org/simple/ maxpygame
 - [x] Fixed Spritesheet System(How i don't recognize this later?);
 - [x] Is Running Variable for detect if the game stills running;
 - [x] Threading Example(Really cool for multiplayer games);
+- [x] Tips for Widgets;
+- [x] Add Tip system to base engine;
+- [x] Add Tip system to widgets;
+- [x] Add widgets auto create tips;
 - [ ] Opacity on hover widgets;
 - [ ] TextArea Widget;
 - [ ] Optimization;
@@ -79,7 +87,7 @@ pip install -U -i https://test.pypi.org/simple/ maxpygame
 - [ ] Sounds Support.
 
 # Colors
-The engine has 67 Built-in colors!
+The engine has 76 Built-in colors!
 and some aliases, in capitalized(Starts with ther *first* letter in UPPER, and in Lower, is all in lower case)
 ```py
 # Example

@@ -359,7 +359,10 @@ class PyGameEngine:
             None
         """
         self.widgets.append(widget)
-        
+    
+    def create_tip(self, text:str, font:pg.font.FontType) -> Tip:
+        return Tip(self, text, font)
+    
     def create_widget(self, widget_type:str, *args, **kwargs) -> Widget:
         """
         Create a widget from a type
