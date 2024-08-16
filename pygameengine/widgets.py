@@ -113,7 +113,7 @@ class Tip():
         self.total_size = (0, 0)
         for line in lines_copy:
             width, height = self.font.size(line)
-            self.total_size = (max(self.total_size[0], width), self.total_size[1] + height)
+            self.total_size = (max(self.total_size[0], width) + 3, self.total_size[1] + height + 3)
         
         [(lines_copy.pop(x) if text in ['\n',''] else None) for x,text in enumerate(lines_copy)]
         
@@ -135,7 +135,7 @@ class Tip():
         self.surface = pg.Surface(self.total_size, pg.SRCALPHA)
         
         self.engine.draw_rect((0,0), self.total_size, cfgtips.background_color, border_width=cfgtips.border_width, border_color=cfgtips.border_color, screen=self.surface, alpha=cfgtips.alpha)
-        position:list = [2,2]
+        position:list = [0,0]
         for line in self.text_lines:
             self.engine.draw_text(position, line, self.font, cfgtips.text_color, screen=self.surface)
             position[1] += self.font.size(line)[1] + 1
@@ -788,4 +788,99 @@ class Textbox(Widget):
         if self.image:
             self.engine.draw_rect(self.rect.topleft, self.rect.size, self.colors[0] if not self.active else self.colors[1], border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None,alpha=self.alpha)
             self.engine.draw_text((self.rect.left+2.5, self.rect.top+1),self.text, self.font, self.colors[2],alpha=self.alpha)
+        return super().draw()
+    
+class Dropdown(Widget):
+    _type:str = 'dropdown'
+    
+    colors:list[reqColor,reqColor,reqColor,] = []
+    texts:list[str,] = []
+    current_text:int = 0
+    font:pg.font.FontType = None
+    position:tuple[int,int] = (0,0)
+    
+    texts_rects:list[tuple[pg.rect.RectType, int]] = [] # The Rect of text, Index of text
+    
+    rect:pg.Rect = None
+    
+    active:bool = False
+    
+    update_delay_count:int = 0
+    Click_Time_counter:int = 0
+    def __init__(self, engine, position:tuple[int,int], colors:list[reqColor,reqColor,reqColor,], texts:list[str,], font:pg.font.FontType, alpha:int=255, current_text:int=0,id:str=None, tip:Tip=None):
+        super().__init__(engine, id, tip)
+        
+        self.position:tuple = position
+        self.colors:list = colors
+        self.texts:list = texts
+        self.font:pg.font.FontType = font
+        self.alpha:int = alpha
+        self.current_text:int = current_text
+        
+        self.build_widget_display()
+        
+    def build_widget_display(self):
+        self.rect = pg.Rect(*self.position, self.font.size(self.texts[self.current_text])[0]+4, self.font.size(self.texts[self.current_text])[1]+2)
+        
+        width,height = self.rect.size
+        
+        self.surface = pg.Surface((width,height), pg.SRCALPHA)
+        
+        if self.active:
+            self.texts_rects.clear()
+            height += (self.font.size(self.texts[self.current_text])[1]*((len(self.texts)-1) if len(self.texts) > 1 else 1))+2
+            
+            self.surface = pg.Surface((width,height), pg.SRCALPHA)
+            
+            self.engine.draw_rect((0,self.rect.height), (width,height-self.rect.height), self.colors[1], border_width=3 if len(self.colors) > 2 else 0, border_color=self.colors[2] if len(self.colors) > 2 else (0,0,0), alpha=self.alpha if self.alpha < 255 else 200, screen=self.surface)
+            pos = [2,self.rect.height+2]
+            for x,line in enumerate(self.texts):
+                if x != self.current_text:
+                    r = self.engine.draw_text((pos[0], pos[1]), str(line), self.font, self.colors[0], screen=self.surface, alpha=self.alpha)
+                    r.topleft = (pos[0]+self.position[0],pos[1]+self.position[1])
+                    self.texts_rects.append((r,x))
+                    pos[1] += self.font.size(line)[1]
+        
+        self.surface.set_alpha(self.alpha)
+        
+        self.engine.draw_rect((0,0), self.rect.size, self.colors[1], border_width=3 if len(self.colors) > 2 else 0, border_color=self.colors[2] if len(self.colors) > 2 else (0,0,0), alpha=self.alpha, screen=self.surface)
+        self.engine.draw_text((2, 1),self.texts[self.current_text], self.font, self.colors[0], screen=self.surface, alpha=self.alpha)
+        
+        # self.rect.size = (width,height)
+        
+    def hovered(self):
+        if self.engine.getMousePressed()[0] and self.Click_Time_counter <= 0:
+            m_pos = self.engine.getMousePos()
+            if self.rect.collidepoint(m_pos):
+                self.active = not self.active
+            else:
+                if self.active:
+                    passed:bool = False
+                    for rect, index in self.texts_rects:
+                        if rect.collidepoint(m_pos):
+                            self.current_text = index
+                            passed = True
+                            
+                    if not passed:
+                        self.active = False
+                else:
+                    self.active = False
+            self.Click_Time_counter = self.engine.TimeSys.s2f(cfgtimes.WD_DPDW_CLICK_TIME)
+        return super().hovered()
+        
+    def update(self):
+        
+        if self.update_delay_count > 0:
+            self.update_delay_count -= 1
+        if self.Click_Time_counter > 0:
+            self.Click_Time_counter -= 1
+        
+        super().update()
+        
+        if self.update_delay_count <= 0:
+            self.build_widget_display()
+            self.update_delay_count = self.engine.TimeSys.s2f(cfgtimes.WD_DPDW_UPDATE_TIME)
+    
+    def draw(self):
+        self.engine.screen.blit(self.surface, self.rect.topleft)
         return super().draw()

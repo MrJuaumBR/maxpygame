@@ -45,6 +45,7 @@ class Colors:
         self.DARKGRAY = reqColor(64, 64, 64)
         self.LIGHTGRAY = reqColor(192, 192, 192)
         self.BLACK = reqColor(0, 0, 0)
+        
 
         # Red Based Colors
         self.RED = reqColor(255, 0, 0)
@@ -52,12 +53,14 @@ class Colors:
         self.DARKRED = reqColor(128, 0, 0)
         self.BLOODRED = reqColor(0, 0, 0, hex='660000')
         self.BLOOD = reqColor(0, 0, 0, hex='8a0303')
+        self.FIREBRICK = reqColor(178, 34, 34)
         
 
         # Green Based Colors
         self.GREEN = reqColor(0, 255, 0)
         self.LIGHTGREEN = reqColor(128, 255, 128)
         self.DARKGREEN = reqColor(0, 128, 0)
+        self.DARKSEAGREEN = reqColor(0,0,0, hex='#8FBC8B')
 
         # Blue Based Colors
         self.BLUE = reqColor(0, 0, 255)
@@ -65,6 +68,8 @@ class Colors:
         self.DARKBLUE = reqColor(0, 0, 128)
         self.METALBLUE = reqColor(64, 64, 192)
         self.SKYBLUE = reqColor(0, 255, 255)
+        self.MEDIUMAQUAMARINE = reqColor(0,0,0, hex='#66CDAA')
+        self.DODGERBLUE = reqColor(0, 0, 0, hex='#1E90FF')
 
         # Yellow Based Colors
         self.YELLOW = reqColor(255, 255, 0)
@@ -80,6 +85,10 @@ class Colors:
         self.PINK = reqColor(255, 0, 128)
         self.LIGHTPINK = reqColor(255, 128, 255)
         self.DARKPINK = reqColor(128, 0, 255)
+        self.HOTPINK = reqColor(0,0,0,hex="FF69B4")
+        self.MEDIUMVIOLETRED = reqColor(0, 0, 0, hex="C71585")
+        self.PALEVIOLETRED = reqColor(0, 0, 0, hex="DB7093")
+        
 
         # Lime Based Colors
         self.LIME = reqColor(0, 255, 0)
@@ -110,6 +119,7 @@ class Colors:
         self.ANTIFLASH = reqColor(0,0,0, hex='f2f3f4')
         self.BABYPOWDER = reqColor(0,0,0, hex='#fefefa')
         self.BAYSIDE = reqColor(0,0,0, hex='#5fc9bf')
+        self.SANDYBROWN = reqColor(0,0,0, hex='#f4a460')
         
     
     def random(self) -> reqColor:

@@ -22,7 +22,6 @@ max_x = 600
 
 zoom = 0.5
 
-
 while True:
     # Detect events
     for ev in pge.events:

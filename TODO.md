@@ -1,0 +1,59 @@
+# ToDo List
+
+# ToDo
+- [x] Slider fill when pass;
+- [x] Install Via GitHub;
+- [x] LongText Widget;
+- [x] [Colors Json](https://mrjuaumbr.github.io/data/colors.json);
+- [x] [Spritesheet System(Not tested)](https://www.pygame.org/wiki/Spritesheet);
+- [x] [Engine Default Icon](#icon);
+- [x] Colors aliases;
+- [x] Fix Icon for PyPi users;
+- [x] Fix Set Value Widget of Slider;
+- [x] Fix Select Widget don't draw buttons;
+- [x] FPS Control;
+- [x] Readme Fix;
+- [x] Change Delay Time of Some Widgets;
+- [x] Progress Bar widget;
+- [x] Fix Slider Widget Fill(A Little Space beetween Circle & Filled area);
+- [x] Removed Longtext Widget print(Forgot to remove in before release);
+- [x] Make all Widgets lower case(In case of 2 Words in one, e.g.: LongText → Longtext, ProgressBar → Progressbar)
+- [x] Rect Border fix;
+- [x] Select Widget Spacement fix;
+- [x] Text Border;
+- [x] Widgets Fix Custom Id;
+- [x] Widgets Delete;
+- [x] Time support to FPS Variability;
+- [x] Time Settings(Easier to change);
+- [x] New logo;
+- [x] Engine Apply Default Icon(May be ignored);
+- [x] Rework Colors System;
+- [x] Text Box Widget;
+- [x] New Events System;
+- [x] Verify Version Online;
+- [x] Auto install dependencies;
+- [x] New colors(67 → 76);
+- [x] Fixes on Colors System;
+- [x] Fix on findWidgetById Function(Now returns the Widget not the Index.);
+- [x] Updated [colors example](./examples/colors.py) for work better in newer versions;
+- [x] Returns None when not found for some functions;
+- [x] Fix Time System(0.1.6 → 0.1.6fix(.1) → 0.1.7)
+- [x] Fixed Spritesheet System(How i don't recognize this later?);
+- [x] Is Running Variable for detect if the game stills running;
+- [x] Threading Example(Really cool for multiplayer games);
+- [x] Tips for Widgets;
+- [x] Add Tip system to base engine;
+- [x] Add Tip system to widgets;
+- [x] Add widgets auto create tips;
+- [x] Fix Tip Spacement Beetween lines;
+- [x] Fix Tip Background Spacement;
+- [x] Add s2f function;
+- [x] Make colors update everytime one part change(r,g,b);
+- [x] Add More Colors(76 → 84);
+- [x] Dropdown Widget;
+- [ ] Create a documentation;
+- [ ] Opacity on hover widgets;
+- [ ] TextArea Widget;
+- [ ] Optimization;
+- [ ] Music Support;
+- [ ] Sounds Support.

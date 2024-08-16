@@ -545,3 +545,6 @@ class PyGameEngine:
                 screen.blit(render, render_rect)
             
             return render_rect
+        
+# God bless me for continue making this project
+# Cu'z i'm getting crazy

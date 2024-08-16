@@ -4,7 +4,7 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.1.8"
+    version = "0.1.9"
     description = "A simple pygame engine"
     github = "https://github.com/MrJuaumBR/maxpygame"
     testpypi = "https://test.pypi.org/project/maxpygame/"
@@ -77,12 +77,27 @@ class TTimeSys:
         """
         How frames will run in a second
         
+        Transform Seconds to Frames
+        
         * Now Supports unstable_fps
         """
         if self.unstable_fps:
             x = round(self.engine._rfps / self.fps,2)
             return int((x*self.fps)*seconds)
         else: return int(seconds*self.fps)
+        
+    def f2s(self, frames:int) -> int:
+        """
+        How seconds will run in a frame
+        
+        Transform Frames to Seconds
+        
+        * Now Supports unstable_fps
+        """
+        if self.unstable_fps:
+            x = round(self.engine._rfps / self.fps,2)
+            return int(frames * x)
+        else: return int(frames / self.fps)
 
 # Color
 def hex_to_rgb(hex:str) -> tuple[int,int,int]:
@@ -92,15 +107,14 @@ def rgb_to_hex(r:int, g:int, b:int) -> str:
     return f'#{r:02x}{g:02x}{b:02x}'
 
 class RGB:
-    r:int
-    g:int
-    b:int
+    _r:int = 0
+    _g:int = 0
+    _b:int = 0
     brightness:float = 0
     def __init__(self, r:int, g:int, b:int):
         self.r = r
         self.g = g
         self.b = b
-        self.validate()
     def validate(self):
         if self.r > 255:
             self.r = 255
@@ -116,12 +130,38 @@ class RGB:
             self.b = 0
             
         self.brightness = round((self.r + self.g + self.b) / 765, 3)
-        
+
+    @property
+    def r(self):
+        return self._r
+    
+    @r.setter
+    def r(self, r:int):
+        self._r = r
+        self.validate()
+    
+    @property
+    def g(self):
+        return self._g
+    
+    @g.setter
+    def g(self, g:int):
+        self._g = g
+        self.validate()
+    
+    @property
+    def b(self):
+        return self._b
+    
+    @b.setter
+    def b(self, b:int):
+        self._b = b
+        self.validate()
+    
     def random(self):
         self.r = random.randint(0, 255)
         self.g = random.randint(0, 255)
         self.b = random.randint(0, 255)
-        self.validate()
     
     def hex(self) -> str:
         self.validate()
@@ -132,9 +172,17 @@ class RGB:
         return (self.r, self.g, self.b)
 
 class HEX:
-    hex:str
+    _hex:str
     def __init__(self, hex:str):
         self.hex = hex
+    
+    @property
+    def hex(self) -> str:
+        return self._hex
+    
+    @hex.setter
+    def hex(self, hex:str):
+        self._hex = hex
     
     def ghex(self) -> str:
         return self.hex
@@ -243,6 +291,8 @@ class cfgtimes:
     WD_TXBX_DEL_TIME = 0.2 # Default -> 0.2s
     WD_TXBX_KEYP_TIME = 0.075 # Default -> 0.075s
     WD_TXBX_CLICK_TIME = 0.15 # Default -> 0.15s
+    WD_DPDW_UPDATE_TIME = 0.07 # Default -> 0.07s
+    WD_DPDW_CLICK_TIME = 0.45 # Default -> 0.45s
     
 class cfgtips:
     """
