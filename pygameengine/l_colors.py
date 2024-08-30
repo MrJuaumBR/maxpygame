@@ -3,11 +3,12 @@ from .objects import color as reqColor
 import requests, json
 import random
 
-Git_Colors_JS = 'https://mrjuaumbr.github.io/data/colors.json'
+Git_Colors_JS = 'https://mrjuaumbr.github.io/database/data/colors.json'
 
 # Colors
 class Colors:
     aliases:list[str,] = []
+    only_native_colors:bool = False
     def __init__(self):
         """
         Some named colors from:
@@ -21,11 +22,39 @@ class Colors:
         return getattr(self, color_name)
     
     def add_colors_from_json(self):
-        colors = requests.get(Git_Colors_JS).json()
-        for color in colors.keys():
-            setattr(self, color.upper(), reqColor(*colors[color])) # Default
-            
+        if not self.only_native_colors:
+            colors = requests.get(Git_Colors_JS)
+            succ = self.load_colors_from_json(colors)
+            if not succ:
+                print('\t\t - [!] Some colors cannot be loaded from online json.')
+            # if colors:
+            #     colors = colors.json()
+            #     for color in colors.keys():
+            #         setattr(self, color.upper(), reqColor(*colors[color])) # Default
+            # else:
+            #     print('\t - [!] Some colors cannot be loaded from online json.')
+                
         self.add_aliases()
+        
+    def load_colors_from_json(self, json_file:dict):
+        if type(json_file) == requests.Response:
+            try:
+                json_file = json_file.json()
+            except:
+                print('\t - [!] colors cannot be loaded from the provided json.')
+                return False
+        try:
+            colors = json_file
+            if colors:
+                for color in colors.keys():
+                    setattr(self, color.upper(), reqColor(*colors[color])) # Default
+                return True # Success
+            else:
+                print('\t - [!] colors cannot be loaded from the provided json.')
+                return False # Error
+        except: 
+            print('\t - [!] colors cannot be loaded from the provided json.')
+            return False # Error
             
     def add_aliases(self):
         colors = self.__dict__.copy()

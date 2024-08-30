@@ -4,7 +4,7 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.1.9"
+    version = "0.2.0"
     description = "A simple pygame engine"
     github = "https://github.com/MrJuaumBR/maxpygame"
     testpypi = "https://test.pypi.org/project/maxpygame/"
@@ -65,7 +65,54 @@ class Icon:
             c = green_color if x%2 == 0 else yellow_color
             self.engine.draw_rect((int((25*i)*self.ratio), int(93*self.ratio)), (int(19*self.ratio),int(10*self.ratio)), c,
                               screen=self.surf)
+# Mouse Object
+class Mouse:
+    _x:int = 0
+    _y:int = 0
+    pos:tuple[int,int] = (_x, _y)
+    scroll:float = 0
+    
+    left:bool = False
+    middle:bool = False
+    right:bool = False
+    
+    # 5 buttons
+    button_4:bool = False
+    button_5:bool = False
+    
+    engine:object
+    def __init__(self, engine):
+        self.engine = engine
+    
+    @property
+    def x(self):
+        return self._x
+    
+    @x.setter
+    def x(self, value):
+        self._x = value
+        self.pos = (self._x, self._y)
         
+    @property
+    def y(self):
+        return self._y
+    
+    @y.setter
+    def y(self, value):
+        self._y = value
+        self.pos = (self._x, self._y)
+    
+    def scroll_detector(self, scroll_event:pg.event.EventType):
+        self.scroll = scroll_event
+    
+    def update(self):
+        self.x, self.y = self.engine.getMousePos()
+        buttons:list[bool,] = self.engine.getMousePressed(5)
+        self.left, self.middle, self.right = buttons[0], buttons[1], buttons[2]
+        if len(buttons) > 3:
+            self.button_4 = buttons[3]
+            self.button_5 = buttons[4]
+
 # Time
 class TTimeSys:
     unstable_fps:bool = False

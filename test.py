@@ -21,7 +21,7 @@ Slider = pge.create_widget('Slider', (15, 170), (300, 20), [pge.Colors.WHITE, pg
 Select = pge.create_widget('Select', (25, 250), arial24, [pge.Colors.HOTPING, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY], items=['480x360', '640x480', '800x600', '1024x768', '1280x720', '1366x768', '1440x900', '1600x900', '1680x1050', '1920x1200','1920x1080'],textBg=True)
 ProgressBar = pge.create_widget('ProgressBar', (15, 450), (300, 20), [pge.Colors.RED, pge.Colors.BROWN, pge.Colors.BROWN, pge.Colors.WHITE],text='?/?', font=arial16, value=.5)
 TextBox = pyge.Textbox(pge, (10, 600), 20, [pge.Colors.DARKGRAY, pge.Colors.LIGHTBLUE,pge.Colors.WHITE, pge.Colors.LIGHTGRAY], arial16, 'Im a textbox!', id='textbox1')
-Dropdown = pyge.Dropdown(pge, (10, 500), [pge.Colors.WHITE, pge.Colors.GRAY, pge.Colors.DARKGRAY], ['Dropdown Option 0', 'Dropdown Option 1', 'Dropdown Option 2'], arial16, id='dropdown1')
+Dropdown = pyge.Dropdown(pge, (10, 500), [pge.Colors.WHITE, pge.Colors.GRAY, pge.Colors.DARKGRAY], ['Dropdown Option 0', 'Dropdown Option 1', 'Dropdown Option 2','Small Option 1', "Tiny Opt"], arial16, id='dropdown1')
 
 longtexttest = """This is a long text made for test the LongText widget\ndo you liked this text? and so... about the widget? and about the engine? is currently useful or no? we will be accepting any suggestions, please add it to our github page! we will read and try it on the engine! do you know a fun fact about this widget? it haves a mode that autosizes the text and auto breaks lines, can be useful for make dialogs box"""
 

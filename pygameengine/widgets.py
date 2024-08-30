@@ -820,9 +820,15 @@ class Dropdown(Widget):
         self.build_widget_display()
         
     def build_widget_display(self):
+        # Set the rect for the new one
         self.rect = pg.Rect(*self.position, self.font.size(self.texts[self.current_text])[0]+4, self.font.size(self.texts[self.current_text])[1]+2)
         
         width,height = self.rect.size
+        
+        # Set width to be the width of the longest text
+        for text in self.texts:
+            if self.font.size(text)[0]+4 > width:
+                width = self.font.size(text)[0]+4
         
         self.surface = pg.Surface((width,height), pg.SRCALPHA)
         
@@ -847,12 +853,16 @@ class Dropdown(Widget):
         self.engine.draw_text((2, 1),self.texts[self.current_text], self.font, self.colors[0], screen=self.surface, alpha=self.alpha)
         
         # self.rect.size = (width,height)
-        
+    
+    def update_wd(self):
+        self.build_widget_display()
+    
     def hovered(self):
         if self.engine.getMousePressed()[0] and self.Click_Time_counter <= 0:
             m_pos = self.engine.getMousePos()
             if self.rect.collidepoint(m_pos):
                 self.active = not self.active
+                self.update_wd()
             else:
                 if self.active:
                     passed:bool = False
@@ -869,17 +879,10 @@ class Dropdown(Widget):
         return super().hovered()
         
     def update(self):
-        
-        if self.update_delay_count > 0:
-            self.update_delay_count -= 1
         if self.Click_Time_counter > 0:
             self.Click_Time_counter -= 1
         
         super().update()
-        
-        if self.update_delay_count <= 0:
-            self.build_widget_display()
-            self.update_delay_count = self.engine.TimeSys.s2f(cfgtimes.WD_DPDW_UPDATE_TIME)
     
     def draw(self):
         self.engine.screen.blit(self.surface, self.rect.topleft)

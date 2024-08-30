@@ -25,6 +25,8 @@ class PyGameEngine:
     events:list[pg.event.Event,] = []
     is_running:bool = False
     
+    mouse:Mouse = None
+    
     def __init__(self,screen:pg.SurfaceType=None):
         pg.init()
         print(f"{self.meta.name} - {self.meta.version}\n\t - By {self.meta.author}")
@@ -56,6 +58,7 @@ class PyGameEngine:
         self.clock = pg.time.Clock()
         self.Colors = ccc()
         self.TimeSys = TTimeSys(self)
+        self.mouse = Mouse(self)
         
     def loadIcon(self):
         self.icon=Icon(self)
@@ -159,7 +162,11 @@ class PyGameEngine:
         Returns:
             list[pg.event.Event,]
         """
-        return pg.event.get()
+        events = pg.event.get()
+        for event in events:
+            if event.type == MOUSEWHEEL:
+                self.mouse.scroll = event.y
+        return events
     def getKeys(self) -> pg.key.ScancodeWrapper:
         return pg.key.get_pressed()
         
@@ -202,6 +209,7 @@ class PyGameEngine:
             self.events = self.getEvents()
         elif self.hasScreen() and target:
             pg.display.update(target)
+        self.mouse.update()
     
     def fpsw(self):
         """
