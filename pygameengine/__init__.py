@@ -163,9 +163,14 @@ class PyGameEngine:
             list[pg.event.Event,]
         """
         events = pg.event.get()
-        for event in events:
-            if event.type == MOUSEWHEEL:
-                self.mouse.scroll = event.y
+        if len(events) == 0: # If there are no events
+            self.mouse.scroll_slow_down()
+        else:
+            for event in events:
+                if event.type == MOUSEWHEEL:
+                    self.mouse.scroll_detector(event)
+                else:
+                    self.mouse.scroll_slow_down()
         return events
     def getKeys(self) -> pg.key.ScancodeWrapper:
         return pg.key.get_pressed()
@@ -206,9 +211,9 @@ class PyGameEngine:
         self.is_running = True
         if self.hasScreen() and target is None:
             pg.display.update(self.screen)
-            self.events = self.getEvents()
         elif self.hasScreen() and target:
             pg.display.update(target)
+        self.events = self.getEvents()
         self.mouse.update()
     
     def fpsw(self):

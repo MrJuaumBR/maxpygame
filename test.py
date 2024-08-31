@@ -13,6 +13,8 @@ pge.setScreenTitle("Hello, World!")
 arial24 = pge.createSysFont('Arial', 24)
 arial16 = pge.createSysFont('Arial', 16)
 arial36 = pge.createSysFont('Arial', 36)
+arial14 = pge.createSysFont('Arial', 14)
+arial12 = pge.createSysFont('Arial', 12)
 
 # Create widgets
 Button:pyge.Button = pge.create_widget(pyge.Button, (15, 100), arial24, 'Im a Button!', [pge.Colors.DARKGRAY, pge.Colors.WHITE, pge.Colors.LIGHTGRAY], id='button1',tip=('This is a test tip, without manual break.', arial16))
@@ -71,6 +73,11 @@ while True:
     pge.draw_text((0,0), f'FPS: {int(pge.getFPS())}', arial16, pge.Colors.WHITE)
     pge.draw_widgets()
     pge.screen.blit(pge.icon.surf, (896, 592))
+    if pge.hasKeyPressed(pyge.K_LSHIFT) or pge.hasKeyPressed(pyge.K_RSHIFT):
+        pge.draw_text((pge.mouse.x+10, pge.mouse.y), str(pge.mouse.pos), arial14, pge.Colors.WHITE)
+        pge.draw_text((pge.mouse.x+10, pge.mouse.y+20), f'Left: {pge.mouse.left}, Right: {pge.mouse.right}, Middle: {pge.mouse.middle}', arial12, pge.Colors.WHITE)
+        pge.draw_text((pge.mouse.x+10, pge.mouse.y+40), f'Btn 4: {pge.mouse.button_4}, Btn 5: {pge.mouse.button_5}', arial12, pge.Colors.WHITE)
+        pge.draw_text((pge.mouse.x+10, pge.mouse.y+60), f'Wheel: {pge.mouse.scroll}', arial12, pge.Colors.WHITE)
     pge.update()
     pge.fpsw()
     # Clear the screen

@@ -4,7 +4,7 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.2.0"
+    version = "0.2.1"
     description = "A simple pygame engine"
     github = "https://github.com/MrJuaumBR/maxpygame"
     testpypi = "https://test.pypi.org/project/maxpygame/"
@@ -80,6 +80,12 @@ class Mouse:
     button_4:bool = False
     button_5:bool = False
     
+    # Scroll Smooth
+    smooth_scroll:bool = True
+    smooth_scroll_delay:int = 0 # frames to wait
+    non_smooth_delay:int = 0.16 # seconds
+    loss_speed:int = 80
+    
     engine:object
     def __init__(self, engine):
         self.engine = engine
@@ -103,15 +109,32 @@ class Mouse:
         self.pos = (self._x, self._y)
     
     def scroll_detector(self, scroll_event:pg.event.EventType):
-        self.scroll = scroll_event
+        self.scroll = scroll_event.y
+    
+    def scroll_slow_down(self):
+        if (self.scroll < 0 or self.scroll > 0) and self.smooth_scroll:
+            self.scroll *= self.loss_speed/100 # xx% Loss Speed
+            self.scroll = round(self.scroll, 4)
+            if abs(self.scroll) < 0.085:
+                self.scroll = 0
+        elif not self.smooth_scroll:
+            if self.smooth_scroll_delay <= 0:
+                self.scroll = 0
+                self.smooth_scroll_delay = self.engine.TimeSys.s2f(self.non_smooth_delay)
     
     def update(self):
+        if self.smooth_scroll_delay > 0:
+            self.smooth_scroll_delay -= 1
+        
         self.x, self.y = self.engine.getMousePos()
         buttons:list[bool,] = self.engine.getMousePressed(5)
         self.left, self.middle, self.right = buttons[0], buttons[1], buttons[2]
         if len(buttons) > 3:
             self.button_4 = buttons[3]
             self.button_5 = buttons[4]
+        else:
+            self.button_4 = False
+            self.button_5 = False
 
 # Time
 class TTimeSys:

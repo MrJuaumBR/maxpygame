@@ -12,6 +12,9 @@ pge.setScreenTitle("Hello, World!")
 # Create a font
 arial12 = pge.createSysFont('Arial', 12)
 
+# pge.setFPS(60)
+# pge.enableFPS_unstable()
+
 # Create a surface
 X_SHIFT = 0
 Y_SHIFT = 0
@@ -23,40 +26,6 @@ max_x = 600
 zoom = 0.5
 
 while True:
-    # Detect events
-    for ev in pge.events:
-        # Quit if the user closes the window
-        if ev.type == pyge.QUIT:
-            pge.exit()
-        elif ev.type == pyge.KEYDOWN:
-            if ev.key == pyge.K_ESCAPE:
-                pge.exit()
-    
-    keys = pge.getKeys()
-    if keys[pyge.K_w] or keys[pyge.K_UP]:
-        Y_SHIFT += 10
-    if keys[pyge.K_s] or keys[pyge.K_DOWN]:
-        Y_SHIFT -= 10
-    if keys[pyge.K_a] or keys[pyge.K_LEFT]:
-        X_SHIFT += 10
-    if keys[pyge.K_d] or keys[pyge.K_RIGHT]:
-        X_SHIFT -= 10
-        
-    if keys[pyge.K_q]:
-        zoom += 0.025
-    if keys[pyge.K_e]:
-        zoom -= 0.025
-    if zoom < 0.1:
-        zoom = 0.1
-    elif zoom > 1.5:
-        zoom = 1.5
-    
-    # Update the screen
-    pge.update()
-    pge.fpsw()
-    # Clear the screen
-    pge.fill(pge.Colors.BLACK)
-    
     # Add colors_surf
     x,y = 0,0
     ii = 0
@@ -83,3 +52,45 @@ while True:
                 ii = 0
                 y += color_rect.height
     pge.draw_text((S_W-300,S_H-20), f'X: {X_SHIFT}, Y: {Y_SHIFT}, Zoom: {round(zoom,4)}, Colors: {pge.Colors.number_of_colors()}, Aliases: {len(pge.Colors.aliases)}', arial12, pge.Colors.WHITE, screen=screen)
+    
+    keys = pge.getKeys()
+    if keys[pyge.K_w] or keys[pyge.K_UP]:
+        Y_SHIFT += 10
+    if keys[pyge.K_s] or keys[pyge.K_DOWN]:
+        Y_SHIFT -= 10
+    if keys[pyge.K_a] or keys[pyge.K_LEFT]:
+        X_SHIFT += 10
+    if keys[pyge.K_d] or keys[pyge.K_RIGHT]:
+        X_SHIFT -= 10
+        
+    if keys[pyge.K_q]:
+        zoom += 0.025
+    if keys[pyge.K_e]:
+        zoom -= 0.025
+    if abs(pge.mouse.scroll) > 0:
+        zoom += pge.mouse.scroll*0.05
+    if zoom < 0.1:
+        zoom = 0.1
+    elif zoom > 1.5:
+        zoom = 1.5
+    
+    # Detect events
+    for ev in pge.events:
+        # Quit if the user closes the window
+        if ev.type == pyge.QUIT:
+            pge.exit()
+        elif ev.type == pyge.KEYDOWN:
+            if ev.key == pyge.K_ESCAPE:
+                pge.exit()
+            elif ev.key == pyge.K_1:
+                pge.mouse.smooth_scroll = not pge.mouse.smooth_scroll
+                print(f'Mouse Smooth Scroll: {"On" if pge.mouse.smooth_scroll else "Off"}')
+                
+    
+    # Update the screen
+    pge.update()
+    pge.fpsw()
+    # Clear the screen
+    pge.fill(pge.Colors.BLACK)
+    
+    

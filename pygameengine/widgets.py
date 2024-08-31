@@ -14,7 +14,7 @@ A File designed to work in Widgets for the engine.
 
 from .required import pg
 from .l_colors import reqColor
-from .objects import cfgtimes,cfgtips
+from .objects import cfgtimes,cfgtips, Mouse
 
 
 """
@@ -60,8 +60,7 @@ class Tip():
         
         self.rect.width = self.total_size[0] + cfgtips.border_width
         self.rect.height = self.total_size[1] + cfgtips.border_width
-        
-        m_pos:tuple[int,int] = self.engine.getMousePos()
+        m_pos:tuple[int,int] = self.engine.mouse.pos
         
         m_pos = (m_pos[0] + cfgtips.mouse_distance[0], m_pos[1] + cfgtips.mouse_distance[1])
         
@@ -198,7 +197,7 @@ class Widget(pg.sprite.Sprite):
         pass
     
     def hovered(self):
-        m_pos = self.engine.getMousePos()
+        m_pos = self.engine.mouse.pos
         if self.rect.collidepoint(m_pos):
             if self.tip is not None:
                 self.tip.draw()
@@ -264,10 +263,8 @@ class Button(Widget):
         self.rect = pg.Rect(*self.position,*self.size)
         
     def update(self):
-        m_pos = self.engine.getMousePos()
-        if self.rect.collidepoint(m_pos):
-            m_press = self.engine.getMousePressed()
-            if m_press[0]:
+        if self.rect.collidepoint(self.engine.mouse.pos):
+            if self.engine.mouse.left:
                 if self.click_time_counter <= 0:
                     self.click_time_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
                     self.value = True
@@ -347,10 +344,8 @@ class Checkbox(Widget):
         
     
     def update(self):
-        m_pos = self.engine.getMousePos()
-        if self.rect.collidepoint(m_pos):
-            m_press = self.engine.getMousePressed()
-            if m_press[0]:
+        if self.rect.collidepoint(self.engine.mouse.pos):
+            if self.engine.mouse.left:
                 if self.click_time_counter <= 0:
                     self.value = not self.value
                     self.click_time_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
@@ -429,11 +424,9 @@ class Slider(Widget):
     
     def update(self):
         if self.circle:
-            m_pos = self.engine.getMousePos()
-            if self.circle.collidepoint(m_pos):
-                m_press = self.engine.getMousePressed()
-                if m_press[0]:
-                    self.currentPosition[0] = m_pos[0] - self.circle.width/2
+            if self.circle.collidepoint(self.engine.mouse.pos):
+                if self.engine.mouse.left:
+                    self.currentPosition[0] = self.engine.mouse.x - self.circle.width/2
                     # Limit X Right
                     if self.currentPosition[0] > self.rect.x + self.rect.width - self.ball_size/2:
                         self.currentPosition[0] = self.rect.x + self.rect.width - self.ball_size/2
@@ -737,18 +730,9 @@ class Textbox(Widget):
         self.value = self.text
         
         # Get mouse and update if is active or no
-        # m_pos = self.engine.getMousePos()
-        # if self.rect.collidepoint(m_pos):
-        #     if self.engine.getMousePressed()[0]:
-        #         if self.key_press_counter <= 0:
-        #             self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time) # Reset Timer
-        #             self.active = True
-        #         else:
-        #             self.active = False
-        if self.engine.getMousePressed()[0]:
+        if self.engine.mouse.left:
             if self.click_counter <= 0:
-                m_pos = self.engine.getMousePos()
-                if self.rect.collidepoint(m_pos):
+                if self.rect.collidepoint(self.engine.mouse.pos):
                     if not self.active:
                         self.click_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
                         self.active = True
@@ -858,16 +842,15 @@ class Dropdown(Widget):
         self.build_widget_display()
     
     def hovered(self):
-        if self.engine.getMousePressed()[0] and self.Click_Time_counter <= 0:
-            m_pos = self.engine.getMousePos()
-            if self.rect.collidepoint(m_pos):
+        if self.engine.mouse.left and self.Click_Time_counter <= 0:
+            if self.rect.collidepoint(self.engine.mouse.pos):
                 self.active = not self.active
                 self.update_wd()
             else:
                 if self.active:
                     passed:bool = False
                     for rect, index in self.texts_rects:
-                        if rect.collidepoint(m_pos):
+                        if rect.collidepoint(self.engine.mouse.pos):
                             self.current_text = index
                             passed = True
                             

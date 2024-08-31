@@ -4,6 +4,16 @@
 <img src="https://img.shields.io/github/v/release/MrJuaumBR/maxpygame">
 
 # MaxPyGame
+```
+___  ___          ______      _____                      
+|  \/  |          | ___ \    |  __ \                     
+| .  . | __ ___  _| |_/ /   _| |  \/ __ _ _ __ ___   ___ 
+| |\/| |/ _` \ \/ /  __/ | | | | __ / _` | '_ ` _ \ / _ \
+| |  | | (_| |>  <| |  | |_| | |_\ \ (_| | | | | | |  __/
+\_|  |_/\__,_/_/\_\_|   \__, |\____/\__,_|_| |_| |_|\___|
+                         __/ |                           
+                        |___/                                                                 
+```
 
 *A Engine made in Python, with Python & PyGame for PyGame*
 

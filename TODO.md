@@ -18,6 +18,7 @@
 - [x] Readme Fix;
 - [x] Site URL for colors changed, so i need to fix here;
 - [x] Fix Dropdown Width don't match;
+- [x] Fix Mouse Sys Scroll don't updating right;
 
 ## Addeds
 - [x] Slider fill when pass;
@@ -52,6 +53,8 @@
 - [x] Add Dropdown Widget;
 - [x] Only native colors for Colors System, this will remove colors that are get from Online Database;
 - [x] Create a new mouse system;
+- [x] Mouse Sys: Smoothly slowing down scroll speed option;
+- [x] [Scroll](./examples/scroll.py) Example;
 - [ ] Create a documentation;
 - [ ] Opacity on hover widgets;
 - [ ] TextArea Widget;
@@ -67,3 +70,6 @@
 - [x] Returns None when not found for some functions;
 - [x] Time Settings(Easier to change);
 - [x] Make Dropdown to not auto update, updates only when clicked;
+- [x] Mouse detection optimized(new Mouse System available from 2.0);
+- [x] Event System detect when have no events and run some necessaire functions;
+- [x] Change the mouse widgets system;
