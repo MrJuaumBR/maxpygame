@@ -47,6 +47,9 @@ class Tip():
         
     @property
     def text(self):
+        """
+        The property that is the text of the tip
+        """
         return self._text
     
     @text.setter
@@ -55,6 +58,9 @@ class Tip():
         self.text_changed = True
         
     def build_rect(self):
+        """
+        Will build the base rect for the tip
+        """
         if self.rect is None:
             self.rect = pg.Rect(0,0,0,0)
         
@@ -78,7 +84,7 @@ class Tip():
     
     def strip_text(self):
         """
-        This function will make 3 things
+        This function will make 3 things:
         
         1. Split the text in lines when haves '\n'
         2. Break line when passes max_x
@@ -119,6 +125,13 @@ class Tip():
         self.text_lines = lines_copy
     
     def update(self):
+        """
+        Updates the tip. If the refresh time counter is bigger than 0, 
+        it will decrement by 1. If the text changed or the refresh time counter
+        is equal or less than 0, it will build the rect and strip the text, and
+        reset the text changed to False and refresh time counter to the refresh time
+        in seconds.
+        """
         if self.refresh_time_counter > 0:
             self.refresh_time_counter -= 1
         
@@ -210,6 +223,7 @@ class Widget(pg.sprite.Sprite):
     
     def delete(self):
         self.engine.DeleteWidget(self._id)
+        self.kill()
     
     def update(self):
         self.cooldown_refresh()
@@ -558,6 +572,19 @@ class Longtext(Widget):
     auto_size:bool = False
     
     def __init__(self, engine, position: [int,int], font: int or pg.font.FontType,text:str,colors: list[reqColor,],size: [int, int] = None,id: str = None, alpha: int = 255, tip:Tip=None): # type: ignore
+        """
+        It's like a textarea but you can't type.
+        
+        Args:
+            engine (any): The engine that the widget is in
+            position (tuple[int,int]): The position of the textarea
+            font (int or pg.font.FontType): The font of the textarea
+            text (str): The text of the textarea
+            colors (list[reqColor,]): The colors of the textarea
+            size (list[int, int], optional): The size of the textarea. Defaults to None.
+            id (str, optional): The id of the widget. Defaults to None.
+            alpha (int, optional): The alpha of the textarea. Defaults to 255.
+        """
         super().__init__(engine, id, tip)
         self.position = position
         self.font:pg.font.FontType = self.engine._findFont(font)
@@ -629,13 +656,16 @@ class Progressbar(Widget):
     value:float = 0
     def __init__(self, engine,position:tuple[int,int],size:tuple[int,int],colors:list[reqColor,reqColor,reqColor,],value:float=0,text:str=None,font:pg.font.FontType=None, id: str = None, tip:Tip=None):
         """
-        engine (any): The engine that the widget is in
-        position (pg.Vector2): The position of the widget
-        size (tuple[int,int]): The size of the widget
-        colors (list[reqColor,reqColor,reqColor,]): The colors of the widget
-        value (float, optional): The value of the widget. Defaults to 0.
-        text (str, optional): The text of the widget. Defaults to None.
-        id (str, optional): The id of the widget. Defaults to None.
+        A Progress bar, can be used for make a loading bar or life bars
+        
+        Args:
+            engine (any): The engine that the widget is in
+            position (pg.Vector2): The position of the widget
+            size (tuple[int,int]): The size of the widget
+            colors (list[reqColor,reqColor,reqColor,]): The colors of the widget
+            value (float, optional): The value of the widget. Defaults to 0.
+            text (str, optional): The text of the widget. Defaults to None.
+            id (str, optional): The id of the widget. Defaults to None.
         """
         super().__init__(engine, id, tip)
         self.position = position
@@ -696,14 +726,17 @@ class Textbox(Widget):
     ]
     def __init__(self, engine,position:tuple[int,int],height:int,colors:list[reqColor,reqColor,reqColor,],font:pg.font.FontType,text:str=None,alpha:int=255, id: str = None, tip:Tip=None):
         """
-        engine (any): The engine that the widget is in
-        position (pg.Vector2): The position of the widget
-        height (int): The height of the widget
-        colors (list[reqColor,reqColor,reqColor,]): The colors of the widget (Background Unactive, Background Active, Text, Border)
-        font (pg.font.FontType): The font of the widget. Defaults to None.
-        text (str, optional): The text of the widget. Defaults to None.
-        alpha (int, optional): The alpha of the widget. Defaults to 255.
-        id (str, optional): The id of the widget. Defaults to None.
+        A Textbox, you can write in it.
+        
+        Args:
+            engine (any): The engine that the widget is in
+            position (pg.Vector2): The position of the widget
+            height (int): The height of the widget
+            colors (list[reqColor,reqColor,reqColor,]): The colors of the widget (Background Unactive, Background Active, Text, Border)
+            font (pg.font.FontType): The font of the widget. Defaults to None.
+            text (str, optional): The text of the widget. Defaults to None.
+            alpha (int, optional): The alpha of the widget. Defaults to 255.
+            id (str, optional): The id of the widget. Defaults to None.
         """
         super().__init__(engine, id, tip)
         self.position:tuple[int,int] = position
@@ -792,6 +825,19 @@ class Dropdown(Widget):
     update_delay_count:int = 0
     Click_Time_counter:int = 0
     def __init__(self, engine, position:tuple[int,int], colors:list[reqColor,reqColor,reqColor,], texts:list[str,], font:pg.font.FontType, alpha:int=255, current_text:int=0,id:str=None, tip:Tip=None):
+        """
+        Dropdown widget, is a dropdown when you click you can choose one of the items listed.
+        
+        Args:
+            position:tuple[int,int]
+            colors:list[reqColor,reqColor,reqColor,]
+            texts:list[str,]
+            font:pg.font.FontType
+            alpha:int
+            current_text:int
+            id:str
+            tip:Tip
+        """
         super().__init__(engine, id, tip)
         
         self.position:tuple = position
@@ -869,4 +915,154 @@ class Dropdown(Widget):
     
     def draw(self):
         self.engine.screen.blit(self.surface, self.rect.topleft)
+        return super().draw()
+    
+class Textarea(Widget):
+    _type:str = 'textarea'
+    
+    colors:list[reqColor,reqColor,reqColor,] = []
+    text:str = None
+    shown_text:list[str,] = []
+    font:pg.font.FontType = None
+    active = False
+    
+    del_press_time:int = cfgtimes.WD_TXBX_DEL_TIME
+    del_press_counter:int = 0
+    
+    key_press_time:int = cfgtimes.WD_TXBX_KEYP_TIME
+    key_press_counter:int = 0
+    
+    click_time:int = cfgtimes.WD_TXBX_CLICK_TIME
+    click_counter:int = 0
+    total_size:tuple[int,int] = (0,0)
+    
+    blacklist = [
+        pg.K_BACKSPACE,
+        pg.K_DELETE,
+        pg.K_LEFT,
+        pg.K_RIGHT,
+        pg.K_UP,
+        pg.K_DOWN,
+        pg.K_LCTRL, pg.K_RCTRL,
+        pg.K_LALT, pg.K_RALT,
+    ]
+    def __init__(self, engine,position:tuple[int,int],colors:list[reqColor,reqColor,reqColor,],font:pg.font.FontType,text:str=None,alpha:int=255, id: str = None, tip:Tip=None):
+        """
+        A Textarea, is basically a **textbox**, but will break when have a "\n" or pass the screen size.
+        
+        Args:
+            engine:Engine
+            position:tuple[int,int]
+            height:int
+            colors:list[reqColor,reqColor,reqColor,]
+            font:pg.font.FontType
+            text:str
+            alpha:int
+            id:str
+            tip:Tip
+        """
+        super().__init__(engine,id,tip)
+        self.position:tuple[int,int] = position
+        self.colors:list[reqColor,reqColor,] = colors
+        self.text:str = text
+        self.font:pg.font.FontType = self.engine._findFont(font)
+        self.alpha:int = alpha
+        
+        self.strip_text()
+    
+    def strip_text(self):
+        """
+        This function will make 3 things:
+        
+        1. Split the text in lines when haves '\n'
+        2. Break line when passes max_x
+        3. Calculate the total_size(
+            width: will get the bigger line width using font,
+            height: will get total size of the height of all lines using font too
+        )
+        """
+        screen_size: tuple[int, int] = self.engine.screen.get_size()
+        
+        max_x, max_y = screen_size[0] - self.position[0], screen_size[1] - self.position[1]
+        
+        # Split when haves '\n'
+        self.shown_text = self.text.replace('\r','').split('\n')
+        
+        # Break line when passes max_x
+        lines_copy = []
+        for line in self.shown_text:
+            words = line.split(' ')
+            current_line = ''
+            for x,word in enumerate(words):
+                if self.font.size(current_line + ' ' + word)[0] >= max_x:
+                    lines_copy.append(current_line)
+                    current_line = word
+                    self.build_widget_display()
+                else:
+                    current_line += (' ' if x > 0 else '') + word
+            lines_copy.append(current_line)
+            
+        # Calculate the total size
+        self.total_size = (0, 0)
+        for line in lines_copy:
+            width, height = self.font.size(line)
+            self.total_size = (max(self.total_size[0], width) + 3, self.total_size[1] + height + 3)
+        
+        [(lines_copy.pop(x) if text in ['\n','\r',''] else None) for x,text in enumerate(lines_copy)]
+        
+        self.shown_text = lines_copy
+        
+    def update(self):
+        # Update Value
+        self.value = self.text
+        
+        # Get mouse and update if is active or no
+        if self.engine.mouse.left:
+            if self.click_counter <= 0:
+                if self.rect.collidepoint(self.engine.mouse.pos):
+                    if not self.active:
+                        self.click_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
+                        self.active = True
+                else:
+                    self.active = False
+        
+        if self.active:
+            if self.key_press_counter <= 0 or self.del_press_counter <= 0:    
+                changed = False
+                keys:pg.key.ScancodeWrapper = self.engine.getKeys() # Get Keys pressed
+                if keys[pg.K_BACKSPACE] and self.del_press_counter <= 0:
+                    self.text = self.text[:-1] # Remove last character
+                    self.del_press_counter = self.engine.TimeSys.s2f(self.del_press_time)
+                    changed = True
+                elif keys[pg.K_RETURN] and self.key_press_counter <= 0:
+                    self.active = False
+                    self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
+                    changed = True
+                elif self.key_press_counter <= 0:
+                    for ev in self.engine.events:
+                        if ev.type == pg.KEYDOWN:
+                            if not (ev.key in self.blacklist):
+                                self.text += ev.unicode
+                            self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
+                            changed = True
+                            
+                if changed:
+                    self.strip_text()
+        
+        return super().update()
+    
+    def cooldown_refresh(self):
+        if self.key_press_counter > 0:
+            self.key_press_counter -= 1
+        if self.click_counter > 0:
+            self.click_counter -= 1
+        if self.del_press_counter > 0:
+            self.del_press_counter -= 1
+        return super().cooldown_refresh()
+    
+    def draw(self):
+        self.rect = pg.Rect(*self.position,*self.total_size)
+        self.engine.draw_rect(self.rect.topleft, self.rect.size, self.colors[0] if not self.active else self.colors[1], border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None,alpha=self.alpha)
+        for ind,line in enumerate(self.shown_text):
+            self.engine.draw_text((self.rect.left+1.5, self.rect.top+1+(ind*self.font.get_height())),line, self.font, self.colors[2],alpha=self.alpha)
         return super().draw()

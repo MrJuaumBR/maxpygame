@@ -4,7 +4,7 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.2.1"
+    version = "0.2.2"
     description = "A simple pygame engine"
     github = "https://github.com/MrJuaumBR/maxpygame"
     testpypi = "https://test.pypi.org/project/maxpygame/"
@@ -17,12 +17,18 @@ class Metadata:
         return int(x)
 
 class Icon:
+    """
+    The engine icon when not initialized.
+    """
     surf:pg.Surface
     size:tuple[int,int]
     default_size = (128,128)
     ratio:float = 1
     engine:any
     def __init__(self,engine, size:tuple[int,int]=(128,128)):
+        """
+        The engine icon initialized and drawned, ready for be used.
+        """
         self.size = size
         self.ratio = (self.size[0]/self.default_size[0] + self.size[1]/self.default_size[1])/2
         self.surf = pg.Surface(size)

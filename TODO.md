@@ -19,14 +19,16 @@
 - [x] Site URL for colors changed, so i need to fix here;
 - [x] Fix Dropdown Width don't match;
 - [x] Fix Mouse Sys Scroll don't updating right;
+- [ ] Fix DeleteWidget;
+- [ ] Fix findWidgetById Returning "Widget" type when is "int";
 
 ## Addeds
 - [x] Slider fill when pass;
 - [x] Install Via GitHub;
 - [x] LongText Widget;
 - [x] [Colors Json](https://mrjuaumbr.github.io/data/colors.json);
-- [x] [Spritesheet System(Not tested)](https://www.pygame.org/wiki/Spritesheet);
-- [x] [Engine Default Icon](#icon);
+- [x] [Spritesheet System](https://www.pygame.org/wiki/Spritesheet);
+- [x] [Engine Default Icon](./engine-icon.png);
 - [x] Colors aliases;
 - [x] FPS Control;
 - [x] Change Delay Time of Some Widgets;
@@ -55,10 +57,9 @@
 - [x] Create a new mouse system;
 - [x] Mouse Sys: Smoothly slowing down scroll speed option;
 - [x] [Scroll](./examples/scroll.py) Example;
+- [x] TextArea Widget;
+- [x] TextArea Example;
 - [ ] Create a documentation;
-- [ ] Opacity on hover widgets;
-- [ ] TextArea Widget;
-- [ ] Optimization;
 - [ ] Music Support;
 - [ ] Sounds Support.
 
@@ -73,3 +74,5 @@
 - [x] Mouse detection optimized(new Mouse System available from 2.0);
 - [x] Event System detect when have no events and run some necessaire functions;
 - [x] Change the mouse widgets system;
+- [x] Make sure that "delete" function into widgets is removing all;
+- [x] Make the tips for widgets(doc) more easier to read;

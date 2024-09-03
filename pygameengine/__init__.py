@@ -9,6 +9,10 @@ from .l_colors import Colors as ccc
 from .l_colors import reqColor
 
 class PyGameEngine:
+    """
+    A **PyGame** Engine.<br>
+    Will make create games easier.
+    """
     meta:Metadata = Metadata()
     Colors:ccc
     TimeSys:TTimeSys = None
@@ -28,6 +32,9 @@ class PyGameEngine:
     mouse:Mouse = None
     
     def __init__(self,screen:pg.SurfaceType=None):
+        """
+        Initializes **PyGame** and the **Engine** itself.
+        """
         pg.init()
         print(f"{self.meta.name} - {self.meta.version}\n\t - By {self.meta.author}")
         try:
@@ -61,6 +68,9 @@ class PyGameEngine:
         self.mouse = Mouse(self)
         
     def loadIcon(self):
+        """
+        Use this when you want to load the engine icon
+        """
         self.icon=Icon(self)
     
     # Color System
@@ -402,7 +412,7 @@ class PyGameEngine:
         
     def findWidgetById(self, id:str) -> Widget:
         """
-        Find a widget by its id
+        Find a widget by its id and then return it
         
         Parameters:
             id:str
@@ -417,9 +427,9 @@ class PyGameEngine:
 
     def DeleteWidget(self, id:str):
         """
-        Delete a widget from the list of widgets
+        Delete a widget from the list of widgets and from any group that is in.
         """
-        self.widgets.pop(self.findWidgetById(id))
+        self.findWidgetById(id).delete()
 
     # Image System
     def loadImage(self, path:str) -> pg.SurfaceType:
@@ -521,6 +531,7 @@ class PyGameEngine:
             screen.blit(ss, rr)
             
             return rr
+        return None
 
     def draw_text(self, position:tuple[int,int],text:str, font:pg.font.FontType, color:reqColor,screen:pg.SurfaceType=None, bgColor:reqColor=None,border_width:int=0,border_color:reqColor=None, alpha:int=255):
         """
@@ -558,6 +569,7 @@ class PyGameEngine:
                 screen.blit(render, render_rect)
             
             return render_rect
+        return None
         
 # God bless me for continue making this project
 # Cu'z i'm getting crazy

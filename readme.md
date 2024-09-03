@@ -77,8 +77,28 @@ Currently the engine has some widgets
 - LongText;
 - ProgressBar;
 - TextBox;
+- TextArea;
+- DropDown;
+
+# Credits
+- [PyGame](https://www.pygame.org/news) for developing the base lib;
+- @MrJuaumBR for trying to make more easier to create games;
+- @akvendramin for testing and giving tips.
+
+# Contacts
+[YouTube](https://www.youtube.com/@mrjuaumbr)
+
+[GitHub](https://github.com/MrJuaumBR)
+
+[Site](https://mrjuaumbr.github.io)
+
+[TestPyPi](https://test.pypi.org/user/MrJuaumBR/)
+
+[Discord](https://discord.gg/fb84sHDX7R)
 
 # Prompts
+*Ignore*
+
 *pre-build setup.py*
 ```shell
 py setup.py build
@@ -95,17 +115,3 @@ pip install .
 ```shell
 twine upload --repository testpypi dist/*
 ```
-
-# Credits
-- [PyGame](https://www.pygame.org/news) for developing the base lib;
-- @MrJuaumBR for trying to make more easier to create games;
-- @akvendramin for testing and giving tips.
-
-# Contacts
-[YouTube](https://www.youtube.com/@mrjuaumbr)
-
-[GitHub](https://github.com/MrJuaumBR)
-
-[TestPyPi](https://test.pypi.org/user/MrJuaumBR/)
-
-[Discord](https://discord.gg/fb84sHDX7R)
