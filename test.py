@@ -16,6 +16,9 @@ arial36 = pge.createSysFont('Arial', 36)
 arial14 = pge.createSysFont('Arial', 14)
 arial12 = pge.createSysFont('Arial', 12)
 
+# System Info
+pge.getSystemInfo()
+
 # Create widgets
 Button:pyge.Button = pge.create_widget(pyge.Button, (15, 100), arial24, 'Im a Button!', [pge.Colors.DARKGRAY, pge.Colors.WHITE, pge.Colors.LIGHTGRAY], id='button1',tip=('This is a test tip, without manual break.', arial16))
 Check = pge.create_widget('Checkbox', (190,100), arial24, 'Im a Checkbox!', [pge.Colors.WHITE, pge.Colors.RED, pge.Colors.GREEN, pge.Colors.DARKGRAY], id='checkbox1', tip=('This is a test tip\nwith manual break.', arial16))
@@ -31,7 +34,6 @@ LongText = pge.create_widget(pyge.Longtext, (10,300), arial24, longtexttest, [pg
 
 # FPS Variability
 pge.enableFPS_unstable()
-
 
 # Load Engine Icon
 pge.loadIcon()

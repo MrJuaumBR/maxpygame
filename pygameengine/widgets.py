@@ -222,7 +222,7 @@ class Widget(pg.sprite.Sprite):
         if self._UpdateWhenDraw: self.update()
     
     def delete(self):
-        self.engine.DeleteWidget(self._id)
+        self.engine._DeleteWidget(self._id)
         self.kill()
     
     def update(self):

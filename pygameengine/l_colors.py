@@ -152,7 +152,8 @@ class Colors:
         
     
     def random(self) -> reqColor:
-        x = random.choice(self.__dict__.keys())
+        keys = [key for key in self.__dict__.keys() if type(self.__dict__[key]) == reqColor]
+        x = random.choice(keys)
         x = self.__dict__[x]
         return x
 

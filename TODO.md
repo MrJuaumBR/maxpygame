@@ -19,8 +19,9 @@
 - [x] Site URL for colors changed, so i need to fix here;
 - [x] Fix Dropdown Width don't match;
 - [x] Fix Mouse Sys Scroll don't updating right;
-- [ ] Fix DeleteWidget;
-- [ ] Fix findWidgetById Returning "Widget" type when is "int";
+- [x] Fix DeleteWidget;
+- [x] Fix findWidgetById Returning "Widget" type when is "int";
+- [x] Fix Colors.random().
 
 ## Addeds
 - [x] Slider fill when pass;
@@ -59,6 +60,9 @@
 - [x] [Scroll](./examples/scroll.py) Example;
 - [x] TextArea Widget;
 - [x] TextArea Example;
+- [x] Widget Limit Warn;
+- [x] Added "widget_limit.py";
+- [x] Get System Info Function;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.
@@ -76,3 +80,4 @@
 - [x] Change the mouse widgets system;
 - [x] Make sure that "delete" function into widgets is removing all;
 - [x] Make the tips for widgets(doc) more easier to read;
+- [x] Updated "threading_test.py".

@@ -7,6 +7,7 @@ from .objects import *
 from .widgets import *
 from .l_colors import Colors as ccc
 from .l_colors import reqColor
+from .excptions import *
 
 class PyGameEngine:
     """
@@ -30,6 +31,9 @@ class PyGameEngine:
     is_running:bool = False
     
     mouse:Mouse = None
+    
+    widget_limits:int = 15
+    limit_error_active:bool = True
     
     def __init__(self,screen:pg.SurfaceType=None):
         """
@@ -381,6 +385,13 @@ class PyGameEngine:
         Returns:
             None
         """
+        if len(self.widgets) >= self.widget_limits:
+            print('\t - [!] You are using a high amount of widgets, try to reduce it.')
+            if len(self.widgets) >= self.widget_limits*2:
+                if self.limit_error_active:
+                    raise(WidgetPassedError(widget,len(self.widgets)))
+        elif len(self.widgets) >= self.widget_limits*0.8:
+            print(f'\t - [!] You used {int((len(self.widgets)/self.widget_limits)*100)}% of max recommended widgets. Consider reducing it.')
         self.widgets.append(widget)
     
     def create_tip(self, text:str, font:pg.font.FontType) -> Tip:
@@ -419,17 +430,26 @@ class PyGameEngine:
         Returns:
             Widget
         """
-        for widget in self.widgets:
-            if widget._id == id:
-                return self.widgets[self.widgets.index(widget)]
+        if type(id) in [str,int]:
+            id = str(id)
+            for widget in self.widgets:
+                if str(widget._id) == id:
+                    return self.widgets[self.widgets.index(widget)]
         
         return None
 
-    def DeleteWidget(self, id:str):
+    def DeleteWidget(self, widget:Widget):
         """
         Delete a widget from the list of widgets and from any group that is in.
         """
-        self.findWidgetById(id).delete()
+        self.findWidgetById(widget).delete()
+        
+    def _DeleteWidget(self, widget_id:str):
+        """
+        Delete a widget from the list of widgets and from any group that is in.
+        """
+        w = self.widgets.index(self.findWidgetById(widget_id))
+        self.widgets.pop(w)
 
     # Image System
     def loadImage(self, path:str) -> pg.SurfaceType:
@@ -570,6 +590,38 @@ class PyGameEngine:
             
             return render_rect
         return None
+    
+    def getSystemDict(self) -> dict:
+        import platform, subprocess
+        info = {
+            "System": platform.system(),
+            "Node Name": platform.node(),
+            "Release": platform.release(),
+            "Version": platform.version(),
+            "Machine": platform.machine(),
+        }
+        
+        cpu_cmd = ''
+        gpu_cmd = ''
+        if info["System"] == "Windows":
+            cpu_cmd = 'wmic cpu get name'
+            gpu_cmd = 'wmic path Win32_VideoController get name'
+        elif info["System"] == "Linux":
+            cpu_cmd = 'lscpu'
+            gpu_cmd = 'lspci'
+        
+        cpu = subprocess.run(cpu_cmd, shell=True, stdout=subprocess.PIPE).stdout.strip().decode("utf-8").replace("\r",'').replace("\n",'').replace("    ", "")
+        gpu = subprocess.run(gpu_cmd, shell=True, stdout=subprocess.PIPE).stdout.strip().decode("utf-8").replace("\r",'').replace("\n",'').replace("    ", "")
+        
+        info["CPU"] = cpu
+        info["GPU"] = gpu
+        
+        return info
+    
+    def getSystemInfo(self):
+        info = self.getSystemDict()
+        for key in info.keys():
+            print(f'{key}: {info[key]}')
         
 # God bless me for continue making this project
 # Cu'z i'm getting crazy
