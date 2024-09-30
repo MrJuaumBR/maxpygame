@@ -437,22 +437,40 @@ class Slider(Widget):
             self.currentPosition = [self.rect.x + self.ball_size//2, self.rect.y - self.ball_size//4]
     
     def update(self):
+        """
+        This is the update method for the Select widget.
+
+        It will check if the mouse is inside the circle and if the left mouse button is pressed.
+        If yes, it will move the circle to the mouse position, making sure that it doesn't go outside of the widget's boundaries.
+
+        Then it will calculate the value (a float between 0 and 1) by dividing the position of the circle by the width of the widget.
+        """
         if self.circle:
             if self.circle.collidepoint(self.engine.mouse.pos):
                 if self.engine.mouse.left:
+                    # Move the circle to the mouse position
                     self.currentPosition[0] = self.engine.mouse.x - self.circle.width/2
+                    # Make sure the circle doesn't go outside of the widget's boundaries
                     # Limit X Right
-                    if self.currentPosition[0] > self.rect.x + self.rect.width - self.ball_size/2:
-                        self.currentPosition[0] = self.rect.x + self.rect.width - self.ball_size/2
-                    elif self.currentPosition[0] < self.rect.x - self.ball_size/2:# Limit X Left
+                    if self.currentPosition[0] > self.rect.right - self.ball_size/2:
+                        self.currentPosition[0] = self.rect.right - self.ball_size/2
+                    # Limit X Left
+                    elif self.currentPosition[0] < self.rect.x - self.ball_size/2:
                         self.currentPosition[0] = self.rect.x - self.ball_size/2
                     
         # Calculate the value (float beetween 0 and 1)
+        # This is done by getting the position of the circle relative to the left edge of the widget
+        # and then dividing that by the width of the widget
+        # This will give us a value between 0 and 1
+        # If the value is less than 0, it will be set to 0
+        # If the value is greater than 1, it will be set to 1
+        # The value is then rounded to 2 decimal places
         
-        # Get the value beetween 0 and max size
-        a = self.rect.width - self.rect.x # Min 0, Max Width
-        b = self.currentPosition[0] - self.rect.x
-        v = b / a
+        a = self.rect.width - self.rect.x # Minimum 0, Max {Width}
+        a = a if a > 0 else self.rect.width
+        b = self.currentPosition[0] - self.rect.x # Mouse Position beetween 0 and {width}
+        b = b if b > 0 else 0
+        v = b/a # Value beetween 0 and 1 (Float that represents the percentage of the mouse inside the width area)
         if v < 0: v = 0
         elif v > 1: v = 1
         self.value = round(v,2)

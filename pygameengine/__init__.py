@@ -32,7 +32,7 @@ class PyGameEngine:
     
     mouse:Mouse = None
     
-    widget_limits:int = 15
+    widget_limits:int = 30
     limit_error_active:bool = True
     
     def __init__(self,screen:pg.SurfaceType=None):
@@ -395,6 +395,15 @@ class PyGameEngine:
         self.widgets.append(widget)
     
     def create_tip(self, text:str, font:pg.font.FontType) -> Tip:
+        """
+        Create a tip from a text and a font
+        
+        Parameters:
+            text:str
+            font:pg.font.FontType
+        Returns:
+            Tip
+        """
         return Tip(self, text, font)
     
     def create_widget(self, widget_type:str, *args, **kwargs) -> Widget:
@@ -420,6 +429,28 @@ class PyGameEngine:
             aargs = args
             return widget(self, *aargs, **kwargs)
         return None
+    
+    def SetLimitWidget(self, limit:int=30):
+        """
+        Set the widget limit number
+        
+        Parameters:
+            limit:int
+        Returns:
+            None
+        """
+        self.widget_limits = limit
+        
+    def SetErrorLimitWidget(self, state:bool=True):
+        """
+        Enable or disable the widget limit error
+        
+        Parameters:
+            state:bool
+        Returns:
+            None
+        """
+        self.limit_error_active = state
         
     def findWidgetById(self, id:str) -> Widget:
         """
@@ -462,6 +493,36 @@ class PyGameEngine:
             pg.SurfaceType
         """
         return pg.image.load(path)
+    
+    def flip(self, surface:pg.SurfaceType, x_axis:bool=False, y_axis:bool=False) -> pg.SurfaceType:
+        """
+        Flips a surface on the x &/or y axis
+        
+        Parameters:
+            surface:pg.SurfaceType
+            x_axis:bool
+            y_axis:bool
+        Returns:
+            pg.SurfaceType
+        """
+        x = pg.transform.flip(surface, x_axis, y_axis)
+        return x
+    
+    def rotate(self, surface:pg.SurfaceType, rect:pg.Rect, angle:int) -> tuple[pg.SurfaceType, pg.Rect]:
+        """
+        Rotate a surface
+        
+        Parameters:
+            surface:pg.SurfaceType
+            rect:pg.Rect
+            angle:int = Degrees
+        Returns:
+            tuple[pg.SurfaceType, pg.Rect]
+        """
+        new_image = pg.transform.rotate(surface, angle)
+        new_rect = new_image.get_rect(center=rect.center)
+        return new_image, new_rect
+        
     
     def createSpritesheet(self, image_path:str) -> spritesheet:
         """
@@ -592,7 +653,6 @@ class PyGameEngine:
         return None
     
     def getSystemDict(self) -> dict:
-        import platform, subprocess
         info = {
             "System": platform.system(),
             "Node Name": platform.node(),
@@ -615,13 +675,41 @@ class PyGameEngine:
         
         info["CPU"] = cpu
         info["GPU"] = gpu
+        info["RAM"] = self.getRam()
         
         return info
     
-    def getSystemInfo(self):
+    def getRam(self):
+        if platform.system() == "Windows":
+            total_memory = float(os.popen("wmic ComputerSystem get TotalPhysicalMemory").read().strip().split()[-1])
+        else:
+            mem_info = subprocess.check_output(['free', '-b']).decode('utf-8').split('\n')[1].split()
+            total_memory = float(mem_info[1])
+            
+        return f'{round(total_memory / (1024**3), 2)} Gb'
+            
+
+    def printSystemInfo(self):
         info = self.getSystemDict()
         for key in info.keys():
             print(f'{key}: {info[key]}')
+            
+            
+    def getInUseCPU(self) -> float:
+        if platform.system() == "Windows":
+            return float(os.popen("wmic cpu get loadpercentage").read().strip().split()[-1])
+        else:
+            return float(os.popen("top -bn1 | grep 'Cpu(s)' | sed 's/.*, *\([0-9.]*\)%* id.*/\\1/' | awk '{print 100 - $1}'").read().strip())
         
+    def getInUseRam(self) -> float:
+        if platform.system() == "Windows":
+            total_memory = float(os.popen("wmic ComputerSystem get TotalPhysicalMemory").read().strip().split()[-1])
+            free_memory = float(os.popen("wmic OS get FreePhysicalMemory").read().strip().split()[-1]) * 1024
+            return (total_memory - free_memory) / total_memory
+        else:
+            mem_info = subprocess.check_output(['free']).decode('utf-8').split('\n')[1].split()
+            total_memory = float(mem_info[1])
+            used_memory = float(mem_info[2])
+            return used_memory / total_memory
 # God bless me for continue making this project
 # Cu'z i'm getting crazy

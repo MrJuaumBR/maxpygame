@@ -22,6 +22,7 @@
 - [x] Fix DeleteWidget;
 - [x] Fix findWidgetById Returning "Widget" type when is "int";
 - [x] Fix Colors.random().
+- [x] Fix slider bug;
 
 ## Addeds
 - [x] Slider fill when pass;
@@ -63,6 +64,10 @@
 - [x] Widget Limit Warn;
 - [x] Added "widget_limit.py";
 - [x] Get System Info Function;
+- [x] Error Widget Limit Enable/Disable;
+- [x] Widget Limit Changeable;
+- [x] Rotate Surface Function;
+- [x] Flip Surface Function;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.
@@ -80,4 +85,7 @@
 - [x] Change the mouse widgets system;
 - [x] Make sure that "delete" function into widgets is removing all;
 - [x] Make the tips for widgets(doc) more easier to read;
-- [x] Updated "threading_test.py".
+- [x] Updated "threading_test.py";
+- [x] Get Total Ram the machines have;
+- [x] Total Ram & CPU in use;
+- [ ] Total GPU in use;

@@ -1,7 +1,7 @@
 """
 A File designed only to import things for all the project.
 """
-import math, os, random, sys, time, requests
+import math, os, random, sys, time, requests, platform, subprocess
 try:
     import pygame as pg
     from pygame.locals import *
