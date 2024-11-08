@@ -4,7 +4,7 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.2.4"
+    version = "0.2.5"
     description = "A simple pygame engine"
     github = "https://github.com/MrJuaumBR/maxpygame"
     testpypi = "https://test.pypi.org/project/maxpygame/"
@@ -182,6 +182,17 @@ def hex_to_rgb(hex:str) -> tuple[int,int,int]:
 def rgb_to_hex(r:int, g:int, b:int) -> str:
     return f'#{r:02x}{g:02x}{b:02x}'
 
+def humanize_seconds(seconds:int) -> dict:
+    """
+    This command will humanize seconds
+    Like: Days, Hours, Minutes, Seconds
+    """
+    days = seconds // 86400
+    hours = (seconds % 86400) // 3600
+    minutes = (seconds % 3600) // 60
+    seconds = seconds % 60
+    return {'days':days, 'hours':hours, 'minutes':minutes, 'seconds':seconds}
+
 class RGB:
     _r:int = 0
     _g:int = 0
@@ -246,6 +257,11 @@ class RGB:
     def rgb(self) -> tuple[int,int,int]:
         self.validate()
         return (self.r, self.g, self.b)
+    
+    def setRGB(self, rgb:tuple[int,int,int]):
+        self.r = rgb[0]
+        self.g = rgb[1]
+        self.b = rgb[2]
 
 class HEX:
     _hex:str

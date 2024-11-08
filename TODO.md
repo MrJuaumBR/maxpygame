@@ -23,6 +23,9 @@
 - [x] Fix findWidgetById Returning "Widget" type when is "int";
 - [x] Fix Colors.random().
 - [x] Fix slider bug;
+- [x] Fix another slider bug;
+- [x] Fix Update bug when trying to update screen(needs rects);
+- [x] Fixed Ram in Use;
 
 ## Addeds
 - [x] Slider fill when pass;
@@ -68,6 +71,11 @@
 - [x] Widget Limit Changeable;
 - [x] Rotate Surface Function;
 - [x] Flip Surface Function;
+- [x] RGB setRGB function;
+- [x] Started Time;
+- [x] Elapsed Time;
+- [x] Humanize Seconds Function;
+- [x] Delta Time Property;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.
@@ -88,4 +96,5 @@
 - [x] Updated "threading_test.py";
 - [x] Get Total Ram the machines have;
 - [x] Total Ram & CPU in use;
+- [x] Updated [machine.py](./examples/machine.py) to have elapsed time;
 - [ ] Total GPU in use;

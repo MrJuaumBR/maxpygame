@@ -29,6 +29,7 @@ class PyGameEngine:
     icon:Icon = None
     events:list[pg.event.Event,] = []
     is_running:bool = False
+    started_time:datetime = 0
     
     mouse:Mouse = None
     
@@ -70,7 +71,59 @@ class PyGameEngine:
         self.Colors = ccc()
         self.TimeSys = TTimeSys(self)
         self.mouse = Mouse(self)
+        self.started_time:datetime = datetime.now()
+    
+    def _getElapsedTime(self) -> dict:
+        """
+        Get the elapsed time of the engine
         
+        Parameters:
+            None
+        Returns:
+            dict
+        """
+        x = humanize_seconds((datetime.now() - self.started_time).seconds)
+        return x
+    
+    def getElapsedTime(self) -> str:
+        """
+        Get the elapsed time of the engine
+        
+        Parameters:
+            None
+        Returns:
+            str
+        """
+        x = self._getElapsedTime()
+        s_ = []
+        s = ''
+        for key in x.keys():
+            if x[key] > 0:
+                s_.append(f'{x[key]} {key}')
+        
+        for index,item in enumerate(s_):
+            if index == len(s_)-1:
+                s += item
+            else:
+                s += f'{item}, '
+        return s
+    
+    @property
+    def delta_time(self) -> float:
+        """
+        Get the delta time of the engine
+        
+        Parameters:
+            None
+        Returns:
+            float
+        """
+        return (datetime.now() - self.started_time)
+    
+    @delta_time.setter
+    def delta_time(self, value:float):
+        print("Delta time can't get be changed.")
+    
     def loadIcon(self):
         """
         Use this when you want to load the engine icon
@@ -135,7 +188,7 @@ class PyGameEngine:
         if not self.hasScreen(): # If there is no screen
             if flags == FULLSCREEN: # If fullscreen
                 flags = FULLSCREEN|SCALED
-            self.screen = pg.display.set_mode((width, height), flags)
+            self.screen = pg.display.set_mode((width, height), flags=flags)
             if self.icon is None:
                 self.loadIcon()
                 self.setScreenIcon(self.icon.surf)
@@ -213,6 +266,27 @@ class PyGameEngine:
         pg.quit()
         sys.exit()
         
+    def _triesUpdate(self, target:pg.SurfaceType=None):
+        """
+        Update the screen if there is one, if not try to update the target
+        
+        ! This function is for trying to catch a error !
+        
+        Parameters:
+            target(Optional):pg.SurfaceType
+        """
+        try:
+            if target is None:
+                pg.display.update(self.screen)
+            else:
+                pg.display.update(target)
+        except Exception as ex:
+            try:
+                # Tries Flip
+                pg.display.flip()
+            except Exception as ex:
+                raise ex
+        
     def update(self, target:pg.SurfaceType=None):
         """
         Update the screen if there is one, if not try to update the target
@@ -224,9 +298,27 @@ class PyGameEngine:
         """
         self.is_running = True
         if self.hasScreen() and target is None:
-            pg.display.update(self.screen)
+            self._triesUpdate()
         elif self.hasScreen() and target:
-            pg.display.update(target)
+            self._triesUpdate(target)
+        self.events = self.getEvents()
+        self.mouse.update()
+        
+    def flip(self):
+        """
+        Flip the screen if there is one
+        
+        ! Make sure that you don't use update function !
+        
+        Parameters:
+            None
+        Returns:
+            None
+        """
+        self.is_running = True
+        if self.hasScreen():
+            pg.display.flip()
+            
         self.events = self.getEvents()
         self.mouse.update()
     
@@ -285,18 +377,6 @@ class PyGameEngine:
                 clr = self.getColor(fill_color)
             else: clr = fill_color
             self.screen.fill(clr)
-    
-    def flip(self):
-        """
-        Flip the screen if there is one
-        
-        Parameters:
-            None
-        Returns:
-            None
-        """
-        if self.hasScreen():
-            self.screen.flip()
     
     def createSurface(self, width:int, height:int, flags:int=0) -> pg.SurfaceType:
         return pg.Surface((width, height), flags)
@@ -494,7 +574,7 @@ class PyGameEngine:
         """
         return pg.image.load(path)
     
-    def flip(self, surface:pg.SurfaceType, x_axis:bool=False, y_axis:bool=False) -> pg.SurfaceType:
+    def flip_surface(self, surface:pg.SurfaceType, x_axis:bool=False, y_axis:bool=False) -> pg.SurfaceType:
         """
         Flips a surface on the x &/or y axis
         
@@ -663,10 +743,10 @@ class PyGameEngine:
         
         cpu_cmd = ''
         gpu_cmd = ''
-        if info["System"] == "Windows":
+        if info["System"].lower() == "windows":
             cpu_cmd = 'wmic cpu get name'
             gpu_cmd = 'wmic path Win32_VideoController get name'
-        elif info["System"] == "Linux":
+        elif info["System"].lower() == "linux":
             cpu_cmd = 'lscpu'
             gpu_cmd = 'lspci'
         
@@ -680,7 +760,7 @@ class PyGameEngine:
         return info
     
     def getRam(self):
-        if platform.system() == "Windows":
+        if platform.system().lower() == "windows":
             total_memory = float(os.popen("wmic ComputerSystem get TotalPhysicalMemory").read().strip().split()[-1])
         else:
             mem_info = subprocess.check_output(['free', '-b']).decode('utf-8').split('\n')[1].split()
@@ -696,20 +776,30 @@ class PyGameEngine:
             
             
     def getInUseCPU(self) -> float:
-        if platform.system() == "Windows":
+        """
+        ! This function uses CMD, so is totally unstable and the FPS will drop if in the game loop. !
+        Get the percentage(%) of CPU in use
+        """
+        if platform.system().lower() == "windows":
             return float(os.popen("wmic cpu get loadpercentage").read().strip().split()[-1])
         else:
             return float(os.popen("top -bn1 | grep 'Cpu(s)' | sed 's/.*, *\([0-9.]*\)%* id.*/\\1/' | awk '{print 100 - $1}'").read().strip())
         
     def getInUseRam(self) -> float:
-        if platform.system() == "Windows":
-            total_memory = float(os.popen("wmic ComputerSystem get TotalPhysicalMemory").read().strip().split()[-1])
-            free_memory = float(os.popen("wmic OS get FreePhysicalMemory").read().strip().split()[-1]) * 1024
-            return (total_memory - free_memory) / total_memory
+        """
+        ! This function uses CMD, so is totally unstable and the FPS will drop if in the game loop. !
+        Get the percentage(%) of RAM in use
+        """
+        if platform.system().lower() == "windows":
+            total_memory = float(self.getRam().replace(' Gb', ''))
+            free_memory = float(subprocess.check_output("wmic OS get FreePhysicalMemory", shell=True).decode().split('\n')[1].strip()) # In KBytes
+            free_memory /= 1024**2 # In GBytes
+            free_memory = round(free_memory,2) # Rounded
+            return round((total_memory - free_memory) / total_memory,2)
         else:
             mem_info = subprocess.check_output(['free']).decode('utf-8').split('\n')[1].split()
             total_memory = float(mem_info[1])
             used_memory = float(mem_info[2])
-            return used_memory / total_memory
+            return round(used_memory / total_memory,2)
 # God bless me for continue making this project
 # Cu'z i'm getting crazy

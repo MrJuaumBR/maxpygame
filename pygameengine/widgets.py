@@ -457,24 +457,18 @@ class Slider(Widget):
                     # Limit X Left
                     elif self.currentPosition[0] < self.rect.x - self.ball_size/2:
                         self.currentPosition[0] = self.rect.x - self.ball_size/2
-                    
-        # Calculate the value (float beetween 0 and 1)
-        # This is done by getting the position of the circle relative to the left edge of the widget
-        # and then dividing that by the width of the widget
-        # This will give us a value between 0 and 1
-        # If the value is less than 0, it will be set to 0
-        # If the value is greater than 1, it will be set to 1
-        # The value is then rounded to 2 decimal places
         
-        a = self.rect.width - self.rect.x # Minimum 0, Max {Width}
-        a = a if a > 0 else self.rect.width
-        b = self.currentPosition[0] - self.rect.x # Mouse Position beetween 0 and {width}
-        b = b if b > 0 else 0
-        v = b/a # Value beetween 0 and 1 (Float that represents the percentage of the mouse inside the width area)
-        if v < 0: v = 0
-        elif v > 1: v = 1
-        self.value = round(v,2)
-                        
+        # Calculate the value based on the mouse position X
+        # The idea is get beetween values (Mosue Pos X and Rect Pos X) and then get a "float" that will be the percentage of Mouse Pos X in Rect Pos X + Width
+
+        self.value = (self.currentPosition[0] - self.rect.x) / (self.rect.width - self.ball_size/2)
+        
+        # Limits the value to not be outside of 0 and 1
+        if self.value > 1: self.value = 1
+        elif self.value < 0: self.value = 0
+        
+        # Rounds the value to get only 3 ndigits
+        self.value = round(self.value,3)
                     
         return super().update()
     

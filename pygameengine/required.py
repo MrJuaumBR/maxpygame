@@ -12,4 +12,5 @@ except ModuleNotFoundError:
     import pygame as pg
     from pygame.locals import *
 import inspect
+from datetime import datetime
 from .excptions import *

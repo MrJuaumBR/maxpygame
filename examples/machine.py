@@ -22,9 +22,11 @@ while True:
     
     # System Info
     pge.draw_text((10, 10), 'System Info', arial24, pge.Colors.BLACK)
+    
+    sysinfo['Time_Elapsed'] = pge.getElapsedTime()
     pos = [15, 34]
     for info in sysinfo.keys():
-        pge.draw_text(pos, f'{info}: {sysinfo[info]}', arial14, pge.Colors.BLACK)
+        pge.draw_text(pos, f'{(str(info).replace("_", " ")).capitalize()}: {sysinfo[info]}', arial14, pge.Colors.BLACK)
         pos[1] += 20
     
     for event in pge.events:
