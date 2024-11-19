@@ -27,7 +27,10 @@ Dropdown = pyge.Dropdown(pge, (10, 500), [pge.Colors.WHITE, pge.Colors.GRAY, pge
 
 longtexttest = """This is a long text made for test the LongText widget\ndo you liked this text? and so... about the widget? and about the engine? is currently useful or no? we will be accepting any suggestions, please add it to our github page! we will read and try it on the engine! do you know a fun fact about this widget? it haves a mode that autosizes the text and auto breaks lines, can be useful for make dialogs box"""
 
-LongText = pge.create_widget(pyge.Longtext, (10,300), arial24, longtexttest, [pge.Colors.WHITE, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY], id='longtext1')
+#LongText = pge.create_widget(pyge.Longtext, (10,300), arial24, longtexttest, [pge.Colors.WHITE, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY], id='longtext1')
+
+KeyQueryText = pge.create_widget(pyge.Longtext, (10, 300), arial24, '', [pge.Colors.WHITE, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY], id='keyquerytext1')
+
 
 # FPS Variability
 pge.enableFPS_unstable()
@@ -37,6 +40,8 @@ pge.loadIcon()
 
 # Example Tip
 ExampleTip = pyge.Tip(pge, 'This is a example tip :)', arial16)
+
+pge.input_query_enable = True
 
 # Game Loop
 while True:
@@ -52,6 +57,14 @@ while True:
     
     if pge.hasKeyPressed(pyge.K_LCTRL) or pge.hasKeyPressed(pyge.K_RCTRL):
         ExampleTip.draw()
+    
+    # Input Query
+    inputQueryVlue = ''
+    for index,key in pge.input_query.GetQuery():
+        inputQueryVlue += pge.keyToString(key) + f"{"" if index == len(pge.input_query.GetQuery())-1 else ", "}"
+        
+    KeyQueryText.text = f'[{inputQueryVlue}]'
+    KeyQueryText.build_widget_display()
     
     # Detect events
     for ev in pge.events:

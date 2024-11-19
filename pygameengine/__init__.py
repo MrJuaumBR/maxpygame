@@ -31,6 +31,10 @@ class PyGameEngine:
     is_running:bool = False
     started_time:datetime = 0
     
+    # Input Query
+    input_query_enable:bool = False
+    input_query:InputQuery = None
+    
     mouse:Mouse = None
     
     widget_limits:int = 30
@@ -41,6 +45,7 @@ class PyGameEngine:
         Initializes **PyGame** and the **Engine** itself.
         """
         pg.init()
+        self.input_query=InputQuery(self)
         print(f"{self.meta.name} - {self.meta.version}\n\t - By {self.meta.author}")
         try:
             print(f'\t - [!] Any issues, please go to: {self.meta.github}')
@@ -109,7 +114,7 @@ class PyGameEngine:
         return s
     
     @property
-    def delta_time(self) -> float:
+    def delta_time(self) -> timedelta:
         """
         Get the delta time of the engine
         
@@ -253,6 +258,28 @@ class PyGameEngine:
         """
         return self.getKeys()[key]
     
+    def keyToString(self, key:int) -> str:
+        """
+        Convert a key to a string
+        
+        Parameters:
+            key:int
+        Returns:
+            str
+        """
+        return pg.key.name(key)
+    
+    def stringToKey(self, name:str) -> int:
+        """
+        Convert a string to a key
+        
+        Parameters:
+            name:str
+        Returns:
+            int
+        """
+        return pg.key.key_code(name)
+    
     def exit(self):
         """
         Exit PyGameEngine
@@ -303,6 +330,19 @@ class PyGameEngine:
             self._triesUpdate(target)
         self.events = self.getEvents()
         self.mouse.update()
+        
+        if self.input_query_enable:
+            new_events:list[pg.event.Event,] = []
+            for event in self.events:
+                if event.type == pg.KEYDOWN:
+                    self.input_query.insert_query(event.key)
+                elif event.type != pg.KEYUP:
+                    new_events.append(event)
+                    
+            self.events = new_events
+            
+            self.input_query.update(self.delta_time)
+                    
         
     def flip(self):
         """

@@ -26,6 +26,7 @@
 - [x] Fix another slider bug;
 - [x] Fix Update bug when trying to update screen(needs rects);
 - [x] Fixed Ram in Use;
+- [x] Fixed delta_time returning wrong values;
 
 ## Addeds
 - [x] Slider fill when pass;
@@ -76,6 +77,9 @@
 - [x] Elapsed Time;
 - [x] Humanize Seconds Function;
 - [x] Delta Time Property;
+- [x] Input Query;
+- [x] keyToString function;
+- [x] stringToKey function;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.
@@ -97,4 +101,5 @@
 - [x] Get Total Ram the machines have;
 - [x] Total Ram & CPU in use;
 - [x] Updated [machine.py](./examples/machine.py) to have elapsed time;
+- [x] New Engine Title in [readme](./readme.md);
 - [ ] Total GPU in use;

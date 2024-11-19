@@ -4,16 +4,7 @@
 <img src="https://img.shields.io/github/v/release/MrJuaumBR/maxpygame">
 
 # MaxPyGame
-```
-___  ___          ______      _____                      
-|  \/  |          | ___ \    |  __ \                     
-| .  . | __ ___  _| |_/ /   _| |  \/ __ _ _ __ ___   ___ 
-| |\/| |/ _` \ \/ /  __/ | | | | __ / _` | '_ ` _ \ / _ \
-| |  | | (_| |>  <| |  | |_| | |_\ \ (_| | | | | | |  __/
-\_|  |_/\__,_/_/\_\_|   \__, |\____/\__,_|_| |_| |_|\___|
-                         __/ |                           
-                        |___/                                                                 
-```
+<img src="./engine-title.png" style="width: 50%; height: 480px; margin-left: 25%; margin-right: 25%;" alt="Engine Title" title="MaxPyGame">
 
 *A Engine made in Python, with Python & PyGame for PyGame*
 
@@ -80,10 +71,20 @@ Currently the engine has some widgets
 - TextArea;
 - DropDown;
 
+# Functionalities
+- Input Query;
+- Time System;
+- Delta Time;
+- Input System;
+- Machine Info Getter;
+- Widgets;
+- Basic Functions of PyGame;
+- And More...
+
 # Credits
 - [PyGame](https://www.pygame.org/news) for developing the base lib;
 - @MrJuaumBR for trying to make more easier to create games;
-- @akvendramin for testing and giving tips.
+- @vendramin96 for testing and giving tips.
 
 # Contacts
 [YouTube](https://www.youtube.com/@mrjuaumbr)

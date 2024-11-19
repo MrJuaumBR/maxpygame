@@ -4,7 +4,7 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.2.5"
+    version = "0.2.6"
     description = "A simple pygame engine"
     github = "https://github.com/MrJuaumBR/maxpygame"
     testpypi = "https://test.pypi.org/project/maxpygame/"
@@ -181,6 +181,66 @@ def hex_to_rgb(hex:str) -> tuple[int,int,int]:
 
 def rgb_to_hex(r:int, g:int, b:int) -> str:
     return f'#{r:02x}{g:02x}{b:02x}'
+
+# Input Query
+class InputQuery:
+    """
+    InputQuery System
+    """
+    engine:object
+    _query:list[int,] = [] #Each value inside of the query is a int that represents the key
+    last_change:float = 0.0 # Represents the delta time that the query was last changed
+    query_limit:int = 12 # The limit of keys into the query
+    def __init__(self,engine):
+        self.engine = engine
+    
+    def insert_query(self, key:int):
+        """
+        This function will insert a key into the query
+        
+        Parameters:
+            key (int): The key to insert
+        
+        Returns:
+            None
+        """
+        self._query.append(key)
+        self.last_change = self.engine.delta_time.total_seconds()
+    
+    def GetQuery(self) -> list[(int,int),]:
+        """
+        This function will return a list of tuples
+        The first value is the index of the key
+        The second value is the key
+        
+        Parameters:
+            None
+        
+        Returns:
+            list[(int,int),]: A list of tuples
+        """
+        q = []
+        for index, key in enumerate(self._query):
+            q.append((index,key))
+        return q
+    
+    def update(self, delta_time:timedelta):
+        """
+        This function will update the query
+        
+        Parameters:
+            delta_time (timedelta): The delta time
+        
+        Returns:
+            None
+        """
+        dt = delta_time.total_seconds()
+        if dt-self.last_change > 1 and len(self._query) > 0:
+            self._query.pop(0)
+            self.last_change = dt-0.875
+        else:
+            if len(self._query) > self.query_limit:
+                self._query.pop(0) # Removes the older key
 
 def humanize_seconds(seconds:int) -> dict:
     """
