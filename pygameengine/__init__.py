@@ -30,6 +30,7 @@ class PyGameEngine:
     events:list[pg.event.Event,] = []
     is_running:bool = False
     started_time:datetime = 0
+    _screen_size:tuple[int,int] = (0,0)
     
     # Input Query
     input_query_enable:bool = False
@@ -179,6 +180,18 @@ class PyGameEngine:
             return pg.display.get_surface()
         return self.screen
     
+    @property
+    def screen_size(self) -> tuple[int,int]:
+        """
+        Get the size of the screen if there is one
+        
+        """
+        return self._screen_size
+    
+    @screen_size.setter
+    def screen_size(self, value:tuple[int,int]):
+        self._screen_size = value
+    
     def createScreen(self, width:int, height:int, flags:int=SCALED) -> pg.SurfaceType:
         """
         Create a screen if there is not one
@@ -199,6 +212,7 @@ class PyGameEngine:
                 self.setScreenIcon(self.icon.surf)
             else: self.setScreenIcon(self.icon)
             self.is_running = True
+            self.screen_size = (width, height)
             return self.screen
     def setScreenTitle(self, title:str):
         """
@@ -241,6 +255,8 @@ class PyGameEngine:
             for event in events:
                 if event.type == MOUSEWHEEL:
                     self.mouse.scroll_detector(event)
+                elif event.type == VIDEORESIZE:
+                    self.screen_size = self.screen.get_size()
                 else:
                     self.mouse.scroll_slow_down()
         return events
@@ -669,7 +685,8 @@ class PyGameEngine:
             widgets = self.widgets
             
         for widget in widgets:
-            widget.draw()
+            if widget.enable:
+                widget.draw()
     def draw_rect(self, pos:tuple[int,int],size:tuple[int,int], color:reqColor,border_width:int=0,border_color:reqColor=None, screen:pg.SurfaceType=None, alpha:int=255) -> pg.Rect:
         """
         Draw a rect on the screen

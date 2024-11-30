@@ -80,6 +80,9 @@
 - [x] Input Query;
 - [x] keyToString function;
 - [x] stringToKey function;
+- [x] Enable/Disable System for Widgets;
+- [x] Screen Resize Detector;
+- [x] Example of Enable/Disable Widgets + Keys Handling + Screen Resize;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.
@@ -102,4 +105,5 @@
 - [x] Total Ram & CPU in use;
 - [x] Updated [machine.py](./examples/machine.py) to have elapsed time;
 - [x] New Engine Title in [readme](./readme.md);
+- [x] Images on Readme.md for Links(Make works properly into TestPyPi);
 - [ ] Total GPU in use;

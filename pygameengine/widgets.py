@@ -178,6 +178,7 @@ class Widget(pg.sprite.Sprite):
     alpha:int=255
     
     value:any
+    enable:bool = True
     
     tip:Tip = None
     
@@ -216,10 +217,11 @@ class Widget(pg.sprite.Sprite):
                 self.tip.draw()
     
     def draw(self):
-        self.hovered()
-        if self.image is None:
-            self.build_widget_display() # First run of the draw, then create the draw object
-        if self._UpdateWhenDraw: self.update()
+        if self.enable:
+            self.hovered()
+            if self.image is None:
+                self.build_widget_display() # First run of the draw, then create the draw object
+            if self._UpdateWhenDraw: self.update()
     
     def delete(self):
         self.engine._DeleteWidget(self._id)

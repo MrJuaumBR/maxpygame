@@ -4,7 +4,7 @@
 <img src="https://img.shields.io/github/v/release/MrJuaumBR/maxpygame">
 
 # MaxPyGame
-<img src="./engine-title.png" style="width: 50%; height: 480px; margin-left: 25%; margin-right: 25%;" alt="Engine Title" title="MaxPyGame">
+<img src="https://raw.githubusercontent.com/MrJuaumBR/maxpygame/main/engine-title.png" style="width: 50%; height: 480px; margin-left: 25%; margin-right: 25%;" alt="Engine Title" title="MaxPyGame">
 
 *A Engine made in Python, with Python & PyGame for PyGame*
 
@@ -79,6 +79,8 @@ Currently the engine has some widgets
 - Machine Info Getter;
 - Widgets;
 - Basic Functions of PyGame;
+- Screen Resize Detector;
+- Own Color System;
 - And More...
 
 # Credits
