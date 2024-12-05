@@ -146,10 +146,10 @@ class Tip():
         
         self.surface = pg.Surface(self.total_size, pg.SRCALPHA)
         
-        self.engine.draw_rect((0,0), self.total_size, cfgtips.background_color, border_width=cfgtips.border_width, border_color=cfgtips.border_color, screen=self.surface, alpha=cfgtips.alpha)
+        self.engine.draw_rect((0,0), self.total_size, self.engine.cfgtips.background_color, border_width=self.engine.cfgtips.border_width, border_color=self.engine.cfgtips.border_color, screen=self.surface, alpha=self.engine.cfgtips.alpha)
         position:list = [0,0]
         for line in self.text_lines:
-            self.engine.draw_text(position, line, self.font, cfgtips.text_color, screen=self.surface)
+            self.engine.draw_text(position, line, self.font, self.engine.cfgtips.text_color, screen=self.surface)
             position[1] += self.font.size(line)[1] + 1
             
         self.engine.screen.blit(self.surface, self.rect)
@@ -232,10 +232,18 @@ class Widget(pg.sprite.Sprite):
     
 class Button(Widget):
     """
-    Button Widget.
+    # Button
     
-    For collect valor use: Button.value
-    will return a bool value(True/False)
+    Button Widget, can be very useful
+    
+    Parameters:
+        engine (any): The engine that the widget is in
+        position (pg.Vector2): The position of the button
+        font (int or pg.font.FontType): The font of the button
+        text (str): The text of the button
+        colors (list[reqColor,reqColor,]): The colors of the button -> **[Text, Background, Border(Optional)]**
+        id (str, optional): The id of the widget. Defaults to None.
+        alpha (int, optional): The alpha of the button. Defaults to 255.
     """
     _type:str = 'button'
     
@@ -246,14 +254,16 @@ class Button(Widget):
     value:bool = False
     def __init__(self,engine, position:pg.Vector2, font:int or pg.font.FontType, text:str, colors:list[reqColor,reqColor,],id:str=None,alpha:int=255, tip:Tip=None): # type: ignore
         """
+        # Button
+        
         Button Widget, can be very useful
         
-        Args:
+        Parameters:
             engine (any): The engine that the widget is in
             position (pg.Vector2): The position of the button
             font (int or pg.font.FontType): The font of the button
             text (str): The text of the button
-            colors (list[reqColor,reqColor,]): The colors of the button
+            colors (list[reqColor,reqColor,]): The colors of the button -> **[Text, Background, Border(Optional)]**
             id (str, optional): The id of the widget. Defaults to None.
             alpha (int, optional): The alpha of the button. Defaults to 255.
         """
@@ -305,32 +315,43 @@ class Button(Widget):
     
 class Checkbox(Widget):
     """
-    Checkbox Widget.
+    # Checkbox
     
-    For collect valor use: Checkbox.value
-    will return a bool value(True/False)
+    Checkbox Widget, can be very useful
     
-    Click, True, Click, False, Click, True
-    Checkbox!
+    *Clicky, True, Clicky, False, Clicky, True*
+    
+    Parameters:
+        engine (any): The engine that the widget is in
+        position (pg.Vector2): The position of the checkbox
+        font (int or pg.font.FontType): The font of the checkbox
+        text (str): The text of the checkbox
+        colors (list[reqColor,reqColor,reqColor,]): The colors of the checkbox -> **[Text, Active, Unactive, Border(Optional)]**
+        id (str, optional): The id of the widget. Defaults to None.
+        alpha (int, optional): The alpha of the checkbox. Defaults to 255.
     """
     _type:str = 'checkbox'
     
     click_time:int = cfgtimes.WD_CKBX_CLICK_TIME
     click_time_counter:int = 0
     
-    box_size:int # Default -> 1/4 of wid
+    box_size:int # Default -> 1/3 of wid
     
     value:bool = False
     def __init__(self,engine, position:pg.Vector2, font:int or pg.font.FontType, text:str, colors:list[reqColor,reqColor,reqColor,],id:str=None,alpha:int=255, tip:Tip=None): # type: ignore
         """
+        # Checkbox
+        
         Checkbox Widget, can be very useful
         
-        Args:
+        *Clicky, True, Clicky, False, Clicky, True*
+        
+        Parameters:
             engine (any): The engine that the widget is in
             position (pg.Vector2): The position of the checkbox
             font (int or pg.font.FontType): The font of the checkbox
             text (str): The text of the checkbox
-            colors (list[reqColor,reqColor,reqColor,]): The colors of the checkbox
+            colors (list[reqColor,reqColor,reqColor,]): The colors of the checkbox -> **[Text, Active, Unactive, Border(Optional)]**
             id (str, optional): The id of the widget. Defaults to None.
             alpha (int, optional): The alpha of the checkbox. Defaults to 255.
         """
@@ -346,7 +367,7 @@ class Checkbox(Widget):
         self.size = pg.math.Vector2(*self.font.size(self.text))
         
         # Add Box Size
-        self.box_size = int(self.size.x / 4)
+        self.box_size = int(self.size.x / 3)
         self.size.x += int(self.box_size * 1.15)
         
         # Create Image
@@ -376,17 +397,26 @@ class Checkbox(Widget):
             self.engine.screen.blit(self.image, self.rect)
 
             # Draw box
-            c = self.colors[1] if not self.value else self.colors[2]
+            c = self.colors[2] if not self.value else self.colors[1]
             self.engine.draw_rect(self.rect.topleft, (self.box_size, self.size.y), c,border_width=(3 if len(self.colors) > 3 else 0),border_color= (self.colors[3] if len(self.colors) > 3 else (0,0,0)), alpha=self.alpha)
         
         return super().draw()
     
 class Slider(Widget):
     """
-    Slider Widget.
+    # Slider
     
-    Value beetween 0 and 1
-    collect from _value or value - Float
+    Slider Widget, is very useful
+    
+    Parameters:
+        engine (any): The engine that the widget is in
+        position (pg.Vector2): The position of the slider
+        size (tuple[int,int]): The size of the slider
+        colors (list[reqColor,reqColor,]): The colors of the slider -> **[Fill & Circle, Background, Border(Optional)]**
+        value (float, optional): The value of the slider. Defaults to None.
+        fill_passed (bool, optional): If the slider should fill the passed area. Defaults to True.
+        id (str, optional): The id of the widget. Defaults to None.
+        alpha (int, optional): The alpha of the slider. Defaults to 255.
     """
     _type:str = 'slider'
     
@@ -399,13 +429,15 @@ class Slider(Widget):
     value:float = 0
     def __init__(self,engine, position:[int,int], size:tuple[int,int],colors:list[reqColor,reqColor,],value:float=None,fill_passed:bool=True,id:str=None,alpha:int=255, tip:Tip=None): # type: ignore
         """
+        # Slider
+        
         Slider Widget, is very useful
         
-        Args:
+        Parameters:
             engine (any): The engine that the widget is in
             position (pg.Vector2): The position of the slider
             size (tuple[int,int]): The size of the slider
-            colors (list[reqColor,reqColor,]): The colors of the slider
+            colors (list[reqColor,reqColor,]): The colors of the slider -> **[Fill & Circle, Background, Border(Optional)]**
             value (float, optional): The value of the slider. Defaults to None.
             fill_passed (bool, optional): If the slider should fill the passed area. Defaults to True.
             id (str, optional): The id of the widget. Defaults to None.
@@ -491,9 +523,20 @@ class Slider(Widget):
 
 class Select(Widget):
     """
-    Select Widget.
+    # Select
     
     It's like choose a item, Left or Right.
+    
+    Parameters:
+        engine (any): The engine that the widget is in
+        position (pg.Vector2): The position of the select
+        font (int or pg.font.FontType): The font of the select
+        colors (list[reqColor,reqColor,]): The colors of the select -> **[Text, Background, Border(Optional)]**
+        items (list): The items of the select
+        value (int, optional): The value of the select. Defaults to 0.
+        textBg (bool, optional): If the text background is enabled. Defaults to False.
+        id (str, optional): The id of the widget. Defaults to None.
+        alpha (int, optional): The alpha of the select. Defaults to 255.
     """
     _type:str = 'select'
     
@@ -507,15 +550,15 @@ class Select(Widget):
     
     def __init__(self, engine, position: [int, int], font: int or pg.font.FontType,colors: list[reqColor, reqColor,], items: list ,value:int=0, textBg:bool = False,id: str = None, alpha: int = 255, tip:Tip=None): # type: ignore
         """
-        Select Widget.
+        # Select
         
         It's like choose a item, Left or Right.
         
-        Args:
+        Parameters:
             engine (any): The engine that the widget is in
             position (pg.Vector2): The position of the select
             font (int or pg.font.FontType): The font of the select
-            colors (list[reqColor,reqColor,]): The colors of the select
+            colors (list[reqColor,reqColor,]): The colors of the select -> **[Text, Background, Border(Optional)]**
             items (list): The items of the select
             value (int, optional): The value of the select. Defaults to 0.
             textBg (bool, optional): If the text background is enabled. Defaults to False.
@@ -576,9 +619,18 @@ class Select(Widget):
     
 class Longtext(Widget):
     """
-    LongText Widget.
+    # LongText
+    It's like a textarea/textbox but you can't type.
     
-    It's like a textarea.
+    Parameters:
+        engine (any): The engine that the widget is in
+        position (tuple[int,int]): The position of the textarea
+        font (int or pg.font.FontType): The font of the textarea
+        text (str): The text of the textarea
+        colors (list[reqColor,]): The colors of the textarea -> **[Text, Background(Optional), Border(Optional)]**
+        size (list[int, int], optional): The size of the textarea. Defaults to None.
+        id (str, optional): The id of the widget. Defaults to None.
+        alpha (int, optional): The alpha of the textarea. Defaults to 255.
     """
     _type:str = 'longtext'
     
@@ -587,14 +639,15 @@ class Longtext(Widget):
     
     def __init__(self, engine, position: [int,int], font: int or pg.font.FontType,text:str,colors: list[reqColor,],size: [int, int] = None,id: str = None, alpha: int = 255, tip:Tip=None): # type: ignore
         """
-        It's like a textarea but you can't type.
+        # LongText
+        It's like a textarea/textbox but you can't type.
         
-        Args:
+        Parameters:
             engine (any): The engine that the widget is in
             position (tuple[int,int]): The position of the textarea
             font (int or pg.font.FontType): The font of the textarea
             text (str): The text of the textarea
-            colors (list[reqColor,]): The colors of the textarea
+            colors (list[reqColor,]): The colors of the textarea -> **[Text, Background(Optional), Border(Optional)]**
             size (list[int, int], optional): The size of the textarea. Defaults to None.
             id (str, optional): The id of the widget. Defaults to None.
             alpha (int, optional): The alpha of the textarea. Defaults to 255.
@@ -613,8 +666,8 @@ class Longtext(Widget):
     
     def get_lines(self) -> dict:
         """
-        - Get the lines of the text;
-        - Break the lines when it's too long;
+        * Get the lines of the text;
+        * Break the lines when it's too long;
         """
         lines = {}
         current_line = ''
@@ -661,6 +714,20 @@ class Longtext(Widget):
         return super().draw()
     
 class Progressbar(Widget):
+    """
+    # Progress bar
+    
+    A Progress bar, can be used for make a loading bar or life bars
+    
+    Parameters:
+        engine (any): The engine that the widget is in
+        position (pg.Vector2): The position of the widget
+        size (tuple[int,int]): The size of the widget
+        colors (list[reqColor,reqColor,reqColor,]): The colors of the widget -> **[Fill Color, Background, Border, Text(Optional)]**
+        value (float, optional): The value of the widget. Defaults to 0.
+        text (str, optional): The text of the widget. Defaults to None.
+        id (str, optional): The id of the widget. Defaults to None.
+    """
     _type:str = 'progressbar'
     
     colors:list[reqColor,reqColor,reqColor,] = []
@@ -670,13 +737,15 @@ class Progressbar(Widget):
     value:float = 0
     def __init__(self, engine,position:tuple[int,int],size:tuple[int,int],colors:list[reqColor,reqColor,reqColor,],value:float=0,text:str=None,font:pg.font.FontType=None, id: str = None, tip:Tip=None):
         """
+        # Progress bar
+        
         A Progress bar, can be used for make a loading bar or life bars
         
-        Args:
+        Parameters:
             engine (any): The engine that the widget is in
             position (pg.Vector2): The position of the widget
             size (tuple[int,int]): The size of the widget
-            colors (list[reqColor,reqColor,reqColor,]): The colors of the widget
+            colors (list[reqColor,reqColor,reqColor,]): The colors of the widget -> **[Fill Color, Background, Border, Text(Optional)]**
             value (float, optional): The value of the widget. Defaults to 0.
             text (str, optional): The text of the widget. Defaults to None.
             id (str, optional): The id of the widget. Defaults to None.
@@ -705,11 +774,26 @@ class Progressbar(Widget):
             # Fill bar
             self.engine.draw_rect(self.rect.topleft, (self.rect.width * self.value, self.rect.height), self.colors[0])
             
-            if self.text and (self.font and len(self.colors) > 3):
-                self.engine.draw_text((self.rect.left+1, self.rect.top+1),str(self.text), self.font, self.colors[3])
+            if self.text and (self.font):
+                self.engine.draw_text((self.rect.left+1, self.rect.top+1),str(self.text), self.font, (self.colors[3] if len(self.colors) >= 3 else self.colors[1]))
         return super().draw()
     
 class Textbox(Widget):
+    """
+    # Textbox
+    
+    A Textbox, you can write in it.
+    
+    Parameters:
+        engine (any): The engine that the widget is in
+        position (pg.Vector2): The position of the widget
+        height (int): The height of the widget
+        colors (list[reqColor,reqColor,reqColor,]): The colors of the widget -> **[Background Unactive, Background Active, Text, Border(Optional)]**
+        font (pg.font.FontType): The font of the widget. Defaults to None.
+        text (str, optional): The text of the widget. Defaults to None.
+        alpha (int, optional): The alpha of the widget. Defaults to 255.
+        id (str, optional): The id of the widget. Defaults to None.
+    """
     _type:str = 'textbox'
     
     colors:list[reqColor,reqColor,reqColor,] = []
@@ -740,13 +824,15 @@ class Textbox(Widget):
     ]
     def __init__(self, engine,position:tuple[int,int],height:int,colors:list[reqColor,reqColor,reqColor,],font:pg.font.FontType,text:str=None,alpha:int=255, id: str = None, tip:Tip=None):
         """
+        # Textbox
+        
         A Textbox, you can write in it.
         
-        Args:
+        Parameters:
             engine (any): The engine that the widget is in
             position (pg.Vector2): The position of the widget
             height (int): The height of the widget
-            colors (list[reqColor,reqColor,reqColor,]): The colors of the widget (Background Unactive, Background Active, Text, Border)
+            colors (list[reqColor,reqColor,reqColor,]): The colors of the widget -> **[Background Unactive, Background Active, Text, Border(Optional)]**
             font (pg.font.FontType): The font of the widget. Defaults to None.
             text (str, optional): The text of the widget. Defaults to None.
             alpha (int, optional): The alpha of the widget. Defaults to 255.
@@ -822,6 +908,21 @@ class Textbox(Widget):
         return super().draw()
     
 class Dropdown(Widget):
+    """
+    # Dropdown
+    
+    Dropdown widget, is a dropdown when you click you can choose one of the items listed.
+    
+    Parameters:
+        position:tuple[int,int]
+        colors:list[reqColor,reqColor,reqColor,] -> **[Text Color, Background Color, Border Color(Optional)]**
+        texts:list[str,]
+        font:pg.font.FontType
+        alpha:int
+        current_text:int
+        id:str
+        tip:Tip
+    """
     _type:str = 'dropdown'
     
     colors:list[reqColor,reqColor,reqColor,] = []
@@ -840,11 +941,13 @@ class Dropdown(Widget):
     Click_Time_counter:int = 0
     def __init__(self, engine, position:tuple[int,int], colors:list[reqColor,reqColor,reqColor,], texts:list[str,], font:pg.font.FontType, alpha:int=255, current_text:int=0,id:str=None, tip:Tip=None):
         """
+        # Dropdown
+        
         Dropdown widget, is a dropdown when you click you can choose one of the items listed.
         
-        Args:
+        Parameters:
             position:tuple[int,int]
-            colors:list[reqColor,reqColor,reqColor,]
+            colors:list[reqColor,reqColor,reqColor,] -> **[Text Color, Background Color, Border Color(Optional)]**
             texts:list[str,]
             font:pg.font.FontType
             alpha:int
@@ -932,13 +1035,29 @@ class Dropdown(Widget):
         return super().draw()
     
 class Textarea(Widget):
+    """
+    # Textarea Widget
+    A Textarea, is basically a **textbox**, but will break when have a "\n" or pass the screen size.
+        
+        Parameters:
+            engine:Engine
+            position:tuple[int,int]
+            height:int
+            colors:list[reqColor,reqColor,reqColor,] -> **[Active Color, Inactive Color, Text Color & Border Color]**
+            font:pg.font.FontType
+            text:str
+            alpha:int
+            id:str
+            tip:Tip
+    """
     _type:str = 'textarea'
     
     colors:list[reqColor,reqColor,reqColor,] = []
     text:str = None
     shown_text:list[str,] = []
     font:pg.font.FontType = None
-    active = False
+    active:bool = False
+    editable:bool = True
     
     del_press_time:int = cfgtimes.WD_TXBX_DEL_TIME
     del_press_counter:int = 0
@@ -962,13 +1081,14 @@ class Textarea(Widget):
     ]
     def __init__(self, engine,position:tuple[int,int],colors:list[reqColor,reqColor,reqColor,],font:pg.font.FontType,text:str=None,alpha:int=255, id: str = None, tip:Tip=None):
         """
+        # Textarea Widget
         A Textarea, is basically a **textbox**, but will break when have a "\n" or pass the screen size.
         
-        Args:
+        Parameters:
             engine:Engine
             position:tuple[int,int]
             height:int
-            colors:list[reqColor,reqColor,reqColor,]
+            colors:list[reqColor,reqColor,reqColor,] -> **[Active Color, Inactive Color, Text Color & Border Color]**
             font:pg.font.FontType
             text:str
             alpha:int
@@ -997,7 +1117,7 @@ class Textarea(Widget):
         """
         screen_size: tuple[int, int] = self.engine.screen.get_size()
         
-        max_x, max_y = screen_size[0] - self.position[0], screen_size[1] - self.position[1]
+        max_x, _ = screen_size[0] - self.position[0], screen_size[1] - self.position[1]
         
         # Split when haves '\n'
         self.shown_text = self.text.replace('\r','').split('\n')
@@ -1040,7 +1160,7 @@ class Textarea(Widget):
                 else:
                     self.active = False
         
-        if self.active:
+        if self.active and self.editable:
             if self.key_press_counter <= 0 or self.del_press_counter <= 0:    
                 changed = False
                 keys:pg.key.ScancodeWrapper = self.engine.getKeys() # Get Keys pressed

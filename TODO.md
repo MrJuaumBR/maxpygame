@@ -83,6 +83,7 @@
 - [x] Enable/Disable System for Widgets;
 - [x] Screen Resize Detector;
 - [x] Example of Enable/Disable Widgets + Keys Handling + Screen Resize;
+- [x] TextArea Disable Edit;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.
@@ -106,4 +107,5 @@
 - [x] Updated [machine.py](./examples/machine.py) to have elapsed time;
 - [x] New Engine Title in [readme](./readme.md);
 - [x] Images on Readme.md for Links(Make works properly into TestPyPi);
+- [x] Review Docstrings of widgets;
 - [ ] Total GPU in use;

@@ -41,6 +41,8 @@ class PyGameEngine:
     widget_limits:int = 30
     limit_error_active:bool = True
     
+    cfgtips = cfgtips()
+    
     def __init__(self,screen:pg.SurfaceType=None):
         """
         Initializes **PyGame** and the **Engine** itself.
