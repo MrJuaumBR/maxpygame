@@ -194,7 +194,7 @@ class PyGameEngine:
     def screen_size(self, value:tuple[int,int]):
         self._screen_size = value
     
-    def createScreen(self, width:int, height:int, flags:int=SCALED) -> pg.SurfaceType:
+    def createScreen(self, width:int, height:int, flags:int=SCALED,VSync:bool=False) -> pg.SurfaceType:
         """
         Create a screen if there is not one
         
@@ -202,13 +202,14 @@ class PyGameEngine:
             width:int
             height:int
             flags(Optional):int
+            VSync(Optional):bool
         Returns:
             pg.SurfaceType
         """
         if not self.hasScreen(): # If there is no screen
             if flags == FULLSCREEN: # If fullscreen
                 flags = FULLSCREEN|SCALED
-            self.screen = pg.display.set_mode((width, height), flags=flags)
+            self.screen = pg.display.set_mode((width, height), flags=flags,vsync=VSync)
             if self.icon is None:
                 self.loadIcon()
                 self.setScreenIcon(self.icon.surf)
@@ -216,6 +217,7 @@ class PyGameEngine:
             self.is_running = True
             self.screen_size = (width, height)
             return self.screen
+        
     def setScreenTitle(self, title:str):
         """
         Set the title of the screen if there is one

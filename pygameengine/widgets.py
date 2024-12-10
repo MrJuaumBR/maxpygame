@@ -663,22 +663,29 @@ class Longtext(Widget):
             self.size = size
         self.text = text
         self.alpha = alpha
-    
+        
     def get_lines(self) -> dict:
         """
-        * Get the lines of the text;
-        * Break the lines when it's too long;
+        Splits the text into lines based on the width of the text and the screen size.
+        Returns a dictionary where the keys are the line numbers and the values are the lines of text.
         """
         lines = {}
         current_line = ''
-        self.text = self.text.replace('\n',' ')
-        for word in self.text.split(' '):
-            if pg.font.Font.size(self.font, current_line + word)[0] > self.engine.screen.get_size()[0] - self.position[0]:
-                lines[len(lines) + 1] = current_line
-                current_line = word + ' '
+        line_number = 1
+        for word in self.text.replace('\n',' <BreakHere> ').split():
+            if word in [' <BreakHere> ', '\n', '<BreakHere>']:
+                lines[line_number] = current_line.strip()
+                current_line = ''
+                line_number += 1
+            elif pg.font.Font.size(self.font, current_line + ' ' + word)[0] > self.engine.screen.get_size()[0] - self.position[0]:
+                lines[line_number] = current_line.strip()
+                current_line = word
+                line_number += 1
             else:
-                current_line += word + ' '
-        lines[len(lines) + 1] = current_line.strip()
+                if word != ' ':
+                    current_line += ' ' + word
+        if current_line:
+            lines[line_number] = current_line.strip()
         return lines
 
     
@@ -812,6 +819,8 @@ class Textbox(Widget):
     click_time:int = cfgtimes.WD_TXBX_CLICK_TIME
     click_counter:int = 0
     
+    editable:bool = True
+    
     blacklist = [
         pg.K_BACKSPACE,
         pg.K_DELETE,
@@ -852,44 +861,43 @@ class Textbox(Widget):
         self.rect = pg.Rect(*self.position,self.max_width,self.height)
         
     def update(self):
-        # Update Size
-        size = self.font.size(self.text)
-        w,h = size[0]+5,size[1]
-        if h > self.height:
-            self.height = h+2
-        self.rect.size = (self.font.size('WW')[0] if w < self.font.size('WW')[0] else w,h+2)
-        
-        # Update Value
-        self.value = self.text
-        
-        # Get mouse and update if is active or no
-        if self.engine.mouse.left:
-            if self.click_counter <= 0:
-                if self.rect.collidepoint(self.engine.mouse.pos):
-                    if not self.active:
-                        self.click_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
-                        self.active = True
-                else:
-                    self.active = False
-        
-        if self.active:
-            if self.key_press_counter <= 0 or self.del_press_counter <= 0:    
-                keys:pg.key.ScancodeWrapper = self.engine.getKeys() # Get Keys pressed
-                if keys[pg.K_BACKSPACE] and self.del_press_counter <= 0:
-                    self.text = self.text[:-1] # Remove last character
-                    self.del_press_counter = self.engine.TimeSys.s2f(self.del_press_time)
-                elif keys[pg.K_RETURN] and self.key_press_counter <= 0:
-                    self.active = False
-                    self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
-                elif self.key_press_counter <= 0:
-                    for ev in self.engine.events:
-                        if ev.type == pg.KEYDOWN:
-                            if not (ev.key in self.blacklist):
-                                self.text += ev.unicode
-                            self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
-                            
-        
-        
+        if self.editable:
+            # Update Size
+            size = self.font.size(self.text)
+            w,h = size[0]+5,size[1]
+            if h > self.height:
+                self.height = h+2
+            self.rect.size = (self.font.size('WW')[0] if w < self.font.size('WW')[0] else w,h+2)
+            
+            # Update Value
+            self.value = self.text
+            
+            # Get mouse and update if is active or no
+            if self.engine.mouse.left:
+                if self.click_counter <= 0:
+                    if self.rect.collidepoint(self.engine.mouse.pos):
+                        if not self.active:
+                            self.click_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
+                            self.active = True
+                    else:
+                        self.active = False
+            
+            if self.active:
+                if self.key_press_counter <= 0 or self.del_press_counter <= 0:    
+                    keys:pg.key.ScancodeWrapper = self.engine.getKeys() # Get Keys pressed
+                    if keys[pg.K_BACKSPACE] and self.del_press_counter <= 0:
+                        self.text = self.text[:-1] # Remove last character
+                        self.del_press_counter = self.engine.TimeSys.s2f(self.del_press_time)
+                    elif keys[pg.K_RETURN] and self.key_press_counter <= 0:
+                        self.active = False
+                        self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
+                    elif self.key_press_counter <= 0:
+                        for ev in self.engine.events:
+                            if ev.type == pg.KEYDOWN:
+                                if not (ev.key in self.blacklist):
+                                    self.text += ev.unicode
+                                self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)                   
+            
         return super().update()
     
     def cooldown_refresh(self):
@@ -903,8 +911,12 @@ class Textbox(Widget):
     
     def draw(self):
         if self.image:
-            self.engine.draw_rect(self.rect.topleft, self.rect.size, self.colors[0] if not self.active else self.colors[1], border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None,alpha=self.alpha)
-            self.engine.draw_text((self.rect.left+2.5, self.rect.top+1),self.text, self.font, self.colors[2],alpha=self.alpha)
+            if self.active:
+                color = self.colors[1]
+            else:
+                color = self.colors[0]
+            self.engine.draw_rect(self.rect, color, border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None,alpha=self.alpha)
+            self.engine.draw_text((self.rect.x+2.5, self.rect.y+1),self.text, self.font, self.colors[2],alpha=self.alpha)
         return super().draw()
     
 class Dropdown(Widget):
@@ -1069,6 +1081,8 @@ class Textarea(Widget):
     click_counter:int = 0
     total_size:tuple[int,int] = (0,0)
     
+    surface:pg.Surface = None
+    
     blacklist = [
         pg.K_BACKSPACE,
         pg.K_DELETE,
@@ -1108,7 +1122,7 @@ class Textarea(Widget):
         """
         This function will make 3 things:
         
-        1. Split the text in lines when haves '\n'
+        1. Split the text in lines when haves '\\n'
         2. Break line when passes max_x
         3. Calculate the total_size(
             width: will get the bigger line width using font,
@@ -1151,37 +1165,38 @@ class Textarea(Widget):
         self.value = self.text
         
         # Get mouse and update if is active or no
-        if self.engine.mouse.left:
-            if self.click_counter <= 0:
-                if self.rect.collidepoint(self.engine.mouse.pos):
-                    if not self.active:
-                        self.click_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
-                        self.active = True
-                else:
-                    self.active = False
-        
-        if self.active and self.editable:
-            if self.key_press_counter <= 0 or self.del_press_counter <= 0:    
-                changed = False
-                keys:pg.key.ScancodeWrapper = self.engine.getKeys() # Get Keys pressed
-                if keys[pg.K_BACKSPACE] and self.del_press_counter <= 0:
-                    self.text = self.text[:-1] # Remove last character
-                    self.del_press_counter = self.engine.TimeSys.s2f(self.del_press_time)
-                    changed = True
-                elif keys[pg.K_RETURN] and self.key_press_counter <= 0:
-                    self.active = False
-                    self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
-                    changed = True
-                elif self.key_press_counter <= 0:
-                    for ev in self.engine.events:
-                        if ev.type == pg.KEYDOWN:
-                            if not (ev.key in self.blacklist):
-                                self.text += ev.unicode
-                            self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
-                            changed = True
-                            
-                if changed:
-                    self.strip_text()
+        if self.editable:
+            if self.engine.mouse.left:
+                if self.click_counter <= 0:
+                    if self.rect.collidepoint(self.engine.mouse.pos):
+                        if not self.active:
+                            self.click_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
+                            self.active = True
+                    else:
+                        self.active = False
+            
+            if self.active and self.editable:
+                if self.key_press_counter <= 0 or self.del_press_counter <= 0:    
+                    changed = False
+                    keys:pg.key.ScancodeWrapper = self.engine.getKeys() # Get Keys pressed
+                    if keys[pg.K_BACKSPACE] and self.del_press_counter <= 0:
+                        self.text = self.text[:-1] # Remove last character
+                        self.del_press_counter = self.engine.TimeSys.s2f(self.del_press_time)
+                        changed = True
+                    elif keys[pg.K_RETURN] and self.key_press_counter <= 0:
+                        self.active = False
+                        self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
+                        changed = True
+                    elif self.key_press_counter <= 0:
+                        for ev in self.engine.events:
+                            if ev.type == pg.KEYDOWN:
+                                if not (ev.key in self.blacklist):
+                                    self.text += ev.unicode
+                                self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
+                                changed = True
+                                
+                    if changed:
+                        self.strip_text()
         
         return super().update()
     
@@ -1195,8 +1210,13 @@ class Textarea(Widget):
         return super().cooldown_refresh()
     
     def draw(self):
-        self.rect = pg.Rect(*self.position,*self.total_size)
-        self.engine.draw_rect(self.rect.topleft, self.rect.size, self.colors[0] if not self.active else self.colors[1], border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None,alpha=self.alpha)
-        for ind,line in enumerate(self.shown_text):
-            self.engine.draw_text((self.rect.left+1.5, self.rect.top+1+(ind*self.font.get_height())),line, self.font, self.colors[2],alpha=self.alpha)
+        if self.surface is None or self.text_changed:
+            self.strip_text()
+            self.text_changed = False
+            self.surface = pg.Surface(self.total_size, pg.SRCALPHA)
+            self.engine.draw_rect((0,0), self.total_size, self.colors[0] if not self.active else self.colors[1], border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None, alpha=self.alpha, screen=self.surface)
+            for ind,line in enumerate(self.shown_text):
+                print(ind, line, '\n\n')
+                self.engine.draw_text((1.5, 1+(ind*self.font.get_height())),line, self.font, self.colors[2], alpha=self.alpha, screen=self.surface)
+        self.engine.screen.blit(self.surface, self.position)
         return super().draw()

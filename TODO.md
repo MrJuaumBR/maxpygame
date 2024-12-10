@@ -84,6 +84,8 @@
 - [x] Screen Resize Detector;
 - [x] Example of Enable/Disable Widgets + Keys Handling + Screen Resize;
 - [x] TextArea Disable Edit;
+- [x] VSync Support;
+- [x] Line Counter;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.
@@ -108,4 +110,6 @@
 - [x] New Engine Title in [readme](./readme.md);
 - [x] Images on Readme.md for Links(Make works properly into TestPyPi);
 - [x] Review Docstrings of widgets;
+- [x] Make Longtext support "\n";
+- [x] + Optimization in Textbox & Textarea (when editable == False);
 - [ ] Total GPU in use;
