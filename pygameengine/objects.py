@@ -4,7 +4,7 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.2.9"
+    version = "0.2.9fix"
     description = "A simple pygame engine"
     github = "https://github.com/MrJuaumBR/maxpygame"
     testpypi = "https://test.pypi.org/project/maxpygame/"
@@ -194,7 +194,7 @@ class InputQuery:
     def __init__(self,engine):
         self.engine = engine
     
-    def insert_query(self, key:int):
+    def insert_query(self, event:pg.event.EventType):
         """
         This function will insert a key into the query
         
@@ -204,14 +204,15 @@ class InputQuery:
         Returns:
             None
         """
-        self._query.append(key)
+        self._query.append((event, event.key))
         self.last_change = self.engine.delta_time.total_seconds()
     
-    def GetQuery(self) -> list[(int,int),]:
+    def GetQuery(self) -> list[(int,int, pg.event.EventType),]:
         """
-        This function will return a list of tuples
-        The first value is the index of the key
-        The second value is the key
+        This function will return a list of tuples\n
+        * The first value is the index of the key\n
+        * The second value is the key\n
+        * The third value is the event\n
         
         Parameters:
             None
@@ -220,9 +221,22 @@ class InputQuery:
             list[(int,int),]: A list of tuples
         """
         q = []
-        for index, key in enumerate(self._query):
-            q.append((index,key))
+        for index, value in enumerate(self._query):
+            event, key = value
+            q.append((index,key,event))
         return q
+    
+    def RemoveFromQuery(self, index:int):
+        """
+        This function will remove a key from the query
+        
+        Parameters:
+            index (int): The index of the key to remove
+        
+        Returns:
+            None
+        """
+        self._query.pop(index)
     
     def update(self, delta_time:timedelta):
         """

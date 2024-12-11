@@ -60,7 +60,7 @@ while True:
     
     # Input Query
     inputQueryVlue = ''
-    for index,key in pge.input_query.GetQuery():
+    for index,key,_ in pge.input_query.GetQuery():
         inputQueryVlue += pge.keyToString(key) + f"{"" if index == len(pge.input_query.GetQuery())-1 else ", "}"
         
     KeyQueryText.text = f'[{inputQueryVlue}]'
@@ -84,6 +84,8 @@ while True:
                 print(pge.getElapsedTime())
                 
                 print(f'Ram in use: {pge.getInUseRam()*100}% ')
+            elif ev.key == pyge.K_F2:
+                pge.input_query_enable = not pge.input_query_enable
             
     # Update the screen
     pge.draw_text((0,0), f'FPS: {int(pge.getFPS())}, Delta Time: {pge.delta_time}', arial16, pge.Colors.WHITE)

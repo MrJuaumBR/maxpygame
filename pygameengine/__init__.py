@@ -355,7 +355,7 @@ class PyGameEngine:
             new_events:list[pg.event.Event,] = []
             for event in self.events:
                 if event.type == pg.KEYDOWN:
-                    self.input_query.insert_query(event.key)
+                    self.input_query.insert_query(event)
                 elif event.type != pg.KEYUP:
                     new_events.append(event)
                     
@@ -696,7 +696,8 @@ class PyGameEngine:
         Draw a rect on the screen
         
         Parameters:
-            rect:pg.Rect
+            Position:tuple[int,int]
+            Size:tuple[int,int]
             color:reqColor
             border_width(Optional):int
             screen(Optional):pg.SurfaceType

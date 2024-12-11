@@ -27,6 +27,7 @@
 - [x] Fix Update bug when trying to update screen(needs rects);
 - [x] Fixed Ram in Use;
 - [x] Fixed delta_time returning wrong values;
+- [x] Textbox & Unused Prints(Emergency);
 
 ## Addeds
 - [x] Slider fill when pass;
@@ -86,6 +87,7 @@
 - [x] TextArea Disable Edit;
 - [x] VSync Support;
 - [x] Line Counter;
+- [x] Textbox Input Query Support;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.

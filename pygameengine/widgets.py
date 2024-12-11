@@ -14,7 +14,7 @@ A File designed to work in Widgets for the engine.
 
 from .required import pg
 from .l_colors import reqColor
-from .objects import cfgtimes,cfgtips, Mouse
+from .objects import cfgtimes,cfgtips, Mouse, InputQuery
 
 
 """
@@ -892,10 +892,21 @@ class Textbox(Widget):
                         self.active = False
                         self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
                     elif self.key_press_counter <= 0:
-                        for ev in self.engine.events:
-                            if ev.type == pg.KEYDOWN:
-                                if not (ev.key in self.blacklist):
-                                    self.text += ev.unicode
+                        if not self.engine.input_query_enable:
+                            for ev in self.engine.events:
+                                if ev.type == pg.KEYDOWN:
+                                    if not (ev.key in self.blacklist):
+                                        self.text += ev.unicode
+                                    self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)                   
+                        else:
+                            ipq:InputQuery = self.engine.input_query
+                            for index, key, event in ipq.GetQuery():
+                                index:int
+                                key:int
+                                event:pg.event.EventType
+                                if not (key in self.blacklist):
+                                    self.text += event.unicode
+                                ipq.RemoveFromQuery(index) # Prevents Dupe
                                 self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)                   
             
         return super().update()
@@ -915,7 +926,7 @@ class Textbox(Widget):
                 color = self.colors[1]
             else:
                 color = self.colors[0]
-            self.engine.draw_rect(self.rect, color, border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None,alpha=self.alpha)
+            self.engine.draw_rect(self.rect.topleft, self.rect.size, color, border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None,alpha=self.alpha)
             self.engine.draw_text((self.rect.x+2.5, self.rect.y+1),self.text, self.font, self.colors[2],alpha=self.alpha)
         return super().draw()
     
@@ -1216,7 +1227,6 @@ class Textarea(Widget):
             self.surface = pg.Surface(self.total_size, pg.SRCALPHA)
             self.engine.draw_rect((0,0), self.total_size, self.colors[0] if not self.active else self.colors[1], border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None, alpha=self.alpha, screen=self.surface)
             for ind,line in enumerate(self.shown_text):
-                print(ind, line, '\n\n')
                 self.engine.draw_text((1.5, 1+(ind*self.font.get_height())),line, self.font, self.colors[2], alpha=self.alpha, screen=self.surface)
         self.engine.screen.blit(self.surface, self.position)
         return super().draw()
