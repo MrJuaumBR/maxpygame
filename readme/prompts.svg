@@ -1,0 +1,49 @@
+<svg fill="none" viewBox="0 0 500 300" width="500" height="300" xmlns="http://www.w3.org/2000/svg">
+    <foreignObject width="100%" height="100%">
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            <style>
+                #div-prompts{
+                    color:#fff;
+                    opacity:0.2;
+
+                    transition: all 0.35s;
+                }
+
+                #div-prompts:hover{
+                    opacity:1;
+                }
+
+                .shell{
+                    background-color: #000000;
+                    background-color: #000000;
+                    color: #00FF00;
+                    font-family: Consolas, 'Courier New', monospace;
+                    font-size: 12px;
+                    padding: 2px;
+                    border: 1px solid #00FF00;
+                    border-radius: 4px;
+                    white-space: pre;
+                    overflow: auto;
+                }
+            </style>
+            <div id="div-prompts">
+                <bold>pre-build setup.py</bold>
+                <div class="shell">
+                    py setup.py build
+                </div>
+                <bold>Build Packages</bold>
+                <div class="shell">
+                py -m build
+                </div>
+                <bold>Local Install</bold>
+                <div class="shell">
+                pip install .
+                </div>
+                <bold>Send to Test PyPi</bold>
+                <div class="shell">
+                twine upload --repository testpypi dist/*
+                </div>
+            </div>
+        </div>
+    </foreignObject>
+</svg>

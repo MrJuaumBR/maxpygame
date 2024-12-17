@@ -83,6 +83,7 @@ class Colors:
         self.BLOODRED = reqColor(0, 0, 0, hex='660000')
         self.BLOOD = reqColor(0, 0, 0, hex='8a0303')
         self.FIREBRICK = reqColor(178, 34, 34)
+        self.DARKENRED = reqColor(190,90,90)
         
 
         # Green Based Colors
@@ -90,6 +91,7 @@ class Colors:
         self.LIGHTGREEN = reqColor(128, 255, 128)
         self.DARKGREEN = reqColor(0, 128, 0)
         self.DARKSEAGREEN = reqColor(0,0,0, hex='#8FBC8B')
+        self.DARKENGREEN = reqColor(90,190,90)
 
         # Blue Based Colors
         self.BLUE = reqColor(0, 0, 255)
@@ -99,6 +101,7 @@ class Colors:
         self.SKYBLUE = reqColor(0, 255, 255)
         self.MEDIUMAQUAMARINE = reqColor(0,0,0, hex='#66CDAA')
         self.DODGERBLUE = reqColor(0, 0, 0, hex='#1E90FF')
+        self.DARKENBLUE = reqColor(90,90,190)
 
         # Yellow Based Colors
         self.YELLOW = reqColor(255, 255, 0)

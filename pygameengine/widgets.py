@@ -146,10 +146,10 @@ class Tip():
         
         self.surface = pg.Surface(self.total_size, pg.SRCALPHA)
         
-        self.engine.draw_rect((0,0), self.total_size, self.engine.cfgtips.background_color, border_width=self.engine.cfgtips.border_width, border_color=self.engine.cfgtips.border_color, screen=self.surface, alpha=self.engine.cfgtips.alpha)
+        self.engine.draw_rect((0,0), self.total_size, self.engine.cfgtips.background_color, border_width=self.engine.cfgtips.border_width, border_color=self.engine.cfgtips.border_color, surface=self.surface, alpha=self.engine.cfgtips.alpha)
         position:list = [0,0]
         for line in self.text_lines:
-            self.engine.draw_text(position, line, self.font, self.engine.cfgtips.text_color, screen=self.surface)
+            self.engine.draw_text(position, line, self.font, self.engine.cfgtips.text_color, surface=self.surface)
             position[1] += self.font.size(line)[1] + 1
             
         self.engine.screen.blit(self.surface, self.rect)
@@ -281,11 +281,11 @@ class Button(Widget):
         
         self.image = pg.Surface(self.size, (pg.SRCALPHA if (self.alpha < 255 or self.alpha != None) else 0))
         if len(self.colors) < 3: # Has only 2 colors
-            self.engine.draw_rect((0,0), self.size, self.colors[1], screen=self.image, alpha=self.alpha)
+            self.engine.draw_rect((0,0), self.size, self.colors[1], surface=self.image, alpha=self.alpha)
         elif len(self.colors) == 3: # Has 3 colors
-            self.engine.draw_rect((0,0), self.size, self.colors[1], border_width=3, border_color=self.colors[2], screen=self.image, alpha=self.alpha)
+            self.engine.draw_rect((0,0), self.size, self.colors[1], border_width=3, border_color=self.colors[2], surface=self.image, alpha=self.alpha)
             
-        self.engine.draw_text((0,0),self.text, self.font, self.colors[0], screen=self.image, alpha=self.alpha)
+        self.engine.draw_text((0,0),self.text, self.font, self.colors[0], surface=self.image, alpha=self.alpha)
         self.rect = pg.Rect(*self.position,*self.size)
         
     def update(self):
@@ -335,7 +335,9 @@ class Checkbox(Widget):
     click_time:int = cfgtimes.WD_CKBX_CLICK_TIME
     click_time_counter:int = 0
     
-    box_size:int # Default -> 1/3 of wid
+    box_size:int # Default -> 1/3 of wid limited to 10 > x < 20
+    
+    on_change:object = None
     
     value:bool = False
     def __init__(self,engine, position:pg.Vector2, font:int or pg.font.FontType, text:str, colors:list[reqColor,reqColor,reqColor,],id:str=None,alpha:int=255, tip:Tip=None): # type: ignore
@@ -374,17 +376,30 @@ class Checkbox(Widget):
         self.image = pg.Surface(self.size, pg.SRCALPHA)
         
         # Insert Text
-        self.engine.draw_text((int(self.box_size * 1.15),0),self.text, self.font, self.colors[0], screen=self.image, alpha=self.alpha)
+        self.engine.draw_text((int(self.box_size * 1.15),0),self.text, self.font, self.colors[0], surface=self.image, alpha=self.alpha)
         
         # Defines
         self.rect = pg.Rect(*self.position,*self.size)
         
+    def __on_change(self):
+        """
+        Function that will trigger the custom On_Change Event of the user
+        
+        Parameters:
+            None
+        Returns:
+            None
+        """
+        if self.on_change:
+            if callable(self.on_change):
+                self.on_change(self)
     
     def update(self):
         if self.rect.collidepoint(self.engine.mouse.pos):
             if self.engine.mouse.left:
                 if self.click_time_counter <= 0:
                     self.value = not self.value
+                    self.__on_change()
                     self.click_time_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
         return super().update()
     
@@ -458,7 +473,7 @@ class Slider(Widget):
         self.ball_size = self.size[1]//2 + 5
         self.image = pg.Surface(self.size, pg.SRCALPHA)
         
-        self.engine.draw_rect((0,0),self.size,self.colors[1], screen=self.image, alpha=self.alpha, border_width=(3 if len(self.colors) >= 3 else 0),border_color= (self.colors[2] if len(self.colors) >= 3 else (0,0,0)))
+        self.engine.draw_rect((0,0),self.size,self.colors[1], surface=self.image, alpha=self.alpha, border_width=(3 if len(self.colors) >= 3 else 0),border_color= (self.colors[2] if len(self.colors) >= 3 else (0,0,0)))
         
         self.rect = pg.Rect(*self.position,*self.size)
         
@@ -472,7 +487,7 @@ class Slider(Widget):
     
     def update(self):
         """
-        This is the update method for the Select widget.
+        This is the update method for the Slider widget.
 
         It will check if the mouse is inside the circle and if the left mouse button is pressed.
         If yes, it will move the circle to the mouse position, making sure that it doesn't go outside of the widget's boundaries.
@@ -548,6 +563,8 @@ class Select(Widget):
     value:int=0
     textBg:bool = False
     
+    
+    on_change:object = None
     def __init__(self, engine, position: [int, int], font: int or pg.font.FontType,colors: list[reqColor, reqColor,], items: list ,value:int=0, textBg:bool = False,id: str = None, alpha: int = 255, tip:Tip=None): # type: ignore
         """
         # Select
@@ -586,7 +603,19 @@ class Select(Widget):
         self.rect = pg.Rect(*self.position,*self.size)
         
         self.image = pg.Surface(self.size, pg.SRCALPHA)
+    
+    def __on_change(self):
+        """
+        Function that will trigger the custom On_Change Event of the user
         
+        Parameters:
+            None
+        Returns:
+            None
+        """    
+        if self.on_change:
+            if callable(self.on_change):
+                self.on_change(self)
     
     def update(self):
         if self.leftButton and self.rightButton:
@@ -594,11 +623,13 @@ class Select(Widget):
                 self.value -= 1
                 if self.value < 0:
                     self.value = len(self.items) - 1
+                self.__on_change()
                 
             if self.rightButton.value:
                 self.value += 1
                 if self.value >= len(self.items):
                     self.value = 0
+                self.__on_change()
                 
             
             self.size = self.font.size(str(self.items[self.value]))
@@ -711,9 +742,9 @@ class Longtext(Widget):
         self.image = pg.Surface(self.size, pg.SRCALPHA)
         self.rect = pg.Rect(*self.position,*self.size)
         if len(self.colors) > 1:
-            self.engine.draw_rect((0,0), self.size, self.colors[1], border_width=3 if len(self.colors) > 2 else 0, border_color=self.colors[2] if len(self.colors) > 2 else None,alpha=self.alpha, screen=self.image)
+            self.engine.draw_rect((0,0), self.size, self.colors[1], border_width=3 if len(self.colors) > 2 else 0, border_color=self.colors[2] if len(self.colors) > 2 else None,alpha=self.alpha, surface=self.image)
         for i, line in enumerate(self.text):
-            self.engine.draw_text((0,(i*pg.font.Font.size(self.font, 'W')[1])),line, self.font, self.colors[0],alpha=self.alpha, screen=self.image)
+            self.engine.draw_text((0,(i*pg.font.Font.size(self.font, 'W')[1])),line, self.font, self.colors[0],alpha=self.alpha, surface=self.image)
             
     def draw(self):
         if self.image and self.rect:
@@ -960,6 +991,8 @@ class Dropdown(Widget):
     
     active:bool = False
     
+    on_change:object = None
+    
     update_delay_count:int = 0
     Click_Time_counter:int = 0
     def __init__(self, engine, position:tuple[int,int], colors:list[reqColor,reqColor,reqColor,], texts:list[str,], font:pg.font.FontType, alpha:int=255, current_text:int=0,id:str=None, tip:Tip=None):
@@ -988,7 +1021,21 @@ class Dropdown(Widget):
         self.current_text:int = current_text
         
         self.build_widget_display()
+    
+    def __on_change(self):
+        """
+        Function that will trigger the custom On_Change Event of the user
         
+        Parameters:
+            None
+        Returns:
+            None
+        """  
+        self.value = self.current_text
+        if self.on_change:
+            if callable(self.on_change):
+                self.on_change(self)
+    
     def build_widget_display(self):
         # Set the rect for the new one
         self.rect = pg.Rect(*self.position, self.font.size(self.texts[self.current_text])[0]+4, self.font.size(self.texts[self.current_text])[1]+2)
@@ -1008,19 +1055,19 @@ class Dropdown(Widget):
             
             self.surface = pg.Surface((width,height), pg.SRCALPHA)
             
-            self.engine.draw_rect((0,self.rect.height), (width,height-self.rect.height), self.colors[1], border_width=3 if len(self.colors) > 2 else 0, border_color=self.colors[2] if len(self.colors) > 2 else (0,0,0), alpha=self.alpha if self.alpha < 255 else 200, screen=self.surface)
+            self.engine.draw_rect((0,self.rect.height), (width,height-self.rect.height), self.colors[1], border_width=3 if len(self.colors) > 2 else 0, border_color=self.colors[2] if len(self.colors) > 2 else (0,0,0), alpha=self.alpha if self.alpha < 255 else 200, surface=self.surface)
             pos = [2,self.rect.height+2]
             for x,line in enumerate(self.texts):
                 if x != self.current_text:
-                    r = self.engine.draw_text((pos[0], pos[1]), str(line), self.font, self.colors[0], screen=self.surface, alpha=self.alpha)
+                    r = self.engine.draw_text((pos[0], pos[1]), str(line), self.font, self.colors[0], surface=self.surface, alpha=self.alpha)
                     r.topleft = (pos[0]+self.position[0],pos[1]+self.position[1])
                     self.texts_rects.append((r,x))
                     pos[1] += self.font.size(line)[1]
         
         self.surface.set_alpha(self.alpha)
         
-        self.engine.draw_rect((0,0), self.rect.size, self.colors[1], border_width=3 if len(self.colors) > 2 else 0, border_color=self.colors[2] if len(self.colors) > 2 else (0,0,0), alpha=self.alpha, screen=self.surface)
-        self.engine.draw_text((2, 1),self.texts[self.current_text], self.font, self.colors[0], screen=self.surface, alpha=self.alpha)
+        self.engine.draw_rect((0,0), self.rect.size, self.colors[1], border_width=3 if len(self.colors) > 2 else 0, border_color=self.colors[2] if len(self.colors) > 2 else (0,0,0), alpha=self.alpha, surface=self.surface)
+        self.engine.draw_text((2, 1),self.texts[self.current_text], self.font, self.colors[0], surface=self.surface, alpha=self.alpha)
         
         # self.rect.size = (width,height)
     
@@ -1038,6 +1085,7 @@ class Dropdown(Widget):
                     for rect, index in self.texts_rects:
                         if rect.collidepoint(self.engine.mouse.pos):
                             self.current_text = index
+                            self.__on_change()
                             passed = True
                             
                     if not passed:
@@ -1225,8 +1273,8 @@ class Textarea(Widget):
             self.strip_text()
             self.text_changed = False
             self.surface = pg.Surface(self.total_size, pg.SRCALPHA)
-            self.engine.draw_rect((0,0), self.total_size, self.colors[0] if not self.active else self.colors[1], border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None, alpha=self.alpha, screen=self.surface)
+            self.engine.draw_rect((0,0), self.total_size, self.colors[0] if not self.active else self.colors[1], border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None, alpha=self.alpha, surface=self.surface)
             for ind,line in enumerate(self.shown_text):
-                self.engine.draw_text((1.5, 1+(ind*self.font.get_height())),line, self.font, self.colors[2], alpha=self.alpha, screen=self.surface)
+                self.engine.draw_text((1.5, 1+(ind*self.font.get_height())),line, self.font, self.colors[2], alpha=self.alpha, surface=self.surface)
         self.engine.screen.blit(self.surface, self.position)
         return super().draw()

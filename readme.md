@@ -79,6 +79,7 @@ Currently the engine has some widgets
 - Input System;
 - Machine Info Getter;
 - Widgets;
+- Mouse Trail;
 - Basic Functions of PyGame;
 - Screen Resize Detector;
 - Own Color System;
@@ -102,20 +103,5 @@ Currently the engine has some widgets
 
 # Prompts
 *Ignore*
-
-*pre-build setup.py*
-```shell
-py setup.py build
-```
-*Build Packages*
-```shell
-py -m build
-```
-*Local Install*
-```shell
-pip install .
-```
-*Send to Test PyPi*
-```shell
-twine upload --repository testpypi dist/*
-```
+<br>
+<img src="./readme/prompts.svg" alt="prompts that will be used" width="500" height="300">

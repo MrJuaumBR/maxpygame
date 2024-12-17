@@ -20,10 +20,12 @@ arial12 = pge.createSysFont('Arial', 12)
 Button:pyge.Button = pge.create_widget(pyge.Button, (15, 100), arial24, 'Im a Button!', [pge.Colors.DARKGRAY, pge.Colors.WHITE, pge.Colors.LIGHTGRAY], id='button1',tip=('This is a test tip, without manual break.', arial16))
 Check = pge.create_widget('Checkbox', (190,100), arial24, 'Im a Checkbox!', [pge.Colors.WHITE, pge.Colors.RED, pge.Colors.GREEN, pge.Colors.DARKGRAY], id='checkbox1', tip=('This is a test tip\nwith manual break.', arial16))
 Slider = pge.create_widget('Slider', (15, 170), (300, 20), [pge.Colors.WHITE, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY, pge.Colors.DARKPINK], value=.5, id='slider1')
-Select = pge.create_widget('Select', (25, 250), arial24, [pge.Colors.HOTPING, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY], items=['480x360', '640x480', '800x600', '1024x768', '1280x720', '1366x768', '1440x900', '1600x900', '1680x1050', '1920x1200','1920x1080'],textBg=True)
+Select:pyge.Select = pge.create_widget('Select', (25, 250), arial24, [pge.Colors.HOTPING, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY], items=['480x360', '640x480', '800x600', '1024x768', '1280x720', '1366x768', '1440x900', '1600x900', '1680x1050', '1920x1200','1920x1080'],textBg=True)
 ProgressBar = pge.create_widget('ProgressBar', (15, 450), (300, 20), [pge.Colors.RED, pge.Colors.BROWN, pge.Colors.BROWN, pge.Colors.WHITE],text='?/?', font=arial16, value=.5)
 TextBox = pyge.Textbox(pge, (10, 600), 20, [pge.Colors.DARKGRAY, pge.Colors.LIGHTBLUE,pge.Colors.WHITE, pge.Colors.LIGHTGRAY], arial16, 'Im a textbox!', id='textbox1')
 Dropdown = pyge.Dropdown(pge, (10, 500), [pge.Colors.WHITE, pge.Colors.GRAY, pge.Colors.DARKGRAY], ['Dropdown Option 0', 'Dropdown Option 1', 'Dropdown Option 2','Small Option 1', "Tiny Opt"], arial16, id='dropdown1')
+
+
 
 longtexttest = """This is a long text made for test the LongText widget\ndo you liked this text? and so... about the widget? and about the engine? is currently useful or no? we will be accepting any suggestions, please add it to our github page! we will read and try it on the engine! do you know a fun fact about this widget? it haves a mode that autosizes the text and auto breaks lines, can be useful for make dialogs box"""
 
@@ -42,6 +44,28 @@ pge.loadIcon()
 ExampleTip = pyge.Tip(pge, 'This is a example tip :)', arial16)
 
 pge.input_query_enable = True
+
+pge.mouse.mouse_trail_enabled = True
+pge.mouse.trail_node_random_color = True
+
+def Dropdown_Change(obj:pyge.Dropdown):
+    print(f"""
+          Changed Dropdown:
+          {obj.value} - {obj.texts[obj.value]}
+          """)
+
+def Select_Change(obj:pyge.Select):
+    print(f"""
+          Changed Select:
+          {obj.value} - {obj.items[obj.value]}
+          """)
+
+def Checkbox_Change(obj:pyge.Checkbox):
+    print(f"Checkbox change: {obj.value}")
+
+Dropdown.on_change = Dropdown_Change
+Select.on_change = Select_Change
+Check.on_change = Checkbox_Change
 
 # Game Loop
 while True:

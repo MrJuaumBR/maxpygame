@@ -88,6 +88,8 @@
 - [x] VSync Support;
 - [x] Line Counter;
 - [x] Textbox Input Query Support;
+- [x] Mouse Trail System;
+- [x] Dropdown, Select and Checkbox now have on_change event trigger;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.
@@ -95,6 +97,7 @@
 ## Changes
 - [x] New colors(67 → 76);
 - [x] Add More Colors(76 → 84);
+- [x] Add More Colors(84 → 87);
 - [x] Updated [colors example](./examples/colors.py) for work better in newer versions;
 - [x] Make colors update everytime one part change(r,g,b);
 - [x] Returns None when not found for some functions;
@@ -114,4 +117,6 @@
 - [x] Review Docstrings of widgets;
 - [x] Make Longtext support "\n";
 - [x] + Optimization in Textbox & Textarea (when editable == False);
+- [x] Rename "Screen" to "Surface";
+- [x] Readme.md changes;
 - [ ] Total GPU in use;

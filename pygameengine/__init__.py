@@ -217,7 +217,7 @@ class PyGameEngine:
             self.is_running = True
             self.screen_size = (width, height)
             return self.screen
-        
+    
     def setScreenTitle(self, title:str):
         """
         Set the title of the screen if there is one
@@ -229,6 +229,7 @@ class PyGameEngine:
         """
         if self.hasScreen():
             pg.display.set_caption(title)
+            
     
     def setScreenIcon(self, icon:pg.SurfaceType):
         """
@@ -265,6 +266,15 @@ class PyGameEngine:
                     self.mouse.scroll_slow_down()
         return events
     def getKeys(self) -> pg.key.ScancodeWrapper:
+        """
+        Get all Keys pressed
+        
+        Parameters:
+            None
+        Returns:
+            ScancodeWrapper
+        """
+        
         return pg.key.get_pressed()
         
     def hasKeyPressed(self, key:int) -> bool:
@@ -426,6 +436,7 @@ class PyGameEngine:
     def fill(self, fill_color:reqColor):
         """
         Fill the screen if there is one
+        and draw the mouse trail if it's enabled
         
         Parameters:
             fill_color:reqColor
@@ -437,8 +448,20 @@ class PyGameEngine:
                 clr = self.getColor(fill_color)
             else: clr = fill_color
             self.screen.fill(clr)
+            if self.mouse.mouse_trail_enabled:
+                self.mouse.draw_trail()
     
     def createSurface(self, width:int, height:int, flags:int=0) -> pg.SurfaceType:
+        """
+        Creates a Surface
+        
+        Parameters:
+            width:int
+            height:int
+            flags:int (Optional)
+        Returns:
+            pg.SurfaceType
+        """
         return pg.Surface((width, height), flags)
     
     # Font System
@@ -691,16 +714,16 @@ class PyGameEngine:
         for widget in widgets:
             if widget.enable:
                 widget.draw()
-    def draw_rect(self, pos:tuple[int,int],size:tuple[int,int], color:reqColor,border_width:int=0,border_color:reqColor=None, screen:pg.SurfaceType=None, alpha:int=255) -> pg.Rect:
+    def draw_rect(self, pos:tuple[int,int],size:tuple[int,int], color:reqColor,border_width:int=0,border_color:reqColor=None, surface:pg.SurfaceType=None, alpha:int=255) -> pg.Rect:
         """
-        Draw a rect on the screen
+        Draw a rect on the surface
         
         Parameters:
             Position:tuple[int,int]
             Size:tuple[int,int]
             color:reqColor
             border_width(Optional):int
-            screen(Optional):pg.SurfaceType
+            surface(Optional):pg.SurfaceType
             alpha(Optional):int
         Returns:
             Rect
@@ -710,11 +733,11 @@ class PyGameEngine:
             
             color = self.getColor(color)
             
-            if screen is None:
-                screen = self.getScreen()
+            if surface is None:
+                surface = self.getScreen()
             if border_width > 0 and border_color is not None:
                 b_color = self.getColor(border_color)
-                pg.draw.rect(screen, b_color, rect, border_width)
+                pg.draw.rect(surface, b_color, rect, border_width)
             s = pg.Surface((rect.size[0]+border_width, rect.size[1]+border_width), pg.SRCALPHA if (alpha < 255 or alpha != None) else 0)
             s.fill(color)
             s.set_alpha(alpha)
@@ -722,18 +745,18 @@ class PyGameEngine:
             r = s.get_rect()
             r.topleft = (rect.left-border_width/2, rect.top-border_width/2)
             
-            screen.blit(s, r)
+            surface.blit(s, r)
             
             return r
 
-    def draw_circle(self, pos:tuple[int,int], radius:int, color:reqColor, screen:pg.SurfaceType=None, alpha:int=255) -> pg.Rect:
+    def draw_circle(self, pos:tuple[int,int], radius:int, color:reqColor, surface:pg.SurfaceType=None, alpha:int=255) -> pg.Rect:
         """
-        Draw a circle on the screen
+        Draw a circle on the surface
         
         Parameters:
             rect:pg.Rect
             color:reqColor
-            screen(Optional):pg.SurfaceType
+            surface(Optional):pg.SurfaceType
             alpha(Optional):int
         Returns:
             Rect
@@ -743,29 +766,29 @@ class PyGameEngine:
             
             color = self.getColor(color)
             
-            if screen is None:
-                screen = self.getScreen()
+            if surface is None:
+                surface = self.getScreen()
             ss = pg.Surface((radius*2, radius*2), pg.SRCALPHA)
             ss.set_alpha(alpha)
             
             rr = pg.draw.ellipse(ss, color, Rect(0, 0, *rect.size))
             rr.topleft = rect.topleft
             
-            screen.blit(ss, rr)
+            surface.blit(ss, rr)
             
             return rr
         return None
 
-    def draw_text(self, position:tuple[int,int],text:str, font:pg.font.FontType, color:reqColor,screen:pg.SurfaceType=None, bgColor:reqColor=None,border_width:int=0,border_color:reqColor=None, alpha:int=255):
+    def draw_text(self, position:tuple[int,int],text:str, font:pg.font.FontType, color:reqColor,surface:pg.SurfaceType=None, bgColor:reqColor=None,border_width:int=0,border_color:reqColor=None, alpha:int=255):
         """
-        Draw text on the screen
+        Draw text on the surface
         
         Parameters:
             text:str
             font:pg.font.FontType
             position:tuple[int,int]
             color:reqColor
-            screen(Optional):pg.SurfaceType
+            surface(Optional):pg.SurfaceType
             bgColor(Optional):reqColor
             alpha(Optional):int
         Returns:
@@ -784,12 +807,12 @@ class PyGameEngine:
             
             if HasBorder:
                 b_color = self.getColor(border_color)
-                self.draw_rect(render_rect.topleft, render_rect.size, bgColor, border_width, border_color, screen, alpha)
+                self.draw_rect(render_rect.topleft, render_rect.size, bgColor, border_width, border_color, surface, alpha)
             
-            if screen is None:
+            if surface is None:
                 self.screen.blit(render, render_rect)
             else:
-                screen.blit(render, render_rect)
+                surface.blit(render, render_rect)
             
             return render_rect
         return None

@@ -4,7 +4,7 @@ from .required import *
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.2.9fix"
+    version = "0.3.0"
     description = "A simple pygame engine"
     github = "https://github.com/MrJuaumBR/maxpygame"
     testpypi = "https://test.pypi.org/project/maxpygame/"
@@ -42,106 +42,35 @@ class Icon:
         
         # Draw Background w/ Border
         self.engine.draw_rect((0,0), [size[0]-int(5*self.ratio),size[1]-int(5*self.ratio)], self.engine.Colors.WHITE,
-                              border_width=int(5*self.ratio), border_color=self.engine.Colors.BROWN, screen=self.surf)
+                              border_width=int(5*self.ratio), border_color=self.engine.Colors.BROWN, surface=self.surf)
         
             # Console Bg
         self.engine.draw_rect((int(20*self.ratio), int(20*self.ratio)), (int(88*self.ratio), int(88*self.ratio)), self.engine.Colors.DARKGRAY,
-                              border_width=int(3*self.ratio), border_color=self.engine.Colors.GRAY, screen=self.surf)
+                              border_width=int(3*self.ratio), border_color=self.engine.Colors.GRAY, surface=self.surf)
             # Console Topbar
         self.engine.draw_rect((int(17*self.ratio),int(19*self.ratio)), (int(94*self.ratio),int(20*self.ratio)), blue_color,
-                              screen=self.surf)
+                              surface=self.surf)
         
         
         # Draw Green Part
         self.engine.draw_rect((int(25*self.ratio), int(45*self.ratio)), (int(70*self.ratio),int(10*self.ratio)), green_color,
-                              screen=self.surf)
+                              surface=self.surf)
         
         self.engine.draw_rect((int(45*self.ratio), int(69*self.ratio)), (int(40*self.ratio),int(10*self.ratio)), green_color,
-                              screen=self.surf)
+                              surface=self.surf)
         
         # Draw Yellow Part
         self.engine.draw_rect((int(25*self.ratio), int(57*self.ratio)), (int(60*self.ratio),int(10*self.ratio)), yellow_color,
-                              screen=self.surf)
+                              surface=self.surf)
         
         self.engine.draw_rect((int(25*self.ratio), int(81*self.ratio)), (int(70*self.ratio),int(10*self.ratio)), yellow_color,
-                              screen=self.surf)
+                              surface=self.surf)
         
         for x in range(3):
             i = x + 1
             c = green_color if x%2 == 0 else yellow_color
             self.engine.draw_rect((int((25*i)*self.ratio), int(93*self.ratio)), (int(19*self.ratio),int(10*self.ratio)), c,
-                              screen=self.surf)
-# Mouse Object
-class Mouse:
-    _x:int = 0
-    _y:int = 0
-    pos:tuple[int,int] = (_x, _y)
-    scroll:float = 0
-    
-    left:bool = False
-    middle:bool = False
-    right:bool = False
-    
-    # 5 buttons
-    button_4:bool = False
-    button_5:bool = False
-    
-    # Scroll Smooth
-    smooth_scroll:bool = True
-    smooth_scroll_delay:int = 0 # frames to wait
-    non_smooth_delay:int = 0.16 # seconds
-    loss_speed:int = 80
-    
-    engine:object
-    def __init__(self, engine):
-        self.engine = engine
-    
-    @property
-    def x(self):
-        return self._x
-    
-    @x.setter
-    def x(self, value):
-        self._x = value
-        self.pos = (self._x, self._y)
-        
-    @property
-    def y(self):
-        return self._y
-    
-    @y.setter
-    def y(self, value):
-        self._y = value
-        self.pos = (self._x, self._y)
-    
-    def scroll_detector(self, scroll_event:pg.event.EventType):
-        self.scroll = scroll_event.y
-    
-    def scroll_slow_down(self):
-        if (self.scroll < 0 or self.scroll > 0) and self.smooth_scroll:
-            self.scroll *= self.loss_speed/100 # xx% Loss Speed
-            self.scroll = round(self.scroll, 4)
-            if abs(self.scroll) < 0.085:
-                self.scroll = 0
-        elif not self.smooth_scroll:
-            if self.smooth_scroll_delay <= 0:
-                self.scroll = 0
-                self.smooth_scroll_delay = self.engine.TimeSys.s2f(self.non_smooth_delay)
-    
-    def update(self):
-        if self.smooth_scroll_delay > 0:
-            self.smooth_scroll_delay -= 1
-        
-        self.x, self.y = self.engine.getMousePos()
-        buttons:list[bool,] = self.engine.getMousePressed(5)
-        self.left, self.middle, self.right = buttons[0], buttons[1], buttons[2]
-        if len(buttons) > 3:
-            self.button_4 = buttons[3]
-            self.button_5 = buttons[4]
-        else:
-            self.button_4 = False
-            self.button_5 = False
-
+                              surface=self.surf)
 # Time
 class TTimeSys:
     unstable_fps:bool = False
@@ -323,6 +252,7 @@ class RGB:
         self.r = random.randint(0, 255)
         self.g = random.randint(0, 255)
         self.b = random.randint(0, 255)
+        return self.rgb()
     
     def hex(self) -> str:
         self.validate()
@@ -368,6 +298,23 @@ class color():
             self._rgb = RGB(r, g, b) # Validate color
             self._hex = HEX(self._rgb.hex()) # Convert rgb to hex after validating
         self.brightness = self._rgb.brightness
+    
+    def random(self) -> RGB:
+        """
+        Generate a random color based on RGB Values
+        
+        Parameters:
+            None
+        Returns:
+            RGB
+        """
+        
+        x = RGB(0,0,0)
+        x.random()
+        self._rgb = x # Validate color
+        self._hex = HEX(self._rgb.hex()) # Convert rgb to hex after validating
+        self.brightness = self._rgb.brightness
+        return self._rgb
     
     @property
     def rgb(self) -> RGB:
@@ -444,6 +391,240 @@ class spritesheet(object):
     
     def images_at(self, rects:list[tuple[int,int,int,int]], colorkey=None):
         return [self.image_at(rect, colorkey) for rect in rects]
+    
+# Mouse Object
+class TrailNode:
+    """
+    The "TrailNode" for mouse Trail System
+    
+    Paramaters:
+        engine:object
+        position:pg.Vector2
+        size:tuple[int,int]
+        node_color:color/tuple[int,int]
+        
+    Returns:
+        TrailNode
+    """
+    engine:object
+    
+    position:pg.Vector2
+    node_color:color
+    size:tuple
+    
+    start_time:timedelta
+    alpha:int = 255
+    alpha_minus:float
+    
+    surface:pg.SurfaceType
+    def __init__(self,engine:object, position:pg.Vector2,size:tuple[int,int],node_color:color):
+        """
+        The "TrailNode" for mouse Trail System
+        
+        Paramaters:
+            engine:object
+            position:pg.Vector2
+            size:tuple[int,int]
+            node_color:color/tuple[int,int]
+            
+        Returns:
+            TrailNode
+        """
+        self.position:pg.Vector2 = position
+        self.node_color:color = node_color
+        self.size:tuple = size
+        
+        self.engine:object = engine
+        
+        self.surface:pg.SurfaceType = pg.Surface(self.size,SRCALPHA)
+        self.surface.fill((node_color if type(node_color) in [list, tuple] else node_color.rgb()))
+        
+        self.start_time:timedelta = self.engine.delta_time
+        # self.alpha_minus:float = self.alpha/self.engine.TimeSys.s2f(mouse.trail_duration)
+        
+    def draw(self, surface:pg.surface.SurfaceType=None):
+        """
+        Draw "TrailNode"
+        
+        Paramaters:
+            surface:pg.SurfaceType (Optional)
+        Returns:
+            None
+        """
+        self.alpha_minus:float = self.alpha/(self.engine.TimeSys.s2f(self.engine.mouse.trail_duration) or 1)
+        if surface is None:
+            surface = self.engine.screen
+        
+        self.surface.set_alpha(int(self.alpha))
+        self.alpha -= self.alpha_minus
+        r = pg.Rect(*self.position,*self.size)
+        r.center = self.position.x,self.position.y
+        surface.blit(self.surface, r)
+        
+
+class Mouse:
+    """
+    Mouse Handler Object
+    
+    This class has the functions to:
+    * Get Mouse Position
+    * Handle Scroll of the mouse
+    * Handle all the Buttons of the mouse
+    * Mouse Trail
+    
+    Paramaters:
+        engine:object
+    Returns:
+        Mouse
+    """
+    _x:int = 0
+    _y:int = 0
+    pos:tuple[int,int] = (_x, _y)
+    scroll:float = 0
+    
+    left:bool = False
+    middle:bool = False
+    right:bool = False
+    
+    # 5 buttons
+    button_4:bool = False
+    button_5:bool = False
+    
+    # Scroll Smooth
+    smooth_scroll:bool = True
+    smooth_scroll_delay:int = 0 # frames to wait
+    non_smooth_delay:int = 0.16 # seconds
+    loss_speed:int = 80
+    
+    # Trail
+    trail_nodes:list[TrailNode,] = []
+    mouse_trail_enabled:bool = False
+    trail_duration:int = 1/10 # In Seconds
+    trail_node_size:tuple[int,int] = (3,3)
+    trail_node_color:color = color(200,200,200)
+    trail_node_random_color:bool = False
+    
+    engine:object
+    def __init__(self, engine):
+        """
+        Mouse Handler Object
+        
+        This class has the functions to:
+        * Get Mouse Position
+        * Handle Scroll of the mouse
+        * Handle all the Buttons of the mouse
+        * Mouse Trail
+        
+        Paramaters:
+            engine:object
+        Returns:
+            Mouse
+        """
+        self.engine = engine
+    
+    @property
+    def x(self):
+        return self._x
+    
+    @x.setter
+    def x(self, value):
+        self._x = value
+        self.pos = (self._x, self._y)
+        
+    @property
+    def y(self):
+        return self._y
+    
+    @y.setter
+    def y(self, value):
+        self._y = value
+        self.pos = (self._x, self._y)
+    
+    def scroll_detector(self, scroll_event:pg.event.EventType):
+        """
+        Scroll Detection Event
+        
+        Paramaters:
+            Scroll_Event:pg.event.EventType
+        Returns:
+            None
+        """
+        self.scroll = scroll_event.y
+    
+    def scroll_slow_down(self):
+        """
+        Scroll Slow Down, Makes a Smooth Scroll that will use accelration for slowly slow down the scrolling
+        
+        Parameters:
+            None
+        Returns:
+            None
+        """
+        if (self.scroll < 0 or self.scroll > 0) and self.smooth_scroll:
+            self.scroll *= self.loss_speed/100 # xx% Loss Speed
+            self.scroll = round(self.scroll, 4)
+            if abs(self.scroll) < 0.085:
+                self.scroll = 0
+        elif not self.smooth_scroll:
+            if self.smooth_scroll_delay <= 0:
+                self.scroll = 0
+                self.smooth_scroll_delay = self.engine.TimeSys.s2f(self.non_smooth_delay)
+    
+    def draw_trail(self):
+        """
+        Draw Trail
+        Will draw the mouse trail at the screen
+        
+        Parameters:
+            None
+        Returns:
+            None
+        """
+        removal = []
+        for index,trail in enumerate(self.trail_nodes):
+            trail:TrailNode
+            elapsed:timedelta = (self.engine.delta_time-trail.start_time)
+            if elapsed.total_seconds() >= self.trail_duration:
+                removal.append(index)
+            else:
+                trail.draw(self.engine.screen)
+        if len(removal) >= 1:
+            for r in removal:
+                try:
+                    self.trail_nodes.pop(r)
+                except: pass
+    
+    def update(self):
+        """
+        Updates the mouse
+        * Trail Creation
+        * Smooth Scroll
+        * Position Update
+        * Buttons Update
+        
+        Parameters:
+            None
+        Returns:
+            None
+        """
+        if self.mouse_trail_enabled:
+            self.trail_nodes.append(TrailNode(self.engine, pg.Vector2(*self.pos),self.trail_node_size,(self.trail_node_color if not self.trail_node_random_color else color(0,0,0).random())))
+        if self.smooth_scroll_delay > 0:
+            self.smooth_scroll_delay -= 1
+        
+        self.x, self.y = self.engine.getMousePos()
+        buttons:list[bool,] = self.engine.getMousePressed(5)
+        self.left, self.middle, self.right = buttons[0], buttons[1], buttons[2]
+        if len(buttons) > 3:
+            self.button_4 = buttons[3]
+            self.button_5 = buttons[4]
+        else:
+            self.button_4 = False
+            self.button_5 = False
+        
+        # self.draw_trail()
+            
+
     
 class cfgtimes:
     """
