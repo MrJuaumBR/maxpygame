@@ -655,13 +655,13 @@ class Longtext(Widget):
     
     Parameters:
         engine (any): The engine that the widget is in
-        position (tuple[int,int]): The position of the textarea
-        font (int or pg.font.FontType): The font of the textarea
-        text (str): The text of the textarea
-        colors (list[reqColor,]): The colors of the textarea -> **[Text, Background(Optional), Border(Optional)]**
-        size (list[int, int], optional): The size of the textarea. Defaults to None.
+        position (tuple[int,int]): The position of the Longtext
+        font (int or pg.font.FontType): The font of the Longtext
+        text (str): The text of the Longtext
+        colors (list[reqColor,]): The colors of the Longtext -> **[Text, Background(Optional), Border(Optional)]**
+        size (list[int, int], optional): The size of the Longtext. Defaults to None.
         id (str, optional): The id of the widget. Defaults to None.
-        alpha (int, optional): The alpha of the textarea. Defaults to 255.
+        alpha (int, optional): The alpha of the Longtext. Defaults to 255.
     """
     _type:str = 'longtext'
     
@@ -675,13 +675,13 @@ class Longtext(Widget):
         
         Parameters:
             engine (any): The engine that the widget is in
-            position (tuple[int,int]): The position of the textarea
-            font (int or pg.font.FontType): The font of the textarea
-            text (str): The text of the textarea
-            colors (list[reqColor,]): The colors of the textarea -> **[Text, Background(Optional), Border(Optional)]**
-            size (list[int, int], optional): The size of the textarea. Defaults to None.
+            position (tuple[int,int]): The position of the Longtext
+            font (int or pg.font.FontType): The font of the Longtext
+            text (str): The text of the Longtext
+            colors (list[reqColor,]): The colors of the Longtext -> **[Text, Background(Optional), Border(Optional)]**
+            size (list[int, int], optional): The size of the Longtext. Defaults to None.
             id (str, optional): The id of the widget. Defaults to None.
-            alpha (int, optional): The alpha of the textarea. Defaults to 255.
+            alpha (int, optional): The alpha of the Longtext. Defaults to 255.
         """
         super().__init__(engine, id, tip)
         self.position = position
@@ -830,6 +830,7 @@ class Textbox(Widget):
         font (pg.font.FontType): The font of the widget. Defaults to None.
         text (str, optional): The text of the widget. Defaults to None.
         alpha (int, optional): The alpha of the widget. Defaults to 255.
+        placeholder (str, optional): The placeholder of the widget. Defaults to None.
         id (str, optional): The id of the widget. Defaults to None.
     """
     _type:str = 'textbox'
@@ -850,6 +851,7 @@ class Textbox(Widget):
     click_time:int = cfgtimes.WD_TXBX_CLICK_TIME
     click_counter:int = 0
     
+    placeholder_text:str = None
     editable:bool = True
     
     blacklist = [
@@ -862,7 +864,7 @@ class Textbox(Widget):
         pg.K_LCTRL, pg.K_RCTRL,
         pg.K_LALT, pg.K_RALT,
     ]
-    def __init__(self, engine,position:tuple[int,int],height:int,colors:list[reqColor,reqColor,reqColor,],font:pg.font.FontType,text:str=None,alpha:int=255, id: str = None, tip:Tip=None):
+    def __init__(self, engine,position:tuple[int,int],height:int,colors:list[reqColor,reqColor,reqColor,],font:pg.font.FontType,text:str=None,alpha:int=255,placeholder:str=None, id: str = None, tip:Tip=None):
         """
         # Textbox
         
@@ -876,6 +878,7 @@ class Textbox(Widget):
             font (pg.font.FontType): The font of the widget. Defaults to None.
             text (str, optional): The text of the widget. Defaults to None.
             alpha (int, optional): The alpha of the widget. Defaults to 255.
+            placeholder (str, optional): The placeholder of the widget. Defaults to None.
             id (str, optional): The id of the widget. Defaults to None.
         """
         super().__init__(engine, id, tip)
@@ -885,6 +888,8 @@ class Textbox(Widget):
         self.text:str = text
         self.font:pg.font.FontType = self.engine._findFont(font)
         self.alpha:int = alpha
+        
+        self.placeholder_text:str = placeholder
         
     def build_widget_display(self):
         self.max_width = self.engine.screen.get_width() - self.position[0]
@@ -898,7 +903,10 @@ class Textbox(Widget):
             w,h = size[0]+5,size[1]
             if h > self.height:
                 self.height = h+2
-            self.rect.size = (self.font.size('WW')[0] if w < self.font.size('WW')[0] else w,h+2)
+            if len(str(self.placeholder_text)) <= 2 or not self.placeholder_text:
+                self.rect.size = ((self.font.size('WW')[0]*1.15) if w < self.font.size('WW')[0] else w,h+2)
+            else:
+                self.rect.size = (int(self.font.size(self.placeholder_text)[0]*1.15) if w < self.font.size(self.placeholder_text)[0] else w,h+2)
             
             # Update Value
             self.value = self.text
@@ -959,6 +967,12 @@ class Textbox(Widget):
                 color = self.colors[0]
             self.engine.draw_rect(self.rect.topleft, self.rect.size, color, border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None,alpha=self.alpha)
             self.engine.draw_text((self.rect.x+2.5, self.rect.y+1),self.text, self.font, self.colors[2],alpha=self.alpha)
+            
+            if self.placeholder_text and (len(str(self.text)) == 0 or not self.text):
+                r1 = pg.Rect(0, 0, *self.font.size(self.placeholder_text))
+                r1.center = self.rect.topleft
+                r1.left += 5
+                self.engine.draw_text(r1.center, self.placeholder_text, self.font, self.colors[2], alpha=150)
         return super().draw()
     
 class Dropdown(Widget):
@@ -990,7 +1004,7 @@ class Dropdown(Widget):
     rect:pg.Rect = None
     
     active:bool = False
-    
+    change_on_scroll:bool = True
     on_change:object = None
     
     update_delay_count:int = 0
@@ -1075,7 +1089,18 @@ class Dropdown(Widget):
         self.build_widget_display()
     
     def hovered(self):
-        if self.engine.mouse.left and self.Click_Time_counter <= 0:
+        if (self.change_on_scroll and self.Click_Time_counter <= 0 and self.rect.collidepoint(self.engine.mouse.pos)): # Check if the mouse is in the rect, change on scroll True and click time counter <= 0
+            if self.engine.mouse.scroll != 0: # Check if the mouse is scrolling
+                self.Click_Time_counter = self.engine.TimeSys.s2f(cfgtimes.WD_DPDW_CLICK_TIME)
+                change = self.engine.mouse.scroll * -1
+                change = 1 if change > 0 else -1
+                self.current_text += change
+                if self.current_text < 0:
+                    self.current_text = len(self.texts)-1
+                elif self.current_text >= len(self.texts):
+                    self.current_text = 0
+                self.__on_change()    
+        if (self.engine.mouse.left) and self.Click_Time_counter <= 0:
             if self.rect.collidepoint(self.engine.mouse.pos):
                 self.active = not self.active
                 self.update_wd()
@@ -1108,18 +1133,19 @@ class Dropdown(Widget):
 class Textarea(Widget):
     """
     # Textarea Widget
-    A Textarea, is basically a **textbox**, but will break when have a "\n" or pass the screen size.
-        
-        Parameters:
-            engine:Engine
-            position:tuple[int,int]
-            height:int
-            colors:list[reqColor,reqColor,reqColor,] -> **[Active Color, Inactive Color, Text Color & Border Color]**
-            font:pg.font.FontType
-            text:str
-            alpha:int
-            id:str
-            tip:Tip
+    A Textarea, is basically a **textbox**, but will break when have a "\\n" or pass the screen size.
+    
+    Parameters:
+        engine:Engine
+        position:tuple[int,int]
+        height:int
+        colors:list[reqColor,reqColor,reqColor,] -> **[Active Color, Inactive Color, Text Color & Border Color]**
+        font:pg.font.FontType
+        text:str
+        alpha:int (Optional)
+        placeholder:str (Optional)
+        id:str (Optional)
+        tip:Tip (Optional)
     """
     _type:str = 'textarea'
     
@@ -1142,6 +1168,10 @@ class Textarea(Widget):
     
     surface:pg.Surface = None
     
+    placeholder_text:str = None
+    
+    min_size = (0,0)
+    
     blacklist = [
         pg.K_BACKSPACE,
         pg.K_DELETE,
@@ -1152,10 +1182,10 @@ class Textarea(Widget):
         pg.K_LCTRL, pg.K_RCTRL,
         pg.K_LALT, pg.K_RALT,
     ]
-    def __init__(self, engine,position:tuple[int,int],colors:list[reqColor,reqColor,reqColor,],font:pg.font.FontType,text:str=None,alpha:int=255, id: str = None, tip:Tip=None):
+    def __init__(self, engine,position:tuple[int,int],colors:list[reqColor,reqColor,reqColor,],font:pg.font.FontType,text:str=None,alpha:int=255,placeholder:str=None, id: str = None, tip:Tip=None):
         """
         # Textarea Widget
-        A Textarea, is basically a **textbox**, but will break when have a "\n" or pass the screen size.
+        A Textarea, is basically a **textbox**, but will break when have a "\\n" or pass the screen size.
         
         Parameters:
             engine:Engine
@@ -1164,9 +1194,10 @@ class Textarea(Widget):
             colors:list[reqColor,reqColor,reqColor,] -> **[Active Color, Inactive Color, Text Color & Border Color]**
             font:pg.font.FontType
             text:str
-            alpha:int
-            id:str
-            tip:Tip
+            alpha:int (Optional)
+            placeholder:str (Optional)
+            id:str (Optional)
+            tip:Tip (Optional)
         """
         super().__init__(engine,id,tip)
         self.position:tuple[int,int] = position
@@ -1174,6 +1205,9 @@ class Textarea(Widget):
         self.text:str = text
         self.font:pg.font.FontType = self.engine._findFont(font)
         self.alpha:int = alpha
+        self.placeholder_text:str = placeholder
+        
+        self.min_size = self.font.size('WWWWWW')
         
         self.strip_text()
     
@@ -1218,44 +1252,64 @@ class Textarea(Widget):
         [(lines_copy.pop(x) if text in ['\n','\r',''] else None) for x,text in enumerate(lines_copy)]
         
         self.shown_text = lines_copy
-        
+    
+    def remove_blacklist_fromQuery(self):
+        if self.engine.input_query_enable:
+            for key in self.blacklist:
+                if self.engine.input_query.HasKey(key):
+                    self.engine.input_query.RemoveFromQueryByKey(key)
+    
     def update(self):
         # Update Value
         self.value = self.text
         
         # Get mouse and update if is active or no
         if self.editable:
-            if self.engine.mouse.left:
-                if self.click_counter <= 0:
-                    if self.rect.collidepoint(self.engine.mouse.pos):
-                        if not self.active:
+            if self.engine.mouse.left: # Left Mouse Click Active ?
+                if self.click_counter <= 0: # Isn't in Click Cooldown
+                    if self.engine.mouse.collidePoint(self.rect): # Mouse on Widget ?
+                        if not self.active: # Isn't Active
                             self.click_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
-                            self.active = True
-                    else:
-                        self.active = False
+                            self.active = True # Set Active
+                            self.text_changed = True
+                    else: # Mouse not on Widget
+                        self.active = False # Set Inactive
+                        self.text_changed = True
             
-            if self.active and self.editable:
-                if self.key_press_counter <= 0 or self.del_press_counter <= 0:    
-                    changed = False
+            if self.active and self.editable: # Is Active & Editable
+                self.remove_blacklist_fromQuery()
+                if self.key_press_counter <= 0 or self.del_press_counter <= 0: # Isn't in Key Press Cooldown//Del Press Cooldown
                     keys:pg.key.ScancodeWrapper = self.engine.getKeys() # Get Keys pressed
-                    if keys[pg.K_BACKSPACE] and self.del_press_counter <= 0:
+                    self.text_changed = False
+                    if keys[pg.K_BACKSPACE] and self.del_press_counter <= 0: # Backspace
                         self.text = self.text[:-1] # Remove last character
-                        self.del_press_counter = self.engine.TimeSys.s2f(self.del_press_time)
-                        changed = True
-                    elif keys[pg.K_RETURN] and self.key_press_counter <= 0:
-                        self.active = False
-                        self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
-                        changed = True
-                    elif self.key_press_counter <= 0:
-                        for ev in self.engine.events:
-                            if ev.type == pg.KEYDOWN:
-                                if not (ev.key in self.blacklist):
-                                    self.text += ev.unicode
-                                self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
-                                changed = True
+                        self.del_press_counter = self.engine.TimeSys.s2f(self.del_press_time) # Reset Timer
+                        self.text_changed = True
+                    elif keys[pg.K_RETURN] and self.key_press_counter <= 0: # Enter
+                        self.active = False # Set Inactive
+                        self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time) # Reset Timer
+                        self.text_changed = True
+                    elif self.key_press_counter <= 0: # Isn't in Key Press Cooldown
+                        if not self.engine.input_query_enable: # No Input Query Enable (Old System)
+                            for ev in self.engine.events: # Get Events
+                                if ev.type == pg.KEYDOWN: # Key Down
+                                    if not (ev.key in self.blacklist):
+                                        self.text += ev.unicode
+                                        self.text_changed = True
+                                    self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)                   
+                        else:
+                            ipq:InputQuery = self.engine.input_query
+                            if len(ipq.GetQuery()) > 0:
+                                for index, key, event in ipq.GetQuery():
+                                    index:int
+                                    key:int
+                                    event:pg.event.EventType
+                                    if not (key in self.blacklist):
+                                        self.text += event.unicode
+                                        self.text_changed = True
+                                    ipq.RemoveFromQuery(index) # Prevents Dupe
+                                    self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
                                 
-                    if changed:
-                        self.strip_text()
         
         return super().update()
     
@@ -1271,10 +1325,29 @@ class Textarea(Widget):
     def draw(self):
         if self.surface is None or self.text_changed:
             self.strip_text()
-            self.text_changed = False
+            if self.placeholder_text and (len(str(self.text)) == 0 or not self.text):
+                self.total_size = [int(i*1.15) for i in self.font.size(self.placeholder_text)]
+            elif (self.total_size[0] < self.min_size[0] or self.total_size[1] < self.min_size[1]):
+                self.total_size = self.min_size
+                
+            # Update Rect
+            self.rect.topleft = self.position
+            self.rect.size = self.total_size
+                
             self.surface = pg.Surface(self.total_size, pg.SRCALPHA)
-            self.engine.draw_rect((0,0), self.total_size, self.colors[0] if not self.active else self.colors[1], border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None, alpha=self.alpha, surface=self.surface)
+            
+            self.engine.draw_rect((0,0), self.total_size, self.colors[0] if self.active else self.colors[1], border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None, alpha=self.alpha, surface=self.surface)
             for ind,line in enumerate(self.shown_text):
                 self.engine.draw_text((1.5, 1+(ind*self.font.get_height())),line, self.font, self.colors[2], alpha=self.alpha, surface=self.surface)
+            
+            # Draw placeholder text at center of the widget with alpha
+            if self.placeholder_text and (len(str(self.text)) == 0 or not self.text):
+                r1 = pg.Rect(0, 0, *self.font.size(self.placeholder_text))
+                r1.center = self.surface.get_rect().topleft
+                r1.left += 5
+                self.engine.draw_text(r1.center, self.placeholder_text, self.font, self.colors[2], alpha=150, surface=self.surface)    
+                
+            self.text_changed = False
+            
         self.engine.screen.blit(self.surface, self.position)
         return super().draw()

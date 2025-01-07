@@ -19,22 +19,25 @@ pge = pyge.PyGameEngine()
 screen = pge.createScreen(1024, 720)
 pge.setScreenTitle("Hello, World!")
 
+pge.input_query_enable = True
+
 # Create a font
 arial16 = pge.createSysFont('Arial', 16)
 
 # Text
 # Get python arg
-text:str = ''
+text:str = 'A Thing'
 if len(sys.argv) > 1:
+    text = ''
     this_file, path = sys.argv
     with open(path, 'rb') as f:
         text:bytes = f.read()
     text = text.decode()
     
-Textarea:pyge.Textarea = pge.create_widget(pyge.Textarea, (10, 15), [pge.Colors.DARKGRAY, pge.Colors.LIGHTBLUE,pge.Colors.WHITE, pge.Colors.LIGHTGRAY], arial16, text, id='textbox1')
+Textarea:pyge.Textarea = pge.create_widget(pyge.Textarea, (10, 15), [pge.Colors.LIGHTBLUE, pge.Colors.DARKGRAY,pge.Colors.WHITE, pge.Colors.LIGHTGRAY], arial16, text,placeholder='Textarea Placeholder', id='textbox1')
 
 # You can now disable textarea edit:
-Textarea.editable = False
+Textarea.editable = True
 
 while True:
     Textarea.position = Textarea.position[0], Textarea.position[1]+pge.mouse.scroll*5
@@ -42,9 +45,10 @@ while True:
     for ev in pge.events:
         if ev.type == pyge.QUIT:
             pge.exit()
-        elif ev.type == pyge.KEYDOWN:
-            if ev.key == pyge.K_F1:
-                print(Textarea.text)
+    
+    if pge.input_query.HasKey(pyge.K_F1):
+        pge.input_query.RemoveFromQueryByKey(pyge.K_F1)
+        print('Textarea text:', Textarea.text)
             
     pge.update()
     pge.fpsw()

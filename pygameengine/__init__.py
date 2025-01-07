@@ -433,7 +433,7 @@ class PyGameEngine:
             self.fps = fps
             self.TimeSys.time = pg.time.get_ticks() # Updates.
      
-    def fill(self, fill_color:reqColor):
+    def fill(self, fill_color:reqColor) -> bool:
         """
         Fill the screen if there is one
         and draw the mouse trail if it's enabled
@@ -441,15 +441,31 @@ class PyGameEngine:
         Parameters:
             fill_color:reqColor
         Returns:
+            None or bool
+        """
+        if not self.hasScreen(): return None # No screen then no,no
+        
+        if not (type(color) in [tuple, list]): # If it's not a tuple/list then probably is a reqColor object
+            clr = self.getColor(fill_color)
+        else: clr = fill_color # If it's a tuple/list then probably is a rgb color
+        self.screen.fill(clr)
+        self.mouse_draw_trail()
+        return True
+    
+    def mouse_draw_trail(self):
+        """
+        Draw the mouse trail if it's enabled
+        
+        Parameters:
+            None
+        Returns:
             None
         """
-        if self.hasScreen():
-            if not (type(color) in [tuple, list]):
-                clr = self.getColor(fill_color)
-            else: clr = fill_color
-            self.screen.fill(clr)
-            if self.mouse.mouse_trail_enabled:
-                self.mouse.draw_trail()
+        if self.mouse.mouse_trail_enabled:
+            self.mouse.draw_trail()
+            return True
+        else:
+            return None
     
     def createSurface(self, width:int, height:int, flags:int=0) -> pg.SurfaceType:
         """

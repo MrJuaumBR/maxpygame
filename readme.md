@@ -102,6 +102,9 @@ Currently the engine has some widgets
 [Discord](https://discord.gg/fb84sHDX7R)
 
 # Prompts
+<br>
+<img src="./readme/Board1.png" alt="Board #1" width="1024" height="720">
+<br>
 *Ignore*
 <br>
 <img src="./readme/prompts.svg" alt="prompts that will be used" width="500" height="300">

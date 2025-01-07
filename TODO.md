@@ -90,6 +90,11 @@
 - [x] Textbox Input Query Support;
 - [x] Mouse Trail System;
 - [x] Dropdown, Select and Checkbox now have on_change event trigger;
+- [x] Scroll Support on Dropdown Widget;
+- [x] Mouse Object collidePoint function;
+- [x] New Functions for Query System (3): HasKey, HasKeyIndex, RemoveFromQueryByKey;
+- [x] Add Query Support for Textarea(Forget to add it in past updates);
+- [x] Placeholder Text for Textarea & Textbox;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.
@@ -119,4 +124,6 @@
 - [x] + Optimization in Textbox & Textarea (when editable == False);
 - [x] Rename "Screen" to "Surface";
 - [x] Readme.md changes;
+- [x] Fill Function small changes;
+- [x] textarea_example.py updates;
 - [ ] Total GPU in use;

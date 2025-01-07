@@ -1,10 +1,11 @@
 from .required import *
 
 # Metadata
+_version = "0.3.1"
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
-    version = "0.3.0"
+    version = _version
     description = "A simple pygame engine"
     github = "https://github.com/MrJuaumBR/maxpygame"
     testpypi = "https://test.pypi.org/project/maxpygame/"
@@ -136,6 +137,36 @@ class InputQuery:
         self._query.append((event, event.key))
         self.last_change = self.engine.delta_time.total_seconds()
     
+    def HasKey(self, key:int) -> bool:
+        """
+        This function will check if a key is in the query
+        
+        Parameters:
+            key (int): The key to check
+        
+        Returns:
+            bool: True if the key is in the query, False if not
+        """
+        for value in self._query:
+            if value[1] == key:
+                return True
+        return False
+    
+    def HasKeyIndex(self, key:int) -> int:
+        """
+        This function will return the index of a key in the query
+        
+        Parameters:
+            key (int): The key to check
+        
+        Returns:
+            int: The index of the key in the query
+        """
+        for index, value in enumerate(self._query):
+            if value[1] == key:
+                return index
+        return None
+    
     def GetQuery(self) -> list[(int,int, pg.event.EventType),]:
         """
         This function will return a list of tuples\n
@@ -155,6 +186,23 @@ class InputQuery:
             q.append((index,key,event))
         return q
     
+    def RemoveFromQueryByKey(self, key:int):
+        """
+        This function will remove the first time a key appears in the query
+        
+        Parameters:
+            key (int): The key to remove
+        
+        Returns:
+            None
+        """
+        if self.HasKey(key):
+            index = self.HasKeyIndex(key)
+            self.RemoveFromQuery(index)
+        else:
+            print(f'Key {self.engine.keyToString(key)}({key}) not found in query')
+
+    
     def RemoveFromQuery(self, index:int):
         """
         This function will remove a key from the query
@@ -165,7 +213,10 @@ class InputQuery:
         Returns:
             None
         """
-        self._query.pop(index)
+        try:
+            self._query.pop(index)
+        except Exception as ex:
+            print(f'Index {index} not found in query')
     
     def update(self, delta_time:timedelta):
         """
@@ -551,6 +602,22 @@ class Mouse:
         """
         self.scroll = scroll_event.y
     
+    def collidePoint(self, rect:pg.rect.RectType) -> bool:
+        """
+        Collide Point
+        
+        Paramaters:
+            rect:pg.rect.RectType
+        Returns:
+            bool
+        """
+        if type(rect) in [list, tuple]:
+            r = pg.rect.Rect(0,0,0,0)
+            r.center = rect
+        else: r = rect
+            
+        return r.collidepoint(self.pos)
+        
     def scroll_slow_down(self):
         """
         Scroll Slow Down, Makes a Smooth Scroll that will use accelration for slowly slow down the scrolling
