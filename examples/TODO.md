@@ -28,6 +28,8 @@
 - [x] Fixed Ram in Use;
 - [x] Fixed delta_time returning wrong values;
 - [x] Textbox & Unused Prints(Emergency);
+- [x] Version Don't Update on [data.json](./data.json);
+- [x] Screen Argument in some examples;
 
 ## Addeds
 - [x] Slider fill when pass;
@@ -95,6 +97,12 @@
 - [x] New Functions for Query System (3): HasKey, HasKeyIndex, RemoveFromQueryByKey;
 - [x] Add Query Support for Textarea(Forget to add it in past updates);
 - [x] Placeholder Text for Textarea & Textbox;
+- [x] Joystick/Controller example;
+- [x] Xbox Controller Support (Experiemental for X360 Controller);
+- [x] [Colors.py](./examples/colors.py) support controller;
+- [x] Select Mouse Scroll Support;
+- [x] Slider Mouse Scroll Support;
+- [x] Checkbox parameter value;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.

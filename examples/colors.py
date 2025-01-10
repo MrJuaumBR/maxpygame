@@ -25,6 +25,8 @@ max_x = 600
 
 zoom = 0.5
 
+pge.setMouseEmulation(True)
+
 while True:
     # Add colors_surf
     x,y = 0,0
@@ -43,7 +45,7 @@ while True:
             # Draw Rect
             color_rect = pge.draw_rect(((x+zoom)+X_SHIFT,(y+zoom)+Y_SHIFT),(rect_size[0]*zoom,rect_size[1]*zoom), pge.Colors.get(color), border_color=text_c, border_width=int(2*zoom))
             # Draw Text
-            pge.draw_text((color_rect.x+3, color_rect.y+3),str(color) + f' {ind}',arial12, text_c, screen=screen)
+            pge.draw_text((color_rect.x+3, color_rect.y+3),str(color) + f' {ind}',arial12, text_c, surface=screen)
             
             x += color_rect.width
             ii += 1
@@ -51,8 +53,12 @@ while True:
                 x = 0
                 ii = 0
                 y += color_rect.height
-    pge.draw_text((S_W-300,S_H-20), f'X: {X_SHIFT}, Y: {Y_SHIFT}, Zoom: {round(zoom,4)}, Colors: {pge.Colors.number_of_colors()}, Aliases: {len(pge.Colors.aliases)}', arial12, pge.Colors.WHITE, screen=screen)
+    pge.draw_text((S_W-300,S_H-20), f'X: {X_SHIFT}, Y: {Y_SHIFT}, Zoom: {round(zoom,4)}, Colors: {pge.Colors.number_of_colors()}, Aliases: {len(pge.Colors.aliases)}', arial12, pge.Colors.WHITE, surface=screen)
     
+    if pge.joystick.mainController:
+        x,y = pge.joystick.mainController.getAxisByString('left')
+        Y_SHIFT += y * -(5*zoom)
+        X_SHIFT += x * -(5*zoom)
     keys = pge.getKeys()
     if keys[pyge.K_w] or keys[pyge.K_UP]:
         Y_SHIFT += 10

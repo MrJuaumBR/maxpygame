@@ -36,7 +36,13 @@ class PyGameEngine:
     input_query_enable:bool = False
     input_query:InputQuery = None
     
+    # Mouse Handler
     mouse:Mouse = None
+    
+    # Joystick Handler
+    joystick:Joystick = None
+    joystick_mouse_emulate:bool = False
+    
     
     widget_limits:int = 30
     limit_error_active:bool = True
@@ -48,6 +54,7 @@ class PyGameEngine:
         Initializes **PyGame** and the **Engine** itself.
         """
         pg.init()
+        pg.joystick.init()
         self.input_query=InputQuery(self)
         print(f"{self.meta.name} - {self.meta.version}\n\t - By {self.meta.author}")
         try:
@@ -79,6 +86,7 @@ class PyGameEngine:
         self.Colors = ccc()
         self.TimeSys = TTimeSys(self)
         self.mouse = Mouse(self)
+        self.joystick = Joystick(self)
         self.started_time:datetime = datetime.now()
     
     def _getElapsedTime(self) -> dict:
@@ -194,6 +202,10 @@ class PyGameEngine:
     def screen_size(self, value:tuple[int,int]):
         self._screen_size = value
     
+    def setMouseEmulation(self, state:bool = True):
+        self.joystick_mouse_emulate = state
+        
+    
     def createScreen(self, width:int, height:int, flags:int=SCALED,VSync:bool=False) -> pg.SurfaceType:
         """
         Create a screen if there is not one
@@ -244,6 +256,7 @@ class PyGameEngine:
             pg.display.set_icon(icon)
     
     # Event System
+    
     def getEvents(self) -> list[pg.event.Event,]:
         """
         Get all the events of PyGame
@@ -360,6 +373,14 @@ class PyGameEngine:
             self._triesUpdate(target)
         self.events = self.getEvents()
         self.mouse.update()
+        
+        n_of_joysticks = pg.joystick.get_count()
+        
+        if n_of_joysticks != self.joystick.number_of_joysticks:
+            self.joystick.checkJoysticks()
+        if n_of_joysticks > 0 and self.joystick_mouse_emulate:
+            self.joystick.main.mouse_emulate=self.joystick_mouse_emulate
+            self.joystick.update()
         
         if self.input_query_enable:
             new_events:list[pg.event.Event,] = []

@@ -22,8 +22,11 @@ print('\n\n',TextBox_Widget.get_lines(),'\n\n')
 
 y_shift = 0
 
+# Enable/Disable controller emulation
+pge.setMouseEmulation(True)
+
 while True:
-    pge.draw_text((0,0), f"Mouse Scroll: {pge.mouse.scroll}, Smooth Scroll: {"On" if pge.mouse.smooth_scroll else "Off"}", arial12, pge.Colors.BLACK,bgColor=pge.Colors.DARKGRAY, screen=screen)
+    pge.draw_text((0,0), f"Mouse Scroll: {pge.mouse.scroll}, Smooth Scroll: {"On" if pge.mouse.smooth_scroll else "Off"}", arial12, pge.Colors.WHITE,bgColor=pge.Colors.DARKGRAY, surface=screen)
     for ev in pge.events:
         if ev.type == pyge.QUIT:
             pge.exit()

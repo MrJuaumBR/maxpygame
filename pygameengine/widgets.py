@@ -328,6 +328,7 @@ class Checkbox(Widget):
         text (str): The text of the checkbox
         colors (list[reqColor,reqColor,reqColor,]): The colors of the checkbox -> **[Text, Active, Unactive, Border(Optional)]**
         id (str, optional): The id of the widget. Defaults to None.
+        value (bool, optional): The value of the checkbox. Defaults to False.
         alpha (int, optional): The alpha of the checkbox. Defaults to 255.
     """
     _type:str = 'checkbox'
@@ -340,7 +341,7 @@ class Checkbox(Widget):
     on_change:object = None
     
     value:bool = False
-    def __init__(self,engine, position:pg.Vector2, font:int or pg.font.FontType, text:str, colors:list[reqColor,reqColor,reqColor,],id:str=None,alpha:int=255, tip:Tip=None): # type: ignore
+    def __init__(self,engine, position:pg.Vector2, font:int or pg.font.FontType, text:str, colors:list[reqColor,reqColor,reqColor,],id:str=None,alpha:int=255, value:bool=False,tip:Tip=None): # type: ignore
         """
         # Checkbox
         
@@ -355,6 +356,7 @@ class Checkbox(Widget):
             text (str): The text of the checkbox
             colors (list[reqColor,reqColor,reqColor,]): The colors of the checkbox -> **[Text, Active, Unactive, Border(Optional)]**
             id (str, optional): The id of the widget. Defaults to None.
+            value (bool, optional): The value of the checkbox. Defaults to False.
             alpha (int, optional): The alpha of the checkbox. Defaults to 255.
         """
         super().__init__(engine,id,tip)
@@ -363,6 +365,7 @@ class Checkbox(Widget):
         self.text = text
         self.colors = colors
         self.alpha = alpha
+        self.value = value
         
     def build_widget_display(self):
         # Colors: 0(Font),1(Disable), 2(Enable), 3(Background),4(Border)
@@ -440,6 +443,8 @@ class Slider(Widget):
     
     fill_passed:bool = True
     
+    change_on_scroll:bool = True
+    
     _value:float = None
     value:float = 0
     def __init__(self,engine, position:[int,int], size:tuple[int,int],colors:list[reqColor,reqColor,],value:float=None,fill_passed:bool=True,id:str=None,alpha:int=255, tip:Tip=None): # type: ignore
@@ -495,6 +500,19 @@ class Slider(Widget):
         Then it will calculate the value (a float between 0 and 1) by dividing the position of the circle by the width of the widget.
         """
         if self.circle:
+            if self.change_on_scroll:
+                TOUCHING = self.rect.collidepoint(self.engine.mouse.pos) or self.circle.collidepoint(self.engine.mouse.pos)
+                if TOUCHING:
+                    scroll = self.engine.mouse.scroll
+                    if scroll != 0:
+                        self.currentPosition[0] += round(scroll*5,2)
+                        
+                        # Limit X Right
+                        if self.currentPosition[0] > self.rect.right - self.ball_size/2:
+                            self.currentPosition[0] = self.rect.right - self.ball_size/2
+                        # Limit X Left
+                        elif self.currentPosition[0] < self.rect.x - self.ball_size/2:
+                            self.currentPosition[0] = self.rect.x - self.ball_size/2
             if self.circle.collidepoint(self.engine.mouse.pos):
                 if self.engine.mouse.left:
                     # Move the circle to the mouse position
@@ -559,10 +577,13 @@ class Select(Widget):
     rightButton:Button = None
     button_click_time = cfgtimes.WD_SLCT_CLICK_TIME
     
+    
     items:list=[]
     value:int=0
     textBg:bool = False
     
+    change_on_scroll:bool = True
+    scroll_change_counter = 0
     
     on_change:object = None
     def __init__(self, engine, position: [int, int], font: int or pg.font.FontType,colors: list[reqColor, reqColor,], items: list ,value:int=0, textBg:bool = False,id: str = None, alpha: int = 255, tip:Tip=None): # type: ignore
@@ -617,24 +638,43 @@ class Select(Widget):
             if callable(self.on_change):
                 self.on_change(self)
     
+    def fix_list(self):
+        if self.value < 0:
+            self.value = len(self.items) - 1
+        if self.value >= len(self.items):
+            self.value = 0
+    
     def update(self):
+        if self.change_on_scroll:
+            mouse_pos = self.engine.mouse.pos
+            TOUCHING = self.leftButton.rect.collidepoint(mouse_pos) or self.rightButton.rect.collidepoint(mouse_pos) or self.rect.collidepoint(mouse_pos)
+            if TOUCHING:
+                if abs(self.engine.mouse.scroll) != 0 and self.scroll_change_counter <= 0:
+                    self.value += 1 if self.engine.mouse.scroll > 0 else -1
+                    self.fix_list()
+                    self.__on_change()
+                    self.scroll_change_counter = self.engine.TimeSys.s2f(0.3)
+                    
         if self.leftButton and self.rightButton:
             if self.leftButton.value:
                 self.value -= 1
-                if self.value < 0:
-                    self.value = len(self.items) - 1
+                self.fix_list()
                 self.__on_change()
                 
             if self.rightButton.value:
                 self.value += 1
-                if self.value >= len(self.items):
-                    self.value = 0
+                self.fix_list()
                 self.__on_change()
                 
             
             self.size = self.font.size(str(self.items[self.value]))
             self.rect = pg.Rect(*self.position,*self.size)
+        
         return super().update()
+    
+    def cooldown_refresh(self):
+        if self.scroll_change_counter > 0: self.scroll_change_counter -= 1
+        return super().cooldown_refresh()
     
     def draw(self):
         

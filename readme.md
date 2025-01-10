@@ -85,6 +85,14 @@ Currently the engine has some widgets
 - Own Color System;
 - And More...
 
+# Controller Support
+**Experiemental**
+Currently Supports only Xbox 360 Controller!
+
+- Right Joystick for move mouse
+- Hold Right Joystick for slow move mouse(While moving)
+- Hold Left Trigger(LT) while moving Right Joystick for scroll
+
 # Credits
 - [PyGame](https://www.pygame.org/news) for developing the base lib;
 - @MrJuaumBR for trying to make more easier to create games;

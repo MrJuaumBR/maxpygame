@@ -1,7 +1,7 @@
 from .required import *
 
 # Metadata
-_version = "0.3.1"
+_version = "0.3.2"
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
@@ -511,7 +511,309 @@ class TrailNode:
         r = pg.Rect(*self.position,*self.size)
         r.center = self.position.x,self.position.y
         surface.blit(self.surface, r)
+
+# Controller Object Identification
+
+JOYSTICK_A_BUTTON = 0
+JOYSTICK_B_BUTTON = 1
+JOYSTICK_X_BUTTON = 2
+JOYSTICK_Y_BUTTON = 3
+JOYSTICK_LEFT_BUTTON = 4
+JOYSTICK_RIGHT_BUTTON = 5
+JOYSTICK_BACK_BUTTON = 6
+JOYSTICK_START_BUTTON = 7
+JOYSTICK_HOME = 10
+
+JOYSTICK_LEFT_AXIS_X = 0
+JOYSTICK_LEFT_AXIS_Y = 1
+JOYSTICK_RIGHT_AXIS_X = 2
+JOYSTICK_RIGHT_AXIS_Y = 3
+
+
+JOYSTICK_LEFT_AXIS_PRESS = 8
+JOYSTICK_RIGHT_AXIS_PRESS = 9
+
+JOYSTICK_LEFT_TRIGGER = 4
+JOYSTICK_RIGHT_TRIGGER = 5
+# Aliases
+JOYSTICK_LB = JOYSTICK_LEFT_BUTTON
+JOYSTICK_RB = JOYSTICK_RIGHT_BUTTON
+JOYSTICK_SHARE_BUTTON = JOYSTICK_BACK_BUTTON
+JOYSTICK_OPTIONS_BUTTON = JOYSTICK_START_BUTTON
+JOYSTICK_LT = JOYSTICK_LEFT_TRIGGER
+JOYSTICK_RT = JOYSTICK_RIGHT_TRIGGER
+
+class Controller():
+    joystick:pg.joystick.JoystickType
+    engine:object
+    mouse_emulate:bool = False
+    
+    # Loaded from Handler
+    joystick_mouse_speed:float
+    joystick_mouse_axis:str
+    joystick_trigger_mouse_button:str
+    joystick_mouse_wheel_button:str
+    joystick_mouse_axis_slower_button:str
+    def __init__(self,id:int, Handler:object) -> pg.joystick.JoystickType:
+        self.id = id
+        self.engine = Handler.engine
         
+        # Load Config from Handler
+        self.joystick_mouse_speed = Handler.joystick_mouse_speed
+        self.joystick_mouse_axis = Handler.joystick_mouse_axis
+        self.joystick_trigger_mouse_button = Handler.joystick_trigger_mouse_button
+        self.joystick_mouse_wheel_button = Handler.joystick_mouse_wheel_button
+        self.joystick_mouse_axis_slower_button = Handler.joystick_mouse_axis_slower_button
+        
+        self.loadJoystickFromPygame()
+        
+    def loadJoystickFromPygame(self):
+        """
+        This function gonna get all function from pygame.joystick.Joystick
+        and put them in this object
+        
+        You can still access the original object by using <this object>.joystick
+        """
+        self.joystick:pg.joystick.JoystickType = pg.joystick.Joystick(self.id)
+        
+        for name, __ in inspect.getmembers(self.joystick):
+            if callable(getattr(self.joystick, name)) and not name.startswith('_'):
+                setattr(self, name, getattr(self.joystick, name))
+                
+    
+    def allButtons(self) -> dict:
+        """
+        Get All Buttons(Based on Xbox Controller)
+        """
+        buttons_name = [
+            'a','b','x','y','lb','rb','back','start','rt','lt','dpad',
+            'left_press','right_press'
+        ]
+        
+        buttons = {}
+        for button in buttons_name:
+            buttons[button] = self.getButtonByString(button)
+            
+        return buttons
+    
+    def getButtonByString(self, name:str) -> bool:
+        """
+        Get Any Button of Controller By Using the name of button
+        
+        Parameters:
+            name:str
+        Returns:
+            bool
+        """
+        name = str(name).lower()
+        
+        if name in ['cross','a']:
+            return self.getButtonById(JOYSTICK_A_BUTTON)
+        elif name in ['circle','b']:
+            return self.getButtonById(JOYSTICK_B_BUTTON)
+        elif name in ['square','x']:
+            return self.getButtonById(JOYSTICK_X_BUTTON)
+        elif name in ['triangle','y']:
+            return self.getButtonById(JOYSTICK_Y_BUTTON)
+        elif name in ['left','lb']:
+            return self.getButtonById(JOYSTICK_LEFT_BUTTON)
+        elif name in ['right','rb']:
+            return self.getButtonById(JOYSTICK_RIGHT_BUTTON)
+        elif name in ['back','share']:
+            return self.getButtonById(JOYSTICK_BACK_BUTTON)
+        elif name in ['start','options']:
+            return self.getButtonById(JOYSTICK_START_BUTTON)
+        elif name in ['left_trigger','lt']:
+            return True if self.get_axis(JOYSTICK_LEFT_TRIGGER) > 0 else False
+        elif name in ['right_trigger','rt']:
+            return True if self.get_axis(JOYSTICK_RIGHT_TRIGGER) > 0 else False
+        elif name in ['dpad','directions']:
+            return self.dpad_as_buttons(dual=True)
+        elif name in ['left_press','left_axis_press']:
+            return self.getButtonById(JOYSTICK_LEFT_AXIS_PRESS)
+        elif name in ['right_press','right_axis_press']:
+            return self.getButtonById(JOYSTICK_RIGHT_AXIS_PRESS)
+        else:
+            return False
+    
+    def dpad_as_buttons(self, dual:bool=True) -> str or tuple[str,str]: # type: ignore
+        """
+        Return Dpad as buttons
+        
+        If Dual False then this will return just one axis, if Dual True then this will return two axis
+        
+        Parameters:
+            dual:bool(Optional)
+        Returns:
+            str if Dual = False
+            tuple[str,str] if Dual = True
+        """
+        dpad = self.getDPad()
+        
+        if dual:
+            x = ''
+            y = ''
+            if dpad[0] > 0:
+                x = 'right'
+            elif dpad[0] < 0:
+                x = 'left'
+            else:
+                x = ''
+            if dpad[1] > 0:
+                y = 'up'
+            elif dpad[1] < 0:
+                y = 'down'
+            else:
+                y = ''
+                
+            return (x,y)
+        else:
+            if dpad[0] > 0:
+                return 'right'
+            elif dpad[0] < 0:
+                return 'left'
+            elif dpad[1] > 0:
+                return 'down'
+            elif dpad[1] < 0:
+                return 'up'
+    
+    def getDPad(self) -> tuple[int,int]:
+        """
+        Returns DPad Info
+        
+        X Axis
+        -1 = Left
+        0 = Center
+        1 = Right
+        
+        Y Axis
+        -1 = Up
+        0 = Center
+        1 = Down
+        
+        Parameters:
+            None
+        Returns:
+            tuple[int,int] both beetween -1 and 1 when 0 = center
+        """
+        dpad = self.get_hat(0)
+        return dpad
+        
+    def _emulate_mouse(self):
+        """
+        Emulate Mouse with Controller/Joystick
+        
+        * Mouse Movement
+        * Mouse Click (Left)
+        * Mouse Scroll
+        
+        Parameters:
+            None
+        Returns:
+            None
+        """
+        axis = self.getAxisByString(self.joystick_mouse_axis)
+        if self.mouse_emulate:
+            if self.getButtonByString(self.joystick_trigger_mouse_button):
+                self.engine.mouse.left = True
+            if self.getButtonByString(self.joystick_mouse_wheel_button):
+                self.engine.mouse.scroll = round(axis[1],4)
+            else:
+                x,y = self.engine.mouse.pos
+                x += round(axis[0],4) * (self.joystick_mouse_speed * (0.5 if self.getButtonByString(self.joystick_mouse_axis_slower_button) else 1))
+                y += round(axis[1],4) * (self.joystick_mouse_speed * (0.5 if self.getButtonByString(self.joystick_mouse_axis_slower_button) else 1))
+                pg.mouse.set_pos((x,y))
+        
+    def getButtonById(self, id:int) -> bool:
+        return self.joystick.get_button(id)
+    
+    def getAxisByString(self, name:str) -> tuple[float,float]:
+        name = str(name).lower()
+        
+        if name in ['left','lxy']:
+            return (self.getAxisById(JOYSTICK_LEFT_AXIS_X), self.getAxisById(JOYSTICK_LEFT_AXIS_Y))
+        elif name in ['right','rxy']:
+            return (self.getAxisById(JOYSTICK_RIGHT_AXIS_X), self.getAxisById(JOYSTICK_RIGHT_AXIS_Y))
+        else:
+            return (0,0)
+        
+    def getAxisById(self, id:int) -> float:
+        return self.joystick.get_axis(id)
+    
+    def update(self):
+        self._emulate_mouse()
+    
+    # def get_id(self) -> int:
+    #     return self.joystick.get_id()
+    
+    # def get_name(self) -> str:
+    #     return self.joystick.get_name()
+    
+    
+
+class Joystick:
+    """
+    Joystick Object
+    
+    Paramaters:
+        engine:object
+    Returns:
+        Joystick
+    """
+    engine:object
+    number_of_joysticks:int = 0
+    joysticks:list[Controller,] = []
+    
+    
+    # Config
+    joystick_mouse_speed:float = 10.0
+    joystick_mouse_axis:str = 'right'
+    joystick_trigger_mouse_button:str = 'rt'
+    joystick_mouse_wheel_button:str = 'lt'
+    joystick_mouse_axis_slower_button:str = 'right_press'
+    
+    def __init__(self,engine:object):
+        self.engine = engine
+        self.number_of_joysticks = pg.joystick.get_count()
+        self.joysticks = [Controller(i,self) for i in range(self.number_of_joysticks)]
+        
+        self.main = self.getJoystickById(0) # Main Joystick == Id 0 or Player 1
+
+    @property
+    def mainController(self) -> Controller:
+        return self.main
+
+    @mainController.setter
+    def mainController(self, joystick:Controller):
+        print("This is a read-only property")
+        
+    @mainController.getter
+    def mainController(self) -> Controller:
+        return self.main
+    
+    mainJoystick = mainController # Aliases
+    
+    def getControllerById(self, id:int) -> Controller:
+        for joystick in self.joysticks: 
+            if joystick.joystick.get_id() == id: return joystick 
+            else: pass
+        return None
+    
+    getJoystickById = getControllerById # Aliases
+    
+    def checkJoysticks(self):
+        self.number_of_joysticks = pg.joystick.get_count()
+        self.joysticks = [Controller(i,self) for i in range(self.number_of_joysticks)]
+        
+        if self.number_of_joysticks == 0:
+            self.main = None
+        else:
+            # Updates main controller too
+            self.main = self.getJoystickById(0) # Main Joystick == Id 0 or Player 1
+            
+    def update(self):
+        if self.main:
+            self.main.update()
 
 class Mouse:
     """
@@ -691,6 +993,7 @@ class Mouse:
         
         # self.draw_trail()
             
+
 
     
 class cfgtimes:
