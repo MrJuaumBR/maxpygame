@@ -11,7 +11,7 @@ from .excptions import *
 
 class PyGameEngine:
     """
-    A **PyGame** Engine.<br>
+    A *PyGame* Engine.
     Will make create games easier.
     """
     meta:Metadata = Metadata()
@@ -24,6 +24,8 @@ class PyGameEngine:
     # Engine Variables
     fps:int=60
     _rfps:float=0
+    LastFPSCount:tuple[float,float] = None
+    LastAvgFPSCount:tuple[float,float] = None
     widgets:list[Widget,] = []
     fonts:list[pg.font.FontType,] = []
     icon:Icon = None
@@ -49,6 +51,12 @@ class PyGameEngine:
     
     cfgtips = cfgtips()
     
+    backgroundFunctions:list[tuple[tuple,object]] = []
+    run_background_thread:bool = False
+    BackgroundThread:threading.Thread
+
+    
+    text_cache:dict
     def __init__(self,screen:pg.SurfaceType=None):
         """
         Initializes **PyGame** and the **Engine** itself.
@@ -88,6 +96,9 @@ class PyGameEngine:
         self.mouse = Mouse(self)
         self.joystick = Joystick(self)
         self.started_time:datetime = datetime.now()
+    
+        self.text_cache:dict = {}
+        self.cache_cleanup_time:float = 0.7
     
     def _getElapsedTime(self) -> dict:
         """
@@ -163,7 +174,7 @@ class PyGameEngine:
         else:
             try:
                 return color.rgb
-            except: print(f'The {color} is a type that cannot be converted to a rgb color.')
+            except: print(f'The {color} (type: {type(color)}) is a type that cannot be converted to a rgb color.')
     
     # Screen System
     def hasScreen(self) -> bool:
@@ -355,9 +366,71 @@ class PyGameEngine:
                 # Tries Flip
                 pg.display.flip()
             except Exception as ex:
-                raise ex
+                raise ex    
+    
+    def background_thread(self):
+        """
+        Background thread for the engine
         
-    def update(self, target:pg.SurfaceType=None):
+        Parameters:
+            None
+        Returns:
+            None
+        """
+        print("\t - [!] Background thread started.")
+        with self.threadLock:
+            while self.run_background_thread and self.is_running:
+                if self.BgFnCanRun:
+                    for index, func_data in enumerate(self.backgroundFunctions):
+                        func = func_data[0]
+                        args = func_data[1]
+                        try:
+                            if func:
+                                if callable(func):
+                                    func(*args)
+                        except Exception as ex:
+                            print(f'\t - [!] Error in background thread: {ex}')
+                        self.backgroundFunctions.pop(index)
+                    self.BgFnCanRun = False
+                self.fpsw()
+
+    def setRunBackgroundThread(self, state:bool = True):
+        """
+        Enable or disable the background thread
+        
+        Parameters:
+            state:bool
+        Returns:
+            None
+        """
+        self.run_background_thread = state
+        if state:
+            print(f'\t - [!] Background thread enabled.')
+            
+            self.BackgroundThread = threading.Thread(target=self.background_thread,name='BackgroundThread',daemon=True)
+            self.BackgroundThread.start()
+            print("After")
+        else:
+            print(f'\t - [!] Background thread disabled.')
+            self.BackgroundThread = None
+            self.backgroundFunctions.clear()
+            
+    def addFunction(self, func:object, args:tuple):
+        """
+        Add a function to the background thread
+        
+        Parameters:
+            func:object
+            args:tuple
+        Returns:
+            None
+        """
+        if self.run_background_thread:
+            self.backgroundFunctions.append((func,args))
+        else:
+            print(f'\t - [!] Background thread is disabled.')
+    
+    def _update(self, target:pg.SurfaceType=None):
         """
         Update the screen if there is one, if not try to update the target
         
@@ -367,32 +440,43 @@ class PyGameEngine:
             None
         """
         self.is_running = True
-        if self.hasScreen() and target is None:
-            self._triesUpdate()
-        elif self.hasScreen() and target:
+        if self.hasScreen():
             self._triesUpdate(target)
         self.events = self.getEvents()
         self.mouse.update()
-        
-        n_of_joysticks = pg.joystick.get_count()
-        
-        if n_of_joysticks != self.joystick.number_of_joysticks:
+
+        current_joysticks = pg.joystick.get_count()
+        if current_joysticks != self.joystick.number_of_joysticks:
             self.joystick.checkJoysticks()
-        if n_of_joysticks > 0 and self.joystick_mouse_emulate:
-            self.joystick.main.mouse_emulate=self.joystick_mouse_emulate
+
+        if current_joysticks > 0 and self.joystick_mouse_emulate:
+            self.joystick.main.mouse_emulate = self.joystick_mouse_emulate
             self.joystick.update()
-        
+
         if self.input_query_enable:
-            new_events:list[pg.event.Event,] = []
+            self.events = [event for event in self.events if event.type != pg.KEYUP]
             for event in self.events:
                 if event.type == pg.KEYDOWN:
                     self.input_query.insert_query(event)
-                elif event.type != pg.KEYUP:
-                    new_events.append(event)
-                    
-            self.events = new_events
-            
             self.input_query.update(self.delta_time)
+            
+    def update(self, target:pg.SurfaceType=None,runBackground:bool=False):
+        """
+        Update the screen if there is one, if not try to update the target
+        
+        *If run_background_thread is True, this function will be called in a background thread*
+        
+        Parameters:
+            target(Optional):pg.SurfaceType
+        Returns:
+            None
+        """
+        if self.run_background_thread and runBackground:
+            self.backgroundFunctions.append((self._update,(target,)))
+        else:
+            self._update(target)
+            self.BgFnCanRun:bool = True
+        
                     
         
     def flip(self):
@@ -421,7 +505,11 @@ class PyGameEngine:
         """
         self.clock.tick(self.fps)
         self._rfps = self.clock.get_fps()
-    
+        current_time = time.time()
+        if self.LastFPSCount and current_time - self.LastFPSCount[0] >= 1:
+            self.LastFPSCount = (current_time, self._rfps)
+        elif not self.LastFPSCount:
+            self.LastFPSCount = (current_time, self._rfps)
     def enableFPS_unstable(self, state:bool = True):
         """
         Adds a support for low perfomance PCs
@@ -429,6 +517,28 @@ class PyGameEngine:
         using a system that will no longer delay too much clicks(Widgets problem)
         """
         self.TimeSys.unstable_fps = state
+    
+    def getAvgFPS(self) -> float:
+        """
+        Get the average FPS of the screen if there is one
+        
+        Parameters:
+            None
+        Returns:
+            float
+        """
+        current_time = time.time()
+        
+        if self.LastAvgFPSCount is None:
+            self.LastAvgFPSCount = (current_time, self._rfps)
+            return self._rfps
+        
+        if self.LastFPSCount and current_time - self.LastFPSCount[0] >= 0.9:
+            avg_fps = (self.LastAvgFPSCount[1] * 2 + self._rfps + self.LastFPSCount[1]) / 4
+            self.LastAvgFPSCount = (current_time, avg_fps)
+            return avg_fps
+        
+        return self.LastAvgFPSCount[1]
     
     def getFPS(self) -> float:
         """
@@ -465,11 +575,7 @@ class PyGameEngine:
             None or bool
         """
         if not self.hasScreen(): return None # No screen then no,no
-        
-        if not (type(color) in [tuple, list]): # If it's not a tuple/list then probably is a reqColor object
-            clr = self.getColor(fill_color)
-        else: clr = fill_color # If it's a tuple/list then probably is a rgb color
-        self.screen.fill(clr)
+        self.screen.fill(fill_color if type(fill_color) in [tuple, list] else self.getColor(fill_color))
         self.mouse_draw_trail()
         return True
     
@@ -585,13 +691,14 @@ class PyGameEngine:
         Returns:
             None
         """
-        if len(self.widgets) >= self.widget_limits:
+        widget_count = len(self.widgets)
+        if widget_count >= self.widget_limits:
             print('\t - [!] You are using a high amount of widgets, try to reduce it.')
-            if len(self.widgets) >= self.widget_limits*2:
-                if self.limit_error_active:
-                    raise(WidgetPassedError(widget,len(self.widgets)))
-        elif len(self.widgets) >= self.widget_limits*0.8:
-            print(f'\t - [!] You used {int((len(self.widgets)/self.widget_limits)*100)}% of max recommended widgets. Consider reducing it.')
+            if widget_count >= self.widget_limits * 2 and self.limit_error_active:
+                raise WidgetPassedError(widget, widget_count)
+        elif widget_count >= self.widget_limits * 0.8:
+            print(f'\t - [!] You used {int((widget_count / self.widget_limits) * 100)}% of max recommended widgets. Consider reducing it.')
+        
         self.widgets.append(widget)
     
     def create_tip(self, text:str, font:pg.font.FontType) -> Tip:
@@ -692,7 +799,7 @@ class PyGameEngine:
         Returns:
             pg.SurfaceType
         """
-        return pg.image.load(path)
+        return pg.image.load(path).convert_alpha()
     
     def flip_surface(self, surface:pg.SurfaceType, x_axis:bool=False, y_axis:bool=False) -> pg.SurfaceType:
         """
@@ -736,22 +843,20 @@ class PyGameEngine:
         return spritesheet(self, image_path)
 
     # Draw System
-    def draw_widgets(self, widgets:list[Widget,]=None):
+    def draw_widgets(self, widgets:list[Widget]=None):
         """
         Draw a list of widgets
         
         Parameters:
-            widgets:list[Widget,]
+            widgets:list[Widget]
         Returns:
             None
         """
-        if widgets is None or len(widgets) <= 0:
-            widgets = self.widgets
-            
-        for widget in widgets:
+        for widget in widgets or self.widgets:
             if widget.enable:
                 widget.draw()
-    def draw_rect(self, pos:tuple[int,int],size:tuple[int,int], color:reqColor,border_width:int=0,border_color:reqColor=None, surface:pg.SurfaceType=None, alpha:int=255) -> pg.Rect:
+                
+    def draw_rect(self, pos:tuple[int,int], size:tuple[int,int], color:reqColor, border_width:int=0, border_color:reqColor=None, surface:pg.SurfaceType=None, alpha:int=255) -> pg.Rect:
         """
         Draw a rect on the surface
         
@@ -765,26 +870,25 @@ class PyGameEngine:
         Returns:
             Rect
         """
-        if self.hasScreen():
-            rect = pg.Rect(*pos, *size)
-            
-            color = self.getColor(color)
-            
-            if surface is None:
-                surface = self.getScreen()
-            if border_width > 0 and border_color is not None:
-                b_color = self.getColor(border_color)
-                pg.draw.rect(surface, b_color, rect, border_width)
-            s = pg.Surface((rect.size[0]+border_width, rect.size[1]+border_width), pg.SRCALPHA if (alpha < 255 or alpha != None) else 0)
-            s.fill(color)
-            s.set_alpha(alpha)
-            
-            r = s.get_rect()
-            r.topleft = (rect.left-border_width/2, rect.top-border_width/2)
-            
-            surface.blit(s, r)
-            
-            return r
+        if not self.hasScreen():
+            return None
+        
+        rect = pg.Rect(*pos, *size)
+        color = self.getColor(color)
+        
+        if surface is None:
+            surface = self.getScreen()
+        
+        if border_width > 0 and border_color is not None:
+            b_color = self.getColor(border_color)
+            pg.draw.rect(surface, b_color, rect, border_width)
+        
+        s = pg.Surface(rect.size, pg.SRCALPHA)
+        s.fill(color)
+        s.set_alpha(alpha)
+        surface.blit(s, rect.topleft)
+        
+        return rect
 
     def draw_circle(self, pos:tuple[int,int], radius:int, color:reqColor, surface:pg.SurfaceType=None, alpha:int=255) -> pg.Rect:
         """
@@ -805,54 +909,58 @@ class PyGameEngine:
             
             if surface is None:
                 surface = self.getScreen()
-            ss = pg.Surface((radius*2, radius*2), pg.SRCALPHA)
-            ss.set_alpha(alpha)
             
-            rr = pg.draw.ellipse(ss, color, Rect(0, 0, *rect.size))
-            rr.topleft = rect.topleft
+            pg.draw.ellipse(surface, color, rect, radius)
             
-            surface.blit(ss, rr)
-            
-            return rr
+            return rect
         return None
 
-    def draw_text(self, position:tuple[int,int],text:str, font:pg.font.FontType, color:reqColor,surface:pg.SurfaceType=None, bgColor:reqColor=None,border_width:int=0,border_color:reqColor=None, alpha:int=255):
+    def draw_text(self, position: tuple[int, int], text: str, font: pg.font.FontType, color: reqColor, surface: pg.SurfaceType = None, bgColor: reqColor = None, border_width: int = 0, border_color: reqColor = None, alpha: int = 255):
         """
         Draw text on the surface
-        
+
         Parameters:
-            text:str
-            font:pg.font.FontType
-            position:tuple[int,int]
-            color:reqColor
-            surface(Optional):pg.SurfaceType
-            bgColor(Optional):reqColor
-            alpha(Optional):int
+            text: str
+            font: pg.font.FontType
+            position: tuple[int, int]
+            color: reqColor
+            surface (Optional): pg.SurfaceType
+            bgColor (Optional): reqColor
+            alpha (Optional): int
         Returns:
             Rect
         """
-        HasBorder = border_width > 0 and border_color is not None
-        if self.hasScreen():
-            color = self.getColor(color)
-            bgColor = self.getColor(bgColor) if bgColor is not None else None
-            
-            render = font.render(text, True, color, None if HasBorder else bgColor)
+        font = self._findFont(font)
+        color = self.getColor(color)
+        bgColor = self.getColor(bgColor) if bgColor is not None else None
+
+        text_id = hash((text, color, bgColor, border_width, border_color, alpha))
+        if text_id in self.text_cache:
+            text_surface = self.text_cache[text_id][0]
+        else:
+            text_surface = pg.Surface((font.size(text)[0] + border_width * 2, font.size(text)[1] + border_width * 2), pg.SRCALPHA)
+            render = font.render(text, True, color, bgColor)
             render.set_alpha(alpha)
-            
-            render_rect = render.get_rect()
-            render_rect.topleft = position
-            
-            if HasBorder:
-                b_color = self.getColor(border_color)
-                self.draw_rect(render_rect.topleft, render_rect.size, bgColor, border_width, border_color, surface, alpha)
-            
-            if surface is None:
-                self.screen.blit(render, render_rect)
-            else:
-                surface.blit(render, render_rect)
-            
-            return render_rect
-        return None
+            text_surface.blit(render, (border_width, border_width))
+            self.text_cache[text_id] = (text_surface, time.time())
+
+        rect = text_surface.get_rect(topleft=position)
+        if surface is None:
+            surface = self.getScreen()
+        surface.blit(text_surface, rect)
+
+        self._clean_text_cache()
+        
+        return rect
+
+    def clear_cache(self):
+        self.text_cache.clear()
+
+    def _clean_text_cache(self):
+        current_time = time.time()
+        for Text_Id, (surf, timestamp) in list(self.text_cache.items()):
+            if current_time - timestamp > self.cache_cleanup_time:
+                del self.text_cache[Text_Id]
     
     def getSystemDict(self) -> dict:
         info = {
@@ -913,10 +1021,11 @@ class PyGameEngine:
         Get the percentage(%) of RAM in use
         """
         if platform.system().lower() == "windows":
-            total_memory = float(self.getRam().replace(' Gb', ''))
-            free_memory = float(subprocess.check_output("wmic OS get FreePhysicalMemory", shell=True).decode().split('\n')[1].strip()) # In KBytes
+            mem_info = subprocess.check_output(['wmic', 'OS', 'get', 'FreePhysicalMemory']).decode('utf-8').split()
+            free_memory = float(mem_info[1]) # In KBytes
+            total_memory = float(subprocess.check_output(['wmic', 'ComputerSystem', 'get', 'TotalPhysicalMemory']).decode('utf-8').split()[1])
             free_memory /= 1024**2 # In GBytes
-            free_memory = round(free_memory,2) # Rounded
+            total_memory /= 1024**2 # In GBytes
             return round((total_memory - free_memory) / total_memory,2)
         else:
             mem_info = subprocess.check_output(['free']).decode('utf-8').split('\n')[1].split()

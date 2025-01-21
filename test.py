@@ -1,4 +1,5 @@
 # Import PyGameEngine
+print("Import")
 import pygameengine as pyge
 
 
@@ -8,6 +9,9 @@ pge = pyge.PyGameEngine()
 # Create Screen
 screen = pge.createScreen(1024, 720)
 pge.setScreenTitle("Hello, World!")
+
+# pge.setRunBackgroundThread(True)
+
 
 # Create a font
 arial24 = pge.createSysFont('Arial', 24)
@@ -25,15 +29,9 @@ ProgressBar:pyge.Progressbar = pge.create_widget('ProgressBar', (15, 450), (300,
 TextBox = pyge.Textbox(pge, (10, 600), 20, [pge.Colors.DARKGRAY, pge.Colors.LIGHTBLUE,pge.Colors.WHITE, pge.Colors.LIGHTGRAY], arial16, 'Im a textbox!',placeholder="Enter a text...", id='textbox1')
 Dropdown = pyge.Dropdown(pge, (10, 500), [pge.Colors.WHITE, pge.Colors.GRAY, pge.Colors.DARKGRAY], ['Dropdown Option 0', 'Dropdown Option 1', 'Dropdown Option 2','Small Option 1', "Tiny Opt"], arial16, id='dropdown1')
 
-
-longtexttest = """This is a long text made for test the LongText widget\ndo you liked this text? and so... about the widget? and about the engine? is currently useful or no? we will be accepting any suggestions, please add it to our github page! we will read and try it on the engine! do you know a fun fact about this widget? it haves a mode that autosizes the text and auto breaks lines, can be useful for make dialogs box"""
-
-#LongText = pge.create_widget(pyge.Longtext, (10,300), arial24, longtexttest, [pge.Colors.WHITE, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY], id='longtext1')
-
-KeyQueryText = pge.create_widget(pyge.Longtext, (10, 300), arial24, '', [pge.Colors.WHITE, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY], id='keyquerytext1')
-
 # FPS Variability
 pge.enableFPS_unstable()
+pge.setFPS(1000)
 
 # Load Engine Icon
 pge.loadIcon()
@@ -43,8 +41,8 @@ ExampleTip = pyge.Tip(pge, 'This is a example tip :)', arial16)
 
 pge.input_query_enable = True
 
-pge.mouse.mouse_trail_enabled = True
-pge.mouse.trail_node_random_color = True
+# pge.mouse.mouse_trail_enabled = True
+# pge.mouse.trail_node_random_color = True
 
 def Dropdown_Change(obj:pyge.Dropdown):
     print(f"""
@@ -85,10 +83,7 @@ while True:
     # Input Query
     inputQueryVlue = ''
     for index,key,_ in pge.input_query.GetQuery():
-        inputQueryVlue += pge.keyToString(key) + f"{"" if index == len(pge.input_query.GetQuery())-1 else ", "}"
-        
-    KeyQueryText.text = f'[{inputQueryVlue}]'
-    KeyQueryText.build_widget_display()
+        inputQueryVlue += pge.keyToString(key) + f"{'' if index == len(pge.input_query.GetQuery())-1 else ', '}"
     
     # Detect events
     for ev in pge.events:
@@ -112,7 +107,7 @@ while True:
                 pge.input_query_enable = not pge.input_query_enable
             
     # Update the screen
-    pge.draw_text((0,0), f'FPS: {int(pge.getFPS())}, Delta Time: {pge.delta_time}', arial16, pge.Colors.WHITE)
+    pge.draw_text((0,0), f'FPS: {int(pge.getFPS())}, Avg FPS: {int(pge.getAvgFPS())}, Cached Text: {len(pge.text_cache.keys())}, Delta Time: {pge.delta_time}', arial16, pge.Colors.WHITE)
     pge.draw_widgets()
     pge.screen.blit(pge.icon.surf, (896, 592))
     if pge.hasKeyPressed(pyge.K_LSHIFT) or pge.hasKeyPressed(pyge.K_RSHIFT):
@@ -124,6 +119,7 @@ while True:
             pge.draw_text((pge.mouse.x+10, pge.mouse.y+80), f'Joystick (Id): {pge.joystick.mainController.get_id()}, Name: {pge.joystick.mainController.get_name()}', arial12, pge.Colors.YELLOW)
             # Joystick axis
             pge.draw_text((pge.mouse.x+10, pge.mouse.y+100), f'Left X,Y: {round(pge.joystick.mainController.get_axis(0),3)}, {round(pge.joystick.mainController.get_axis(1),3)},            Right X,Y: {round(pge.joystick.mainController.get_axis(2),3)}, {round(pge.joystick.mainController.get_axis(3),3)}', arial12, pge.Colors.YELLOW)
+            
     pge.update()
     pge.fpsw()
     # Clear the screen

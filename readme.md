@@ -11,7 +11,7 @@
 The idea for creating this project is to make more easier to develop in PyGame without having to make multiples "widgets" and some functions every time when you will create a project.<br>
 Currently we have multiple functions for use, like: CreateSreen, CreateSysFont, CreateFont and etc...<br>
 for the future we want to improve perfomance and have how many functions that you can imagine!<br>
-Over +3000 Lines of pure code!
+Over +4500 Lines of pure code!
 
 <button style="background-color: #232323; color: #C7C1C1; border-radius: 10px">[<i class="bi bi-window"></i> Test PyPi](https://test.pypi.org/project/maxpygame/)</button>
 
@@ -110,9 +110,6 @@ Currently Supports only Xbox 360 Controller!
 [Discord](https://discord.gg/fb84sHDX7R)
 
 # Prompts
-<br>
-<img src="./readme/Board1.png" alt="Board #1" width="1024" height="720">
-<br>
 *Ignore*
 <br>
-<img src="./readme/prompts.svg" alt="prompts that will be used" width="500" height="300">
+<img src="https://raw.githubusercontent.com/MrJuaumBR/maxpygame/6892ad8576c562e4a100de28a7c461164c12d6e7/readme/prompts.svg" alt="prompts that will be used" width="500" height="300">

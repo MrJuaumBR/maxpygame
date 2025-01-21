@@ -30,6 +30,7 @@
 - [x] Textbox & Unused Prints(Emergency);
 - [x] Version Don't Update on [data.json](./data.json);
 - [x] Screen Argument in some examples;
+- [x] Trail Color Fix;
 
 ## Addeds
 - [x] Slider fill when pass;
@@ -103,6 +104,8 @@
 - [x] Select Mouse Scroll Support;
 - [x] Slider Mouse Scroll Support;
 - [x] Checkbox parameter value;
+- [ ] Average FPS detect;
+- [ ] Detect Screen Size;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.
@@ -134,4 +137,5 @@
 - [x] Readme.md changes;
 - [x] Fill Function small changes;
 - [x] textarea_example.py updates;
+- [x] General Optmizations;
 - [ ] Total GPU in use;

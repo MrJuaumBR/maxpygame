@@ -1,7 +1,7 @@
 """
 A File designed only to import things for all the project.
 """
-import math, os, random, sys, time, requests, platform, subprocess, inspect
+import math, os, random, sys, time, platform, subprocess, inspect, threading
 try:
     import pygame as pg
     from pygame.locals import *
@@ -15,3 +15,10 @@ except ModuleNotFoundError:
 import inspect
 from datetime import datetime, timedelta
 from .excptions import *
+
+try:
+    import requests
+except ModuleNotFoundError:
+    print('Requests not installed, installing...')
+    os.system('python -m pip install requests')
+    print('Installed.')

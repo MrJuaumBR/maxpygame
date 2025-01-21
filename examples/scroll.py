@@ -25,8 +25,10 @@ y_shift = 0
 # Enable/Disable controller emulation
 pge.setMouseEmulation(True)
 
+pge.setFPS(1000)
+
 while True:
-    pge.draw_text((0,0), f"Mouse Scroll: {pge.mouse.scroll}, Smooth Scroll: {"On" if pge.mouse.smooth_scroll else "Off"}", arial12, pge.Colors.WHITE,bgColor=pge.Colors.DARKGRAY, surface=screen)
+    pge.draw_text((0,0), f"FPS: {int(pge.getFPS())}, Avg: {int(pge.getAvgFPS())}, Mouse Scroll: {pge.mouse.scroll}, Smooth Scroll: {"On" if pge.mouse.smooth_scroll else "Off"}", arial12, pge.Colors.WHITE,bgColor=pge.Colors.DARKGRAY, surface=screen)
     for ev in pge.events:
         if ev.type == pyge.QUIT:
             pge.exit()

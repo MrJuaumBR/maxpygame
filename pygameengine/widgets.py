@@ -98,31 +98,19 @@ class Tip():
         
         max_x, max_y = screen_size[0] - (mouse_pos[0]+cfgtips.mouse_distance[0]), screen_size[1] - (mouse_pos[1]+cfgtips.mouse_distance[1])
         
-        # Split when haves '\n'
-        self.text_lines = self.text.split('\n')
+        lines = [line for line in self.text.split('\n') if line]
+        self.text_lines = []
+        current_line = ''
+        for word in ' '.join(lines).split(' '):
+            if self.font.size(current_line + ' ' + word)[0] <= max_x:
+                current_line += ' ' + word
+            else:
+                self.text_lines.append(current_line)
+                current_line = word
+        if current_line:
+            self.text_lines.append(current_line)
         
-        # Break line when passes max_x
-        lines_copy = []
-        for line in self.text_lines:
-            words = line.split(' ')
-            current_line = ''
-            for x,word in enumerate(words):
-                if self.font.size(current_line + ' ' + word)[0] >= max_x:
-                    lines_copy.append(current_line)
-                    current_line = word
-                else:
-                    current_line += (' ' if x > 0 else '') + word
-            lines_copy.append(current_line)
-            
-        # Calculate the total size
-        self.total_size = (0, 0)
-        for line in lines_copy:
-            width, height = self.font.size(line)
-            self.total_size = (max(self.total_size[0], width) + 3, self.total_size[1] + height + 3)
-        
-        [(lines_copy.pop(x) if text in ['\n',''] else None) for x,text in enumerate(lines_copy)]
-        
-        self.text_lines = lines_copy
+        self.total_size = (max(self.font.size(line)[0] for line in self.text_lines) + 3, sum(self.font.size(line)[1] for line in self.text_lines) + 3)
     
     def update(self):
         """
@@ -132,26 +120,34 @@ class Tip():
         reset the text changed to False and refresh time counter to the refresh time
         in seconds.
         """
-        if self.refresh_time_counter > 0:
-            self.refresh_time_counter -= 1
-        
-        if self.text_changed or self.refresh_time_counter <= 0:
-            self.build_rect()
+        if self.refresh_time_counter <= 0:
             self.strip_text()
-            self.text_changed = False
+            self.build_rect()
             self.refresh_time_counter = self.engine.TimeSys.s2f(cfgtips.refresh_time)
+        else:
+            self.refresh_time_counter -= 1
             
     def draw(self):
         self.update()
-        
-        self.surface = pg.Surface(self.total_size, pg.SRCALPHA)
-        
-        self.engine.draw_rect((0,0), self.total_size, self.engine.cfgtips.background_color, border_width=self.engine.cfgtips.border_width, border_color=self.engine.cfgtips.border_color, surface=self.surface, alpha=self.engine.cfgtips.alpha)
-        position:list = [0,0]
-        for line in self.text_lines:
-            self.engine.draw_text(position, line, self.font, self.engine.cfgtips.text_color, surface=self.surface)
-            position[1] += self.font.size(line)[1] + 1
-            
+
+        if not self.surface or self.text_changed:
+            self.surface = pg.Surface(self.total_size, pg.SRCALPHA)
+
+            self.engine.draw_rect(
+                (0, 0), self.total_size,
+                self.engine.cfgtips.background_color,
+                border_width=self.engine.cfgtips.border_width,
+                border_color=self.engine.cfgtips.border_color,
+                surface=self.surface, alpha=self.engine.cfgtips.alpha
+            )
+
+            text_height = self.font.get_linesize()
+            for idx, line in enumerate(self.text_lines):
+                self.engine.draw_text(
+                    (0, idx * text_height), line, self.font,
+                    self.engine.cfgtips.text_color, surface=self.surface
+                )
+
         self.engine.screen.blit(self.surface, self.rect)
         
 """
@@ -275,29 +271,27 @@ class Button(Widget):
         self.alpha = alpha
         
     def build_widget_display(self):
-        # First get the size of the text
-        font:pg.font.FontType = self.engine._findFont(self.font)
-        self.size = pg.math.Vector2(*font.size(self.text))
-        
-        self.image = pg.Surface(self.size, (pg.SRCALPHA if (self.alpha < 255 or self.alpha != None) else 0))
-        if len(self.colors) < 3: # Has only 2 colors
-            self.engine.draw_rect((0,0), self.size, self.colors[1], surface=self.image, alpha=self.alpha)
-        elif len(self.colors) == 3: # Has 3 colors
-            self.engine.draw_rect((0,0), self.size, self.colors[1], border_width=3, border_color=self.colors[2], surface=self.image, alpha=self.alpha)
-            
-        self.engine.draw_text((0,0),self.text, self.font, self.colors[0], surface=self.image, alpha=self.alpha)
-        self.rect = pg.Rect(*self.position,*self.size)
+        font = self.engine._findFont(self.font)
+        self.size = pg.Vector2(font.size(self.text))
+
+        self.image = pg.Surface(self.size, pg.SRCALPHA if self.alpha < 255 else 0)
+        draw_params = {
+            'surface': self.image,
+            'alpha': self.alpha,
+            'border_width': 0
+        }
+
+        if len(self.colors) == 3:
+            draw_params.update({'border_width': 3, 'border_color': self.colors[2]})
+
+        self.engine.draw_rect((0, 0), self.size, self.colors[1], **draw_params)
+        self.engine.draw_text((0, 0), self.text, font, self.colors[0], surface=self.image, alpha=self.alpha)
+        self.rect = pg.Rect(*self.position, *self.size)
         
     def update(self):
-        if self.rect.collidepoint(self.engine.mouse.pos):
-            if self.engine.mouse.left:
-                if self.click_time_counter <= 0:
-                    self.click_time_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
-                    self.value = True
-                else:
-                    self.value = False
-            else:
-                self.value = False
+        if self.engine.mouse.collidePoint(self.rect) and self.engine.mouse.left and self.click_time_counter <= 0:
+            self.click_time_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
+            self.value = True
         else:
             self.value = False
         
@@ -369,19 +363,12 @@ class Checkbox(Widget):
         
     def build_widget_display(self):
         # Colors: 0(Font),1(Disable), 2(Enable), 3(Background),4(Border)
-        self.size = pg.math.Vector2(*self.font.size(self.text))
-        
-        # Add Box Size
-        self.box_size = int(self.size.x / 3)
-        self.size.x += int(self.box_size * 1.15)
-        
-        # Create Image
+        font = self.engine._findFont(self.font)
+        text_size = font.size(self.text)
+        self.box_size = min(20, max(10, int(text_size[0] / 3)))
+        self.size = pg.math.Vector2(text_size[0] + self.box_size + 5, text_size[1])
         self.image = pg.Surface(self.size, pg.SRCALPHA)
-        
-        # Insert Text
-        self.engine.draw_text((int(self.box_size * 1.15),0),self.text, self.font, self.colors[0], surface=self.image, alpha=self.alpha)
-        
-        # Defines
+        self.engine.draw_text((self.box_size + 5,0), self.text, font, self.colors[0], self.image, self.alpha)
         self.rect = pg.Rect(*self.position,*self.size)
         
     def __on_change(self):
@@ -398,25 +385,26 @@ class Checkbox(Widget):
                 self.on_change(self)
     
     def update(self):
-        if self.rect.collidepoint(self.engine.mouse.pos):
-            if self.engine.mouse.left:
-                if self.click_time_counter <= 0:
-                    self.value = not self.value
-                    self.__on_change()
-                    self.click_time_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
-        return super().update()
+        if self.rect.collidepoint(self.engine.mouse.pos) and self.engine.mouse.left and self.click_time_counter <= 0:
+            self.value = not self.value
+            self.__on_change()
+            self.click_time_counter = self.engine.TimeSys.s2f(self.click_time)
+        return super().update() if self.click_time_counter > 0 else self
     
     def cooldown_refresh(self):
         if self.click_time_counter > 0:
             self.click_time_counter -= 1
             
     def draw(self):
-        if self.image and self.rect:
-            self.engine.screen.blit(self.image, self.rect)
+        if not (self.image and self.rect):
+            return super().draw()
+        
+        self.engine.screen.blit(self.image, self.rect)
 
-            # Draw box
-            c = self.colors[2] if not self.value else self.colors[1]
-            self.engine.draw_rect(self.rect.topleft, (self.box_size, self.size.y), c,border_width=(3 if len(self.colors) > 3 else 0),border_color= (self.colors[3] if len(self.colors) > 3 else (0,0,0)), alpha=self.alpha)
+        # Draw box
+        color = self.colors[1 if self.value else 2]
+        border_width, border_color = (3, self.colors[3]) if len(self.colors) > 3 else (0, (0, 0, 0))
+        self.engine.draw_rect(self.rect.topleft, (self.box_size, self.size.y), color, border_width=border_width, border_color=border_color, alpha=self.alpha)
         
         return super().draw()
     
@@ -474,84 +462,53 @@ class Slider(Widget):
         self.fill_passed = fill_passed
         
     def build_widget_display(self):
-        
-        self.ball_size = self.size[1]//2 + 5
+        self.ball_size = (self.size[1] + 10) // 2
         self.image = pg.Surface(self.size, pg.SRCALPHA)
-        
-        self.engine.draw_rect((0,0),self.size,self.colors[1], surface=self.image, alpha=self.alpha, border_width=(3 if len(self.colors) >= 3 else 0),border_color= (self.colors[2] if len(self.colors) >= 3 else (0,0,0)))
-        
-        self.rect = pg.Rect(*self.position,*self.size)
-        
-        if self._value is not None:
-            # Value is between 0 and 1
-            # make the cur position beetween min pos and max pos using the value as percentage
-            # Value only will interact with the X vector
-            self.currentPosition = [self.rect.x + self._value * (self.rect.width - self.ball_size), self.rect.y - self.ball_size//4] # Fixed.
-        else:
-            self.currentPosition = [self.rect.x + self.ball_size//2, self.rect.y - self.ball_size//4]
+        border_width = 3 if len(self.colors) == 3 else 0
+        border_color = self.colors[2] if len(self.colors) == 3 else (0, 0, 0)
+        self.engine.draw_rect((0, 0), self.size, self.colors[1], surface=self.image, alpha=self.alpha, border_width=border_width, border_color=border_color)
+        self.rect = self.image.get_rect(topleft=self.position)
+        self.currentPosition = [self.rect.x + ((self._value or 0) * (self.rect.width - self.ball_size)), self.rect.y - self.ball_size // 4]
+        self.circle = pg.Rect(self.currentPosition[0] - self.ball_size / 2, self.currentPosition[1] - self.ball_size / 2, self.ball_size, self.ball_size)
     
     def update(self):
-        """
-        This is the update method for the Slider widget.
+        mouse_pos = self.engine.mouse.pos
+        if self.change_on_scroll and (self.engine.mouse.collidePoint(self.rect) or self.engine.mouse.collidePoint(self.circle)):
+            scroll = self.engine.mouse.scroll
+            if scroll:
+                self.currentPosition[0] = max(
+                    self.rect.x + self.circle.width // 2,
+                    min(self.currentPosition[0] + scroll * 5, self.rect.right - self.circle.width // 2),
+                )
 
-        It will check if the mouse is inside the circle and if the left mouse button is pressed.
-        If yes, it will move the circle to the mouse position, making sure that it doesn't go outside of the widget's boundaries.
+        if self.engine.mouse.left and self.rect.collidepoint(mouse_pos):
+            self.currentPosition[0] = mouse_pos[0]
+            self.currentPosition[0] = max(
+                self.rect.x + self.circle.width // 2,
+                min(self.currentPosition[0], self.rect.right - self.circle.width // 2),
+            )
 
-        Then it will calculate the value (a float between 0 and 1) by dividing the position of the circle by the width of the widget.
-        """
-        if self.circle:
-            if self.change_on_scroll:
-                TOUCHING = self.rect.collidepoint(self.engine.mouse.pos) or self.circle.collidepoint(self.engine.mouse.pos)
-                if TOUCHING:
-                    scroll = self.engine.mouse.scroll
-                    if scroll != 0:
-                        self.currentPosition[0] += round(scroll*5,2)
-                        
-                        # Limit X Right
-                        if self.currentPosition[0] > self.rect.right - self.ball_size/2:
-                            self.currentPosition[0] = self.rect.right - self.ball_size/2
-                        # Limit X Left
-                        elif self.currentPosition[0] < self.rect.x - self.ball_size/2:
-                            self.currentPosition[0] = self.rect.x - self.ball_size/2
-            if self.circle.collidepoint(self.engine.mouse.pos):
-                if self.engine.mouse.left:
-                    # Move the circle to the mouse position
-                    self.currentPosition[0] = self.engine.mouse.x - self.circle.width/2
-                    # Make sure the circle doesn't go outside of the widget's boundaries
-                    # Limit X Right
-                    if self.currentPosition[0] > self.rect.right - self.ball_size/2:
-                        self.currentPosition[0] = self.rect.right - self.ball_size/2
-                    # Limit X Left
-                    elif self.currentPosition[0] < self.rect.x - self.ball_size/2:
-                        self.currentPosition[0] = self.rect.x - self.ball_size/2
-        
-        # Calculate the value based on the mouse position X
-        # The idea is get beetween values (Mosue Pos X and Rect Pos X) and then get a "float" that will be the percentage of Mouse Pos X in Rect Pos X + Width
+        # Calculate and clamp the value between 0 and 1
+        self.value = round(
+            max(
+                0, 
+                min(
+                    (self.currentPosition[0] - self.rect.x - self.circle.width // 2) / (self.rect.width - self.circle.width), 
+                    1
+                )
+            ),
+            2
+        )
 
-        self.value = (self.currentPosition[0] - self.rect.x) / (self.rect.width - self.ball_size/2)
-        
-        # Limits the value to not be outside of 0 and 1
-        if self.value > 1: self.value = 1
-        elif self.value < 0: self.value = 0
-        
-        # Rounds the value to get only 3 ndigits
-        self.value = round(self.value,3)
-                    
-        return super().update()
+        self.circle.x = self.currentPosition[0] - self.circle.width // 2
     
     def draw(self):
-        
         if self.image and self.rect:
             self.engine.screen.blit(self.image, self.rect)
-            
-            # Fill passed
-            
             if self.fill_passed:
                 w = self.currentPosition[0]-self.rect.x
-                self.engine.draw_rect((self.rect.x, self.rect.y), (0 if w < 0 else w+self.ball_size/2, self.rect.height), self.colors[0] if len(self.colors) < 4 else self.colors[3], alpha=self.alpha)
-            
-            self.circle = self.engine.draw_circle(self.currentPosition,self.ball_size, self.colors[0], alpha=self.alpha)
-        
+                self.engine.draw_rect((self.rect.x, self.rect.y), (0 if w < 0 else w+self.ball_size/2, self.rect.height), self.colors[0], alpha=self.alpha, surface=self.engine.screen)
+            self.engine.draw_circle(self.currentPosition,self.ball_size, self.colors[0], alpha=self.alpha, surface=self.engine.screen)
         return super().draw()
 
 class Select(Widget):
@@ -614,16 +571,12 @@ class Select(Widget):
         
     def build_widget_display(self):
         self.size = self.font.size(self.items[self.value])
-        
+        self.image = pg.Surface(self.size, pg.SRCALPHA)
+        self.rect = pg.Rect(*self.position,*self.size)
         self.leftButton = Button(self.engine, (self.position[0],self.position[1]), self.font, '<', self.colors, alpha=self.alpha, id=f'{self._id}_left')
         self.rightButton = Button(self.engine, (self.position[0],self.position[1]), self.font, '>', self.colors, alpha=self.alpha, id=f'{self._id}_right')
-        
         self.leftButton.click_time = self.button_click_time
         self.rightButton.click_time = self.button_click_time
-        
-        self.rect = pg.Rect(*self.position,*self.size)
-        
-        self.image = pg.Surface(self.size, pg.SRCALPHA)
     
     def __on_change(self):
         """
@@ -639,37 +592,27 @@ class Select(Widget):
                 self.on_change(self)
     
     def fix_list(self):
-        if self.value < 0:
-            self.value = len(self.items) - 1
-        if self.value >= len(self.items):
-            self.value = 0
+        self.value %= len(self.items)
     
     def update(self):
-        if self.change_on_scroll:
-            mouse_pos = self.engine.mouse.pos
-            TOUCHING = self.leftButton.rect.collidepoint(mouse_pos) or self.rightButton.rect.collidepoint(mouse_pos) or self.rect.collidepoint(mouse_pos)
-            if TOUCHING:
-                if abs(self.engine.mouse.scroll) != 0 and self.scroll_change_counter <= 0:
-                    self.value += 1 if self.engine.mouse.scroll > 0 else -1
-                    self.fix_list()
-                    self.__on_change()
-                    self.scroll_change_counter = self.engine.TimeSys.s2f(0.3)
-                    
+        if self.change_on_scroll and self.engine.mouse.collidePoint(self.rect):
+            scroll = self.engine.mouse.scroll
+            if abs(scroll) != 0 and self.scroll_change_counter <= 0:
+                self.value += 1 if scroll > 0 else -1
+                self.fix_list()
+                self.__on_change()
+                self.scroll_change_counter = self.engine.TimeSys.s2f(0.3)
         if self.leftButton and self.rightButton:
             if self.leftButton.value:
                 self.value -= 1
                 self.fix_list()
                 self.__on_change()
-                
             if self.rightButton.value:
                 self.value += 1
                 self.fix_list()
                 self.__on_change()
-                
-            
             self.size = self.font.size(str(self.items[self.value]))
             self.rect = pg.Rect(*self.position,*self.size)
-        
         return super().update()
     
     def cooldown_refresh(self):
@@ -677,15 +620,26 @@ class Select(Widget):
         return super().cooldown_refresh()
     
     def draw(self):
-        
         if self.leftButton and self.rightButton:
-            self.leftButton.rect.right = self.rect.left - 5
-            self.rightButton.rect.left = self.rect.right + 5
-            
-            self.engine.draw_text((self.rect.left,self.rect.top),str(self.items[self.value]), self.font, self.colors[0],bgColor=self.colors[1],border_width=3,border_color=self.colors[2], alpha=self.alpha)
-            # Draw buttons independant of list widgets // Fix
+            offset = 10
+            self.leftButton.rect.right = self.rect.left - int(offset*0.45)
+            self.rightButton.rect.left = self.rect.right + offset
+
+            # Draw text and buttons
+            draw_params = {
+                'position': (self.rect.left, self.position[1]-2.5),
+                'text': str(self.items[self.value]),
+                'font': self.font,
+                'color': self.colors[0],
+                'bgColor': self.colors[1],
+                'border_width': 3,
+                'border_color': self.colors[2],
+                'alpha': self.alpha
+            }
+            self.engine.draw_text(**draw_params)
             self.leftButton.draw()
-            self.rightButton.draw()        
+            self.rightButton.draw()
+        
         return super().draw()
     
 class Longtext(Widget):
@@ -707,84 +661,72 @@ class Longtext(Widget):
     
     lines:list[str,] = []
     auto_size:bool = False
+    __font_size_cache:dict[str,tuple[int,int]] = {}
     
     def __init__(self, engine, position: [int,int], font: int or pg.font.FontType,text:str,colors: list[reqColor,],size: [int, int] = None,id: str = None, alpha: int = 255, tip:Tip=None): # type: ignore
-        """
-        # LongText
-        It's like a textarea/textbox but you can't type.
-        
-        Parameters:
-            engine (any): The engine that the widget is in
-            position (tuple[int,int]): The position of the Longtext
-            font (int or pg.font.FontType): The font of the Longtext
-            text (str): The text of the Longtext
-            colors (list[reqColor,]): The colors of the Longtext -> **[Text, Background(Optional), Border(Optional)]**
-            size (list[int, int], optional): The size of the Longtext. Defaults to None.
-            id (str, optional): The id of the widget. Defaults to None.
-            alpha (int, optional): The alpha of the Longtext. Defaults to 255.
-        """
         super().__init__(engine, id, tip)
         self.position = position
         self.font:pg.font.FontType = self.engine._findFont(font)
         self.colors = colors
-        if size == None:
-            self.auto_size = True
-            self.size = (0,0)
-        else:
-            self.size = size
+        self.auto_size = size is None
+        self.size = (0, 0) if self.auto_size else size
         self.text = text
         self.alpha = alpha
+        self.lines = self.__generate_lines()
         
-    def get_lines(self) -> dict:
-        """
-        Splits the text into lines based on the width of the text and the screen size.
-        Returns a dictionary where the keys are the line numbers and the values are the lines of text.
-        """
-        lines = {}
+    def __generate_lines(self) -> list[str]:
+        lines = []
         current_line = ''
-        line_number = 1
-        for word in self.text.replace('\n',' <BreakHere> ').split():
-            if word in [' <BreakHere> ', '\n', '<BreakHere>']:
-                lines[line_number] = current_line.strip()
-                current_line = ''
-                line_number += 1
-            elif pg.font.Font.size(self.font, current_line + ' ' + word)[0] > self.engine.screen.get_size()[0] - self.position[0]:
-                lines[line_number] = current_line.strip()
-                current_line = word
-                line_number += 1
+        for word in self.text.split():
+            test_line = f'{current_line} {word}'.strip()
+            if self.__get_font_size(test_line)[0] <= self.engine.screen.get_size()[0] - (self.position[0]+1):
+                current_line = test_line
             else:
-                if word != ' ':
-                    current_line += ' ' + word
+                lines.append(current_line)
+                current_line = word
         if current_line:
-            lines[line_number] = current_line.strip()
+            lines.append(current_line)
         return lines
-
+    
+    get_lines = __generate_lines
+    
+    def __get_font_size(self, text:str) -> tuple[int,int]:
+        if text not in self.__font_size_cache:
+            self.__font_size_cache[text] = pg.font.Font.size(self.font, text)
+        return self.__font_size_cache[text]
     
     def build_widget_display(self):
-        """
-        Basically this will limit the text to only show to the border of screen, and if this is too long, it will break to the next line, and will get the line with the biggest width as self.size[0]
-        and the total height of lines as self.size[1]
-        
-        but only if self.auto_size is True
-        else it will get the size of the text and bypass the screen size
-        """
         if self.auto_size:
-            lines = self.get_lines()
-            
-            max_size = 0
-            for line in lines.values():
-                if pg.font.Font.size(self.font, line)[0] > max_size:
-                    max_size = pg.font.Font.size(self.font, line)[0]
-            
-            self.text = [line for line in lines.values()]
-            self.size = (max_size, (len(self.text) * pg.font.Font.size(self.font, 'W')[1])+5)
-            
+            try:
+                max_width = max(pg.font.Font.size(self.font, line)[0] for line in self.lines)
+                self.size = (max_width, len(self.lines) * pg.font.Font.size(self.font, 'W')[1] + 5)
+            except: pass
+        else:
+            max_width = self.size[0]
+
         self.image = pg.Surface(self.size, pg.SRCALPHA)
-        self.rect = pg.Rect(*self.position,*self.size)
+        self.rect = pg.Rect(*self.position, *self.size)
         if len(self.colors) > 1:
-            self.engine.draw_rect((0,0), self.size, self.colors[1], border_width=3 if len(self.colors) > 2 else 0, border_color=self.colors[2] if len(self.colors) > 2 else None,alpha=self.alpha, surface=self.image)
-        for i, line in enumerate(self.text):
-            self.engine.draw_text((0,(i*pg.font.Font.size(self.font, 'W')[1])),line, self.font, self.colors[0],alpha=self.alpha, surface=self.image)
+            self.engine.draw_rect((0,0), self.size, self.colors[1], border_width=3 if len(self.colors) > 2 else 0, border_color=self.colors[2] if len(self.colors) > 2 else None, alpha=self.alpha, surface=self.image)
+
+        y = 0
+        for line in self.lines:
+            rect = self.font.size(line)
+            if rect[0] > max_width:
+                words = line.split()
+                line = ''
+                for word in words:
+                    if pg.font.Font.size(self.font, f'{line} {word}')[0] > max_width:
+                        self.engine.draw_text((0, y), line, self.font, self.colors[0], alpha=self.alpha, surface=self.image)
+                        line = word
+                        y += rect[1]
+                    else:
+                        line += f' {word}'
+                self.engine.draw_text((0, y), line, self.font, self.colors[0], alpha=self.alpha, surface=self.image)
+                y += rect[1]
+            else:
+                self.engine.draw_text((0, y), line, self.font, self.colors[0], alpha=self.alpha, surface=self.image)
+                y += rect[1]
             
     def draw(self):
         if self.image and self.rect:

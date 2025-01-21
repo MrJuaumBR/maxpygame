@@ -1,7 +1,7 @@
 from .required import *
 
 # Metadata
-_version = "0.3.2"
+_version = "0.3.3"
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
@@ -229,23 +229,20 @@ class InputQuery:
             None
         """
         dt = delta_time.total_seconds()
-        if dt-self.last_change > 1 and len(self._query) > 0:
+        if self._query and (dt - self.last_change > 1 or len(self._query) > self.query_limit):
             self._query.pop(0)
-            self.last_change = dt-0.875
-        else:
-            if len(self._query) > self.query_limit:
-                self._query.pop(0) # Removes the older key
+            self.last_change = dt - 0.875
 
 def humanize_seconds(seconds:int) -> dict:
     """
     This command will humanize seconds
     Like: Days, Hours, Minutes, Seconds
     """
-    days = seconds // 86400
-    hours = (seconds % 86400) // 3600
-    minutes = (seconds % 3600) // 60
-    seconds = seconds % 60
-    return {'days':days, 'hours':hours, 'minutes':minutes, 'seconds':seconds}
+    s, ms = divmod(seconds, 1000)
+    m, s = divmod(s, 60)
+    h, m = divmod(m, 60)
+    d, h = divmod(h, 24)
+    return {'days':d, 'hours':h, 'minutes':m, 'seconds':s}
 
 class RGB:
     _r:int = 0
@@ -365,7 +362,7 @@ class color():
         self._rgb = x # Validate color
         self._hex = HEX(self._rgb.hex()) # Convert rgb to hex after validating
         self.brightness = self._rgb.brightness
-        return self._rgb
+        return self._rgb.rgb()
     
     @property
     def rgb(self) -> RGB:
@@ -415,10 +412,10 @@ class spritesheet(object):
         self.image_path = image_path
         self.engine = engine
         try:
-            self.image = self.engine.loadImage(image_path).convert()
+            self.image = pg.image.load(image_path).convert()
         except pg.error as message:
             print('Unable to load spritesheet image:', image_path)
-            raise SystemExit(message)
+            raise SystemExit(str(message))
         
     def image_at(self, rect:tuple[int,int,int,int], colorkey=None):
         """
@@ -432,85 +429,14 @@ class spritesheet(object):
         Returns:
             pg.SurfaceType
         """
-        image = pg.Surface(rect.size).convert()
+        image = pg.Surface(rect.size, pg.SRCALPHA)
         image.blit(self.image, (0,0), rect)
         if colorkey is not None:
-            if colorkey == -1:
-                colorkey = image.get_at((0,0))
             image.set_colorkey(colorkey, pg.RLEACCEL)
         return image
     
     def images_at(self, rects:list[tuple[int,int,int,int]], colorkey=None):
         return [self.image_at(rect, colorkey) for rect in rects]
-    
-# Mouse Object
-class TrailNode:
-    """
-    The "TrailNode" for mouse Trail System
-    
-    Paramaters:
-        engine:object
-        position:pg.Vector2
-        size:tuple[int,int]
-        node_color:color/tuple[int,int]
-        
-    Returns:
-        TrailNode
-    """
-    engine:object
-    
-    position:pg.Vector2
-    node_color:color
-    size:tuple
-    
-    start_time:timedelta
-    alpha:int = 255
-    alpha_minus:float
-    
-    surface:pg.SurfaceType
-    def __init__(self,engine:object, position:pg.Vector2,size:tuple[int,int],node_color:color):
-        """
-        The "TrailNode" for mouse Trail System
-        
-        Paramaters:
-            engine:object
-            position:pg.Vector2
-            size:tuple[int,int]
-            node_color:color/tuple[int,int]
-            
-        Returns:
-            TrailNode
-        """
-        self.position:pg.Vector2 = position
-        self.node_color:color = node_color
-        self.size:tuple = size
-        
-        self.engine:object = engine
-        
-        self.surface:pg.SurfaceType = pg.Surface(self.size,SRCALPHA)
-        self.surface.fill((node_color if type(node_color) in [list, tuple] else node_color.rgb()))
-        
-        self.start_time:timedelta = self.engine.delta_time
-        # self.alpha_minus:float = self.alpha/self.engine.TimeSys.s2f(mouse.trail_duration)
-        
-    def draw(self, surface:pg.surface.SurfaceType=None):
-        """
-        Draw "TrailNode"
-        
-        Paramaters:
-            surface:pg.SurfaceType (Optional)
-        Returns:
-            None
-        """
-        self.alpha_minus:float = self.alpha/(self.engine.TimeSys.s2f(self.engine.mouse.trail_duration) or 1)
-        if surface is None:
-            surface = self.engine.screen
-        
-        self.surface.set_alpha(int(self.alpha))
-        self.alpha -= self.alpha_minus
-        r = pg.Rect(*self.position,*self.size)
-        r.center = self.position.x,self.position.y
-        surface.blit(self.surface, r)
 
 # Controller Object Identification
 
@@ -607,6 +533,8 @@ class Controller():
         """
         name = str(name).lower()
         
+        
+
         if name in ['cross','a']:
             return self.getButtonById(JOYSTICK_A_BUTTON)
         elif name in ['circle','b']:
@@ -651,31 +579,16 @@ class Controller():
         dpad = self.getDPad()
         
         if dual:
-            x = ''
-            y = ''
-            if dpad[0] > 0:
-                x = 'right'
-            elif dpad[0] < 0:
-                x = 'left'
-            else:
-                x = ''
-            if dpad[1] > 0:
-                y = 'up'
-            elif dpad[1] < 0:
-                y = 'down'
-            else:
-                y = ''
-                
+            x = 'right' if dpad[0] > 0 else 'left' if dpad[0] < 0 else ''
+            y = 'up' if dpad[1] > 0 else 'down' if dpad[1] < 0 else ''
             return (x,y)
         else:
-            if dpad[0] > 0:
-                return 'right'
-            elif dpad[0] < 0:
-                return 'left'
-            elif dpad[1] > 0:
-                return 'down'
-            elif dpad[1] < 0:
-                return 'up'
+            return {
+                (-1, 0): 'left',
+                (1, 0): 'right',
+                (0, -1): 'down',
+                (0, 1): 'up'
+            }.get(dpad, '')
     
     def getDPad(self) -> tuple[int,int]:
         """
@@ -814,6 +727,72 @@ class Joystick:
     def update(self):
         if self.main:
             self.main.update()
+    
+# Mouse Object
+class TrailNode:
+    """
+    The "TrailNode" for mouse Trail System
+    
+    Paramaters:
+        engine:object
+        position:pg.Vector2
+        size:tuple[int,int]
+        node_color:color/tuple[int,int]
+        
+    Returns:
+        TrailNode
+    """
+    engine:object
+    
+    position:pg.Vector2
+    node_color:color
+    size:tuple
+    
+    start_time:timedelta
+    alpha:int = 255
+    alpha_minus:float
+    
+    surface:pg.SurfaceType
+    def __init__(self,engine:object, position:pg.Vector2,size:tuple[int,int],node_color:color):
+        """
+        The "TrailNode" for mouse Trail System
+        
+        Paramaters:
+            engine:object
+            position:pg.Vector2
+            size:tuple[int,int]
+            node_color:color/tuple[int,int]
+            
+        Returns:
+            TrailNode
+        """
+        self.position = position
+        self.node_color = node_color
+        self.size = size
+        self.engine = engine
+        self.start_time = self.engine.delta_time
+        self.surface = pg.Surface(size, SRCALPHA)
+        self.surface.fill((node_color if type(node_color) in [list, tuple] else node_color.rgb))
+        self.alpha = 255
+        
+        
+    def draw(self, surface:pg.surface.SurfaceType=None):
+        """
+        Draw "TrailNode"
+        
+        Paramaters:
+            surface:pg.SurfaceType (Optional)
+        Returns:
+            None
+        """
+        time_alive = (self.engine.delta_time - self.start_time).total_seconds()
+        self.alpha = max(0, self.alpha - int(255 * time_alive / self.engine.mouse.trail_duration))
+        if surface is None:
+            surface = self.engine.screen
+        
+        self.surface.set_alpha(self.alpha)
+        surface.blit(self.surface, self.position)
+
 
 class Mouse:
     """
@@ -852,7 +831,7 @@ class Mouse:
     # Trail
     trail_nodes:list[TrailNode,] = []
     mouse_trail_enabled:bool = False
-    trail_duration:int = 1/10 # In Seconds
+    trail_duration:int = 1/2 # In Seconds
     trail_node_size:tuple[int,int] = (3,3)
     trail_node_color:color = color(200,200,200)
     trail_node_random_color:bool = False
@@ -949,19 +928,14 @@ class Mouse:
         Returns:
             None
         """
-        removal = []
-        for index,trail in enumerate(self.trail_nodes):
-            trail:TrailNode
-            elapsed:timedelta = (self.engine.delta_time-trail.start_time)
-            if elapsed.total_seconds() >= self.trail_duration:
-                removal.append(index)
-            else:
-                trail.draw(self.engine.screen)
-        if len(removal) >= 1:
-            for r in removal:
-                try:
-                    self.trail_nodes.pop(r)
-                except: pass
+        current_time = self.engine.delta_time
+        self.trail_nodes = [
+            trail for trail in self.trail_nodes 
+            if (current_time - trail.start_time).total_seconds() < self.trail_duration
+        ]
+        
+        for trail in self.trail_nodes:
+            trail.draw(self.engine.screen)
     
     def update(self):
         """
@@ -977,19 +951,17 @@ class Mouse:
             None
         """
         if self.mouse_trail_enabled:
-            self.trail_nodes.append(TrailNode(self.engine, pg.Vector2(*self.pos),self.trail_node_size,(self.trail_node_color if not self.trail_node_random_color else color(0,0,0).random())))
-        if self.smooth_scroll_delay > 0:
-            self.smooth_scroll_delay -= 1
+            self.trail_nodes.append(TrailNode(
+                self.engine, pg.Vector2(self.pos), self.trail_node_size,
+                self.trail_node_color if not self.trail_node_random_color else color(0, 0, 0).random()
+            ))
         
-        self.x, self.y = self.engine.getMousePos()
-        buttons:list[bool,] = self.engine.getMousePressed(5)
-        self.left, self.middle, self.right = buttons[0], buttons[1], buttons[2]
-        if len(buttons) > 3:
-            self.button_4 = buttons[3]
-            self.button_5 = buttons[4]
-        else:
-            self.button_4 = False
-            self.button_5 = False
+        self.smooth_scroll_delay = max(0, self.smooth_scroll_delay - 1)
+        
+        self.x,self.y = pg.mouse.get_pos()
+        buttons = pg.mouse.get_pressed(5)
+        self.left, self.middle, self.right = buttons[:3]
+        self.button_4, self.button_5 = (buttons[3], buttons[4]) if len(buttons) > 3 else (False, False)
         
         # self.draw_trail()
             

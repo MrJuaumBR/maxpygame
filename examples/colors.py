@@ -25,6 +25,8 @@ max_x = 600
 
 zoom = 0.5
 
+pge.setFPS(1000)
+
 pge.setMouseEmulation(True)
 
 while True:
@@ -53,7 +55,7 @@ while True:
                 x = 0
                 ii = 0
                 y += color_rect.height
-    pge.draw_text((S_W-300,S_H-20), f'X: {X_SHIFT}, Y: {Y_SHIFT}, Zoom: {round(zoom,4)}, Colors: {pge.Colors.number_of_colors()}, Aliases: {len(pge.Colors.aliases)}', arial12, pge.Colors.WHITE, surface=screen)
+    pge.draw_text((S_W-300,S_H-20), f'X: {X_SHIFT}, Y: {Y_SHIFT}, Zoom: {round(zoom,4)}, Colors: {pge.Colors.number_of_colors()}, Aliases: {len(pge.Colors.aliases)}, FPS: {int(pge.getFPS())}', arial12, pge.Colors.WHITE, surface=screen)
     
     if pge.joystick.mainController:
         x,y = pge.joystick.mainController.getAxisByString('left')
