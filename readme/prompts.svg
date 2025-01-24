@@ -33,15 +33,15 @@
                 </div>
                 <bold>Build Packages</bold>
                 <div class="shell">
-                py -m build
+                    py -m build
                 </div>
                 <bold>Local Install</bold>
                 <div class="shell">
-                pip install .
+                    pip install .
                 </div>
                 <bold>Send to Test PyPi</bold>
                 <div class="shell">
-                twine upload --repository testpypi dist/*
+                    twine upload --repository testpypi dist/*
                 </div>
             </div>
         </div>

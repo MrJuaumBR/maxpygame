@@ -423,6 +423,7 @@ class Slider(Widget):
         fill_passed (bool, optional): If the slider should fill the passed area. Defaults to True.
         id (str, optional): The id of the widget. Defaults to None.
         alpha (int, optional): The alpha of the slider. Defaults to 255.
+        on_change (object, optional): The on_change event of the slider. Defaults to None. Needs to be callable and will get the slider as a parameter.
     """
     _type:str = 'slider'
     
@@ -433,9 +434,11 @@ class Slider(Widget):
     
     change_on_scroll:bool = True
     
+    _on_change:object = None
+    
     _value:float = None
     value:float = 0
-    def __init__(self,engine, position:[int,int], size:tuple[int,int],colors:list[reqColor,reqColor,],value:float=None,fill_passed:bool=True,id:str=None,alpha:int=255, tip:Tip=None): # type: ignore
+    def __init__(self,engine, position:[int,int], size:tuple[int,int],colors:list[reqColor,reqColor,],value:float=None,fill_passed:bool=True,id:str=None,alpha:int=255, tip:Tip=None,on_change:object=None): # type: ignore
         """
         # Slider
         
@@ -450,12 +453,14 @@ class Slider(Widget):
             fill_passed (bool, optional): If the slider should fill the passed area. Defaults to True.
             id (str, optional): The id of the widget. Defaults to None.
             alpha (int, optional): The alpha of the slider. Defaults to 255.
+            on_change (object, optional): The on_change event of the slider. Defaults to None. Needs to be callable and will get the slider as a parameter.
         """
         super().__init__(engine,id,tip)
         self.position = position
         self.size = size
         self.colors = colors
         self.alpha = alpha
+        self._on_change = on_change
         if value is not None:
             self._value = value
         
@@ -470,6 +475,11 @@ class Slider(Widget):
         self.rect = self.image.get_rect(topleft=self.position)
         self.currentPosition = [self.rect.x + ((self._value or 0) * (self.rect.width - self.ball_size)), self.rect.y - self.ball_size // 4]
         self.circle = pg.Rect(self.currentPosition[0] - self.ball_size / 2, self.currentPosition[1] - self.ball_size / 2, self.ball_size, self.ball_size)
+    
+    def on_change(self):
+        if self._on_change:
+            if callable(self._on_change):
+                self._on_change(self)
     
     def update(self):
         mouse_pos = self.engine.mouse.pos
@@ -489,7 +499,7 @@ class Slider(Widget):
             )
 
         # Calculate and clamp the value between 0 and 1
-        self.value = round(
+        new_value = round(
             max(
                 0, 
                 min(
@@ -500,7 +510,9 @@ class Slider(Widget):
             2
         )
 
-        self.circle.x = self.currentPosition[0] - self.circle.width // 2
+        if new_value != self.value:
+            self.value = new_value
+            self.on_change()
     
     def draw(self):
         if self.image and self.rect:
@@ -814,6 +826,7 @@ class Textbox(Widget):
         alpha (int, optional): The alpha of the widget. Defaults to 255.
         placeholder (str, optional): The placeholder of the widget. Defaults to None.
         id (str, optional): The id of the widget. Defaults to None.
+        on_change (object, optional): The on_change event of the widget. Defaults to None. Needs to be callable and will get the widget as a parameter.
     """
     _type:str = 'textbox'
     
@@ -836,6 +849,8 @@ class Textbox(Widget):
     placeholder_text:str = None
     editable:bool = True
     
+    _on_change:object = None
+    
     blacklist = [
         pg.K_BACKSPACE,
         pg.K_DELETE,
@@ -846,7 +861,7 @@ class Textbox(Widget):
         pg.K_LCTRL, pg.K_RCTRL,
         pg.K_LALT, pg.K_RALT,
     ]
-    def __init__(self, engine,position:tuple[int,int],height:int,colors:list[reqColor,reqColor,reqColor,],font:pg.font.FontType,text:str=None,alpha:int=255,placeholder:str=None, id: str = None, tip:Tip=None):
+    def __init__(self, engine,position:tuple[int,int],height:int,colors:list[reqColor,reqColor,reqColor,],font:pg.font.FontType,text:str=None,alpha:int=255,placeholder:str=None, id: str = None, tip:Tip=None,on_change:object=None):
         """
         # Textbox
         
@@ -862,6 +877,7 @@ class Textbox(Widget):
             alpha (int, optional): The alpha of the widget. Defaults to 255.
             placeholder (str, optional): The placeholder of the widget. Defaults to None.
             id (str, optional): The id of the widget. Defaults to None.
+            on_change (object, optional): The on_change event of the widget. Defaults to None. Needs to be callable and will get the widget as a parameter.
         """
         super().__init__(engine, id, tip)
         self.position:tuple[int,int] = position
@@ -872,6 +888,8 @@ class Textbox(Widget):
         self.alpha:int = alpha
         
         self.placeholder_text:str = placeholder
+        
+        self._on_change = on_change
         
     def build_widget_display(self):
         self.max_width = self.engine.screen.get_width() - self.position[0]
@@ -930,6 +948,9 @@ class Textbox(Widget):
                                 ipq.RemoveFromQuery(index) # Prevents Dupe
                                 self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)                   
             
+                    if self.text != self.value:
+                        self.on_change()
+                        
         return super().update()
     
     def cooldown_refresh(self):
@@ -956,6 +977,11 @@ class Textbox(Widget):
                 r1.left += 5
                 self.engine.draw_text(r1.center, self.placeholder_text, self.font, self.colors[2], alpha=150)
         return super().draw()
+    
+    def on_change(self):
+        if self._on_change:
+            if callable(self._on_change):
+                self._on_change(self)
     
 class Dropdown(Widget):
     """

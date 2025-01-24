@@ -31,6 +31,7 @@
 - [x] Version Don't Update on [data.json](./data.json);
 - [x] Screen Argument in some examples;
 - [x] Trail Color Fix;
+- [x] Spritesheet converting to non-alpha surface;
 
 ## Addeds
 - [x] Slider fill when pass;
@@ -104,8 +105,10 @@
 - [x] Select Mouse Scroll Support;
 - [x] Slider Mouse Scroll Support;
 - [x] Checkbox parameter value;
-- [ ] Average FPS detect;
-- [ ] Detect Screen Size;
+- [x] Average FPS detect (Just forgot to update here, added on 0.3.3);
+- [x] Detect Screen Size;
+- [x] Slider on_change event;
+- [x] Textbox on_change event;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.

@@ -1,7 +1,7 @@
 from .required import *
 
 # Metadata
-_version = "0.3.3"
+_version = "0.3.4"
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
@@ -233,6 +233,28 @@ class InputQuery:
             self._query.pop(0)
             self.last_change = dt - 0.875
 
+class VideoInfo:
+    """
+    Just a way to connect things to:
+    pygame.display._VidInfo
+    """
+    hw: int
+    wm: int
+    video_mem: int
+    bitsize: int
+    bytesize: int
+    masks: tuple[int,int,int,int]
+    shifts: tuple[int,int,int,int]
+    losses: tuple[int,int,int,int]
+    blit_hw: int
+    blit_hw_CC: int
+    blit_hw_A: int
+    blit_sw: int
+    blit_sw_CC: int
+    blit_sw_A: int
+    current_h: int
+    current_w: int
+
 def humanize_seconds(seconds:int) -> dict:
     """
     This command will humanize seconds
@@ -412,7 +434,7 @@ class spritesheet(object):
         self.image_path = image_path
         self.engine = engine
         try:
-            self.image = pg.image.load(image_path).convert()
+            self.image = pg.image.load(image_path).convert_alpha()
         except pg.error as message:
             print('Unable to load spritesheet image:', image_path)
             raise SystemExit(str(message))

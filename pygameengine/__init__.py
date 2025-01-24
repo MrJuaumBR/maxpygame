@@ -57,11 +57,14 @@ class PyGameEngine:
 
     
     text_cache:dict
+    
+    MonitorInfo:VideoInfo = None
     def __init__(self,screen:pg.SurfaceType=None):
         """
         Initializes **PyGame** and the **Engine** itself.
         """
         pg.init()
+        self.MonitorInfo = pg.display.Info()
         pg.joystick.init()
         self.input_query=InputQuery(self)
         print(f"{self.meta.name} - {self.meta.version}\n\t - By {self.meta.author}")
@@ -150,6 +153,17 @@ class PyGameEngine:
     @delta_time.setter
     def delta_time(self, value:float):
         print("Delta time can't get be changed.")
+    
+    def getMonitorSize(self) -> tuple[int,int]:
+        """
+        Get the monitor size
+        
+        Parameters:
+            None
+        Returns:
+            tuple[int,int]
+        """
+        return (self.MonitorInfo.current_w, self.MonitorInfo.current_h)
     
     def loadIcon(self):
         """

@@ -23,7 +23,7 @@ arial12 = pge.createSysFont('Arial', 12)
 # Create widgets
 Button:pyge.Button = pge.create_widget(pyge.Button, (15, 100), arial24, 'Im a Button!', [pge.Colors.DARKGRAY, pge.Colors.WHITE, pge.Colors.LIGHTGRAY], id='button1',tip=('This is a test tip, without manual break.', arial16))
 Check:pyge.Checkbox = pge.create_widget('Checkbox', (190,100), arial24, 'Im a Checkbox!', [pge.Colors.WHITE, pge.Colors.GREEN, pge.Colors.RED, pge.Colors.DARKGRAY], id='checkbox1',value=False, tip=('This is a test tip\nwith manual break.\nEnable this to enable mouse emulate with controller', arial16))
-Slider:pyge.Slider = pge.create_widget('Slider', (15, 170), (300, 20), [pge.Colors.WHITE, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY, pge.Colors.DARKPINK], value=.5, id='slider1')
+Slider:pyge.Slider = pge.create_widget('Slider', (15, 170), (300, 20), [pge.Colors.WHITE, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY, pge.Colors.DARKPINK], value=.5, id='slider1', on_change=lambda obj: print(f"Slider change: {obj.value}"))
 Select:pyge.Select = pge.create_widget('Select', (25, 250), arial24, [pge.Colors.HOTPING, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY], items=['480x360', '640x480', '800x600', '1024x768', '1280x720', '1366x768', '1440x900', '1600x900', '1680x1050', '1920x1200','1920x1080'],textBg=True)
 ProgressBar:pyge.Progressbar = pge.create_widget('ProgressBar', (15, 450), (300, 20), [pge.Colors.RED, pge.Colors.BROWN, pge.Colors.BROWN, pge.Colors.WHITE],text='?/?', font=arial16, value=.5)
 TextBox = pyge.Textbox(pge, (10, 600), 20, [pge.Colors.DARKGRAY, pge.Colors.LIGHTBLUE,pge.Colors.WHITE, pge.Colors.LIGHTGRAY], arial16, 'Im a textbox!',placeholder="Enter a text...", id='textbox1')
@@ -115,10 +115,11 @@ while True:
         pge.draw_text((pge.mouse.x+10, pge.mouse.y+20), f'Left: {pge.mouse.left}, Right: {pge.mouse.right}, Middle: {pge.mouse.middle}', arial12, pge.Colors.WHITE)
         pge.draw_text((pge.mouse.x+10, pge.mouse.y+40), f'Btn 4: {pge.mouse.button_4}, Btn 5: {pge.mouse.button_5}', arial12, pge.Colors.WHITE)
         pge.draw_text((pge.mouse.x+10, pge.mouse.y+60), f'Wheel: {pge.mouse.scroll}', arial12, pge.Colors.WHITE)
+        pge.draw_text((pge.mouse.x+10, pge.mouse.y+80), f'Monitor Size: {pge.getMonitorSize()}, Screen Size: {pge.screen_size}', arial12, pge.Colors.WHITE)
         if pge.joystick.mainController:
-            pge.draw_text((pge.mouse.x+10, pge.mouse.y+80), f'Joystick (Id): {pge.joystick.mainController.get_id()}, Name: {pge.joystick.mainController.get_name()}', arial12, pge.Colors.YELLOW)
+            pge.draw_text((pge.mouse.x+10, pge.mouse.y+100), f'Joystick (Id): {pge.joystick.mainController.get_id()}, Name: {pge.joystick.mainController.get_name()}', arial12, pge.Colors.YELLOW)
             # Joystick axis
-            pge.draw_text((pge.mouse.x+10, pge.mouse.y+100), f'Left X,Y: {round(pge.joystick.mainController.get_axis(0),3)}, {round(pge.joystick.mainController.get_axis(1),3)},            Right X,Y: {round(pge.joystick.mainController.get_axis(2),3)}, {round(pge.joystick.mainController.get_axis(3),3)}', arial12, pge.Colors.YELLOW)
+            pge.draw_text((pge.mouse.x+10, pge.mouse.y+120), f'Left X,Y: {round(pge.joystick.mainController.get_axis(0),3)}, {round(pge.joystick.mainController.get_axis(1),3)},            Right X,Y: {round(pge.joystick.mainController.get_axis(2),3)}, {round(pge.joystick.mainController.get_axis(3),3)}', arial12, pge.Colors.YELLOW)
             
     pge.update()
     pge.fpsw()
