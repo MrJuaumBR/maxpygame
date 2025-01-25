@@ -109,6 +109,7 @@
 - [x] Detect Screen Size;
 - [x] Slider on_change event;
 - [x] Textbox on_change event;
+- [x] Align Feature to Text & Rect;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.

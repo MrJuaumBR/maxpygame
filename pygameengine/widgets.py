@@ -1003,6 +1003,7 @@ class Dropdown(Widget):
     
     colors:list[reqColor,reqColor,reqColor,] = []
     texts:list[str,] = []
+    text:str = ''
     current_text:int = 0
     font:pg.font.FontType = None
     position:tuple[int,int] = (0,0)
@@ -1041,7 +1042,7 @@ class Dropdown(Widget):
         self.font:pg.font.FontType = font
         self.alpha:int = alpha
         self.current_text:int = current_text
-        
+        self.text = self.texts[self.current_text]
         self.build_widget_display()
     
     def __on_change(self):
@@ -1054,6 +1055,7 @@ class Dropdown(Widget):
             None
         """  
         self.value = self.current_text
+        self.text = self.texts[self.current_text]
         if self.on_change:
             if callable(self.on_change):
                 self.on_change(self)

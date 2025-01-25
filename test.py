@@ -27,7 +27,7 @@ Slider:pyge.Slider = pge.create_widget('Slider', (15, 170), (300, 20), [pge.Colo
 Select:pyge.Select = pge.create_widget('Select', (25, 250), arial24, [pge.Colors.HOTPING, pge.Colors.DARKGRAY, pge.Colors.LIGHTGRAY], items=['480x360', '640x480', '800x600', '1024x768', '1280x720', '1366x768', '1440x900', '1600x900', '1680x1050', '1920x1200','1920x1080'],textBg=True)
 ProgressBar:pyge.Progressbar = pge.create_widget('ProgressBar', (15, 450), (300, 20), [pge.Colors.RED, pge.Colors.BROWN, pge.Colors.BROWN, pge.Colors.WHITE],text='?/?', font=arial16, value=.5)
 TextBox = pyge.Textbox(pge, (10, 600), 20, [pge.Colors.DARKGRAY, pge.Colors.LIGHTBLUE,pge.Colors.WHITE, pge.Colors.LIGHTGRAY], arial16, 'Im a textbox!',placeholder="Enter a text...", id='textbox1')
-Dropdown = pyge.Dropdown(pge, (10, 500), [pge.Colors.WHITE, pge.Colors.GRAY, pge.Colors.DARKGRAY], ['Dropdown Option 0', 'Dropdown Option 1', 'Dropdown Option 2','Small Option 1', "Tiny Opt"], arial16, id='dropdown1')
+Dropdown = pyge.Dropdown(pge, (10, 500), [pge.Colors.WHITE, pge.Colors.GRAY, pge.Colors.DARKGRAY], ["center","topleft","topright","bottomleft","bottomright"], arial16, id='dropdown1')
 
 # FPS Variability
 pge.enableFPS_unstable()
@@ -68,6 +68,7 @@ Check.on_change = Checkbox_Change
 # Game Loop
 while True:
     # Draw a text
+    pge.draw_text(pge.screen_center,f'Hello, This text is on {str(Dropdown.text).capitalize()} of {pge.screen_center}', arial14, pge.Colors.WHITE,align=Dropdown.text)
     if Button.value:
         pge.draw_text((15, 15),f'Button Pressed, Delay Counter(Frames): {Button.click_time_counter}', arial24, pge.Colors.WHITE)
     if Check.value:

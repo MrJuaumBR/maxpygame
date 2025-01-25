@@ -1,7 +1,9 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-<img src="https://img.shields.io/github/v/release/MrJuaumBR/maxpygame">
+![Version](https://img.shields.io/github/v/release/MrJuaumBR/maxpygame)
+
+![Chat](https://img.shields.io/discord/1014636634341392475)
 
 # MaxPyGame
 <img src="https://raw.githubusercontent.com/MrJuaumBR/maxpygame/main/engine-title.png" style="width: 50%; height: 480px; margin-left: 25%; margin-right: 25%;" alt="Engine Title" title="MaxPyGame">

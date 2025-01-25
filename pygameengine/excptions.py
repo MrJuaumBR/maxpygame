@@ -1,3 +1,8 @@
+# Draw Error
+class InvalidAlignParameter(Exception):
+    def __init__(self, align:str):
+        super().__init__(f'The align parameter {align} is not a valid align parameter.')
+
 # Widgets Errors
 class CreateWidgetTypeError(Exception):
     def __init__(self, widget_type:str):

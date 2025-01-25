@@ -19,6 +19,7 @@ class PyGameEngine:
     TimeSys:TTimeSys = None
     # PyGame Functions
     screen:pg.SurfaceType=None # Screen
+    screen_center:tuple[int,int] = (0,0)
     clock:pg.time.Clock=None # Clock
     
     # Engine Variables
@@ -93,6 +94,8 @@ class PyGameEngine:
                             print(f'\t - Updated version.')
         except: pass
         self.screen = screen
+        if self.screen:
+            self.screen_center = (self.screen_size[0]//2, self.screen_size[1]//2)
         self.clock = pg.time.Clock()
         self.Colors = ccc()
         self.TimeSys = TTimeSys(self)
@@ -226,6 +229,7 @@ class PyGameEngine:
     @screen_size.setter
     def screen_size(self, value:tuple[int,int]):
         self._screen_size = value
+        self.screen_center = (self.screen_size[0]//2, self.screen_size[1]//2)
     
     def setMouseEmulation(self, state:bool = True):
         self.joystick_mouse_emulate = state
@@ -253,6 +257,7 @@ class PyGameEngine:
             else: self.setScreenIcon(self.icon)
             self.is_running = True
             self.screen_size = (width, height)
+            self.screen_center = (self.screen_size[0]//2, self.screen_size[1]//2)
             return self.screen
     
     def setScreenTitle(self, title:str):
@@ -870,7 +875,7 @@ class PyGameEngine:
             if widget.enable:
                 widget.draw()
                 
-    def draw_rect(self, pos:tuple[int,int], size:tuple[int,int], color:reqColor, border_width:int=0, border_color:reqColor=None, surface:pg.SurfaceType=None, alpha:int=255) -> pg.Rect:
+    def draw_rect(self, pos:tuple[int,int], size:tuple[int,int], color:reqColor, border_width:int=0, border_color:reqColor=None, surface:pg.SurfaceType=None, alpha:int=255,align:Literal['center', 'topleft', 'topright', 'bottomleft', 'bottomright'] = 'topleft') -> pg.Rect:
         """
         Draw a rect on the surface
         
@@ -888,6 +893,19 @@ class PyGameEngine:
             return None
         
         rect = pg.Rect(*pos, *size)
+        if align == 'center':
+            rect.center = pos
+        elif align == 'topleft':
+            rect.topleft = pos
+        elif align == 'topright':
+            rect.topright = pos
+        elif align == 'bottomleft':
+            rect.bottomleft = pos
+        elif align == 'bottomright':
+            rect.bottomright = pos
+        else:
+            raise(InvalidAlignParameter(align))
+            
         color = self.getColor(color)
         
         if surface is None:
@@ -929,7 +947,7 @@ class PyGameEngine:
             return rect
         return None
 
-    def draw_text(self, position: tuple[int, int], text: str, font: pg.font.FontType, color: reqColor, surface: pg.SurfaceType = None, bgColor: reqColor = None, border_width: int = 0, border_color: reqColor = None, alpha: int = 255):
+    def draw_text(self, position: tuple[int, int], text: str, font: pg.font.FontType, color: reqColor, surface: pg.SurfaceType = None, bgColor: reqColor = None, border_width: int = 0, border_color: reqColor = None, alpha: int = 255, align:Literal['center','topleft','topright','bottomleft','bottomright'] = 'topleft') -> pg.Rect:
         """
         Draw text on the surface
 
@@ -941,6 +959,7 @@ class PyGameEngine:
             surface (Optional): pg.SurfaceType
             bgColor (Optional): reqColor
             alpha (Optional): int
+            align (Optional): 'center','topleft','topright','bottomleft','bottomright'
         Returns:
             Rect
         """
@@ -948,7 +967,7 @@ class PyGameEngine:
         color = self.getColor(color)
         bgColor = self.getColor(bgColor) if bgColor is not None else None
 
-        text_id = hash((text, color, bgColor, border_width, border_color, alpha))
+        text_id = hash((text, color, bgColor, border_width, border_color, alpha, align))
         if text_id in self.text_cache:
             text_surface = self.text_cache[text_id][0]
         else:
@@ -958,10 +977,27 @@ class PyGameEngine:
             text_surface.blit(render, (border_width, border_width))
             self.text_cache[text_id] = (text_surface, time.time())
 
-        rect = text_surface.get_rect(topleft=position)
+        rect:pg.rect.RectType = Rect(0,0,*text_surface.get_size())
+        align = str(align).lower()
+        
+        if align == 'center':
+            rect.center = position
+        elif align == 'topleft':
+            rect.top = position[1]
+            rect.left = position[0]
+        elif align == 'topright':
+            rect.top = position[1]
+            rect.right = position[0]
+        elif align == 'bottomleft':
+            rect.bottomleft = position
+        elif align == 'bottomright':
+            rect.bottomright = position
+        else:
+            raise(InvalidAlignParameter(align))
+            
         if surface is None:
             surface = self.getScreen()
-        surface.blit(text_surface, rect)
+        surface.blit(text_surface, rect.topleft)
 
         self._clean_text_cache()
         
