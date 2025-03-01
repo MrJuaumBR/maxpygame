@@ -1,7 +1,8 @@
 """
 A File designed only to import things for all the project.
 """
-import math, os, random, sys, time, platform, subprocess, inspect, threading
+import math, os, random,json , sys, time, platform, subprocess, inspect, threading, colorsys
+import urllib.request
 from typing import Literal
 try:
     import pygame as pg
@@ -17,9 +18,9 @@ import inspect
 from datetime import datetime, timedelta
 from .excptions import *
 
-try:
-    import requests
-except ModuleNotFoundError:
-    print('Requests not installed, installing...')
-    os.system('python -m pip install requests')
-    print('Installed.')
+# try:
+#     import requests
+# except ModuleNotFoundError:
+#     print('Requests not installed, installing...')
+#     os.system('python -m pip install requests')
+#     print('Installed.')

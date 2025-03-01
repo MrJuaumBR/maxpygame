@@ -27,7 +27,7 @@ while True:
     pge.draw_text((0,0), f'FPS: {pge.fps}', arial14, pge.Colors.BLACK)
     pge.draw_text((0,20), f'Color: ({round(RedSlider.value*255,2)},{round(GreenSlider.value*255,2)},{round(BlueSlider.value*255,2)})', arial18, pge.Colors.BLACK)
     pge.draw_text((0,40), f'Color - Float: ({RedSlider.value},{GreenSlider.value},{BlueSlider.value})', arial14, pge.Colors.BLACK)
-    pge.draw_text((0,200), f'Brightness: {Brightness}', arial18, pge.Colors.BLACK)
+    pge.draw_text((0,200), f'Brightness: {Brightness}, HEX: {Color.hex}, HSV: {[round(x,3) for x in Color.hsv]}', arial18, pge.Colors.BLACK)
     pge.draw_rect((10,65), (128,128), Color)
     
     

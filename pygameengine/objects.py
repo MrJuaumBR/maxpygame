@@ -1,7 +1,7 @@
 from .required import *
 
 # Metadata
-_version = "0.3.5"
+_version = "0.3.6"
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
@@ -9,12 +9,9 @@ class Metadata:
     description = "A simple pygame engine"
     github = "https://github.com/MrJuaumBR/maxpygame"
     testpypi = "https://test.pypi.org/project/maxpygame/"
-    def splitver(self) -> str:
-        x = ''
-        for number in self.version.split("."): x += str(number)
-        return x
     def splitver2int(self) -> int:
-        x = self.splitver()
+        x = self.version.replace('fix','')
+        x = x.replace(".",'')
         return int(x)
 
 class Icon:
@@ -113,6 +110,7 @@ def rgb_to_hex(r:int, g:int, b:int) -> str:
     return f'#{r:02x}{g:02x}{b:02x}'
 
 # Input Query
+
 class InputQuery:
     """
     InputQuery System
@@ -356,18 +354,45 @@ class HEX:
     def rgb(self) -> tuple[int,int,int]:
         return hex_to_rgb(self.hex)
     
-class color():
+
+class color:
     _rgb:RGB
     _hex:HEX
+    hsv:tuple[int,int,int]
     brightness:float = 0
     def __init__(self, r:int, g:int, b:int,hex:str=None):
         if hex is not None:
             self._rgb = RGB(*hex_to_rgb(hex)) # Convert hex to rgb, and validate color(limit > 0 & < 255)
             self._hex = HEX(self._rgb.hex()) # Convert rgb to hex after validating
+            self.hsv = self.rgb_to_hsv()
         else:
             self._rgb = RGB(r, g, b) # Validate color
             self._hex = HEX(self._rgb.hex()) # Convert rgb to hex after validating
+            self.hsv = self.rgb_to_hsv()
         self.brightness = self._rgb.brightness
+        
+    def rgb_to_hsv(self) -> tuple[int,int,int]:
+        r,g,b = self._rgb.rgb()
+        h,s,v = colorsys.rgb_to_hsv(r/255, g/255, b/255)
+        return round(h*360), round(s*100), round(v*100)
+    
+    def hsv_to_rgb(self, h:int, s:int, v:int) -> tuple[int,int,int]:
+        """
+        Convert HSV to RGB
+        
+        Parameters:
+            h (int): Hue
+            s (int): Saturation
+            v (int): Value
+        Returns:
+            tuple[int,int,int]: RGB as tuple
+        """
+        r,g,b = colorsys.hsv_to_rgb(h/360, s/100, v/100)
+        self._rgb = RGB(round(r*255), round(g*255), round(b*255)) # Validate color
+        self._hex = HEX(self._rgb.hex()) # Convert rgb to hex after validating
+        self.hsv = self.rgb_to_hsv()
+        self.brightness = self._rgb.brightness
+        return self._rgb.rgb()
     
     def random(self) -> RGB:
         """
@@ -395,6 +420,7 @@ class color():
         r,g,b = rgb
         self._rgb = RGB(r, g, b) # Validate color
         self._hex = HEX(self._rgb.hex()) # Convert rgb to hex after validating
+        self.hsv = self.rgb_to_hsv()
         self.brightness = self._rgb.brightness
         
     @rgb.getter
@@ -409,6 +435,7 @@ class color():
     def hex(self, hex:str):
         self._rgb = RGB(*hex_to_rgb(hex)) # Convert hex to rgb, and validate color(limit > 0 & < 255)
         self._hex = HEX(self._rgb.hex()) # Convert rgb to hex after validating
+        self.hsv = self.rgb_to_hsv()
         self.brightness = self._rgb.brightness
         
     @hex.getter
@@ -729,10 +756,7 @@ class Joystick:
     mainJoystick = mainController # Aliases
     
     def getControllerById(self, id:int) -> Controller:
-        for joystick in self.joysticks: 
-            if joystick.joystick.get_id() == id: return joystick 
-            else: pass
-        return None
+        return next((joystick for joystick in self.joysticks if joystick.joystick.get_id() == id), None)
     
     getJoystickById = getControllerById # Aliases
     
@@ -808,7 +832,7 @@ class TrailNode:
             None
         """
         time_alive = (self.engine.delta_time - self.start_time).total_seconds()
-        self.alpha = max(0, self.alpha - int(255 * time_alive / self.engine.mouse.trail_duration))
+        self.alpha = max(0, int(self.alpha - 255 * time_alive / self.engine.mouse.trail_duration))
         if surface is None:
             surface = self.engine.screen
         
@@ -923,22 +947,21 @@ class Mouse:
         
     def scroll_slow_down(self):
         """
-        Scroll Slow Down, Makes a Smooth Scroll that will use accelration for slowly slow down the scrolling
+        Scroll Slow Down, Makes a Smooth Scroll that will use acceleration for slowly slow down the scrolling
         
         Parameters:
             None
         Returns:
             None
         """
-        if (self.scroll < 0 or self.scroll > 0) and self.smooth_scroll:
-            self.scroll *= self.loss_speed/100 # xx% Loss Speed
+        if self.smooth_scroll and self.scroll != 0:
+            self.scroll *= 0.01 * self.loss_speed
             self.scroll = round(self.scroll, 4)
             if abs(self.scroll) < 0.085:
                 self.scroll = 0
-        elif not self.smooth_scroll:
-            if self.smooth_scroll_delay <= 0:
-                self.scroll = 0
-                self.smooth_scroll_delay = self.engine.TimeSys.s2f(self.non_smooth_delay)
+        elif not self.smooth_scroll and self.smooth_scroll_delay <= 0:
+            self.scroll = 0
+            self.smooth_scroll_delay = self.engine.TimeSys.s2f(self.non_smooth_delay)
     
     def draw_trail(self):
         """
@@ -951,9 +974,12 @@ class Mouse:
             None
         """
         current_time = self.engine.delta_time
+        trail_duration_seconds = self.trail_duration
+        
+        # Filter and draw in one iteration
         self.trail_nodes = [
-            trail for trail in self.trail_nodes 
-            if (current_time - trail.start_time).total_seconds() < self.trail_duration
+            trail for trail in self.trail_nodes
+            if (current_time - trail.start_time).total_seconds() < trail_duration_seconds
         ]
         
         for trail in self.trail_nodes:
@@ -974,11 +1000,13 @@ class Mouse:
         """
         if self.mouse_trail_enabled:
             self.trail_nodes.append(TrailNode(
-                self.engine, pg.Vector2(self.pos), self.trail_node_size,
-                self.trail_node_color if not self.trail_node_random_color else color(0, 0, 0).random()
+                self.engine, pg.Vector2(self.pos),
+                self.trail_node_size, self.trail_node_color if not self.trail_node_random_color else
+                color(0, 0, 0).random()
             ))
+            self.trail_nodes = [trail for trail in self.trail_nodes if (self.engine.delta_time - trail.start_time).total_seconds() < self.trail_duration]
         
-        self.smooth_scroll_delay = max(0, self.smooth_scroll_delay - 1)
+        self.smooth_scroll_delay -= 1
         
         self.x,self.y = pg.mouse.get_pos()
         buttons = pg.mouse.get_pressed(5)
@@ -986,8 +1014,6 @@ class Mouse:
         self.button_4, self.button_5 = (buttons[3], buttons[4]) if len(buttons) > 3 else (False, False)
         
         # self.draw_trail()
-            
-
 
     
 class cfgtimes:

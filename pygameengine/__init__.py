@@ -51,10 +51,6 @@ class PyGameEngine:
     limit_error_active:bool = True
     
     cfgtips = cfgtips()
-    
-    backgroundFunctions:list[tuple[tuple,object]] = []
-    run_background_thread:bool = False
-    BackgroundThread:threading.Thread
 
     
     text_cache:dict
@@ -69,30 +65,8 @@ class PyGameEngine:
         pg.joystick.init()
         self.input_query=InputQuery(self)
         print(f"{self.meta.name} - {self.meta.version}\n\t - By {self.meta.author}")
-        try:
-            print(f'\t - [!] Any issues, please go to: {self.meta.github}')
-            data_online = requests.get('https://raw.githubusercontent.com/MrJuaumBR/maxpygame/main/data.json').json()
-            if 'version' in data_online.keys():
-                # Check if metadata version can be converted to int
-                try:
-                    int(self.meta.splitver())
-                    ver = self.meta.splitver2int()
-                    if data_online['version'] > ver:
-                        print(f'\t - [!] New version available, please go to: {self.meta.github}')
-                    elif data_online['version'] < ver:
-                        print(f'\t - [!] You are using an unknown version, please go to: {self.meta.github}')
-                    else:
-                        print(f'\t - Updated version.')
-                except: # Cant convert to int
-                    if 'fix' in self.meta.version:
-                        ver = int(self.meta.splitver().replace('fix',''))
-                        if data_online['version'] > ver:
-                            print(f'\t - [!] New version available, please go to: {self.meta.github}')
-                        elif data_online['version'] < ver:
-                            print(f'\t - [!] You are using an unknown version, please go to: {self.meta.github}')
-                        else:
-                            print(f'\t - Updated version.')
-        except: pass
+        print(f'\t - [!] Any issues, please go to: {self.meta.github}')
+        self.detect_version()
         self.screen = screen
         if self.screen:
             self.screen_center = (self.screen_size[0]//2, self.screen_size[1]//2)
@@ -102,9 +76,42 @@ class PyGameEngine:
         self.mouse = Mouse(self)
         self.joystick = Joystick(self)
         self.started_time:datetime = datetime.now()
+        
+        self.is_running = True
     
         self.text_cache:dict = {}
         self.cache_cleanup_time:float = 0.7
+    
+    def detect_version(self) -> bool:
+        with urllib.request.urlopen('https://raw.githubusercontent.com/MrJuaumBR/maxpygame/main/data.json') as resp:
+            data = resp.read().decode()
+            
+        data_online = json.loads(data)
+        if 'version' in data_online.keys():
+                # Check if metadata version can be converted to int
+        #         try:
+        #             int(self.meta.splitver())
+            ver = self.meta.splitver2int()
+            if data_online['version'] > ver:
+                print(f'\t - [!] New version available, please go to: {self.meta.github}')
+            elif data_online['version'] < ver:
+                print(f'\t - [!] You are using an unknown version ({ver}), please go to: {self.meta.github}')
+            else:
+                print(f'\t - Updated version.')
+                return True
+        #         except: # Cant convert to int
+        #             if 'fix' in self.meta.version:
+        #                 ver = int(self.meta.splitver().replace('fix',''))
+        #                 if data_online['version'] > ver:
+        #                     print(f'\t - [!] New version available, please go to: {self.meta.github}')
+        #                 elif data_online['version'] < ver:
+        #                     print(f'\t - [!] You are using an unknown version, please go to: {self.meta.github}')
+        #                 else:
+        #                     print(f'\t - Updated version.')
+        
+        
+        return False
+        
     
     def _getElapsedTime(self) -> dict:
         """
@@ -365,6 +372,7 @@ class PyGameEngine:
         self.is_running = False
         pg.quit()
         sys.exit()
+    quit = exit
         
     def _triesUpdate(self, target:pg.SurfaceType=None):
         """
@@ -386,68 +394,7 @@ class PyGameEngine:
                 pg.display.flip()
             except Exception as ex:
                 raise ex    
-    
-    def background_thread(self):
-        """
-        Background thread for the engine
         
-        Parameters:
-            None
-        Returns:
-            None
-        """
-        print("\t - [!] Background thread started.")
-        with self.threadLock:
-            while self.run_background_thread and self.is_running:
-                if self.BgFnCanRun:
-                    for index, func_data in enumerate(self.backgroundFunctions):
-                        func = func_data[0]
-                        args = func_data[1]
-                        try:
-                            if func:
-                                if callable(func):
-                                    func(*args)
-                        except Exception as ex:
-                            print(f'\t - [!] Error in background thread: {ex}')
-                        self.backgroundFunctions.pop(index)
-                    self.BgFnCanRun = False
-                self.fpsw()
-
-    def setRunBackgroundThread(self, state:bool = True):
-        """
-        Enable or disable the background thread
-        
-        Parameters:
-            state:bool
-        Returns:
-            None
-        """
-        self.run_background_thread = state
-        if state:
-            print(f'\t - [!] Background thread enabled.')
-            
-            self.BackgroundThread = threading.Thread(target=self.background_thread,name='BackgroundThread',daemon=True)
-            self.BackgroundThread.start()
-            print("After")
-        else:
-            print(f'\t - [!] Background thread disabled.')
-            self.BackgroundThread = None
-            self.backgroundFunctions.clear()
-            
-    def addFunction(self, func:object, args:tuple):
-        """
-        Add a function to the background thread
-        
-        Parameters:
-            func:object
-            args:tuple
-        Returns:
-            None
-        """
-        if self.run_background_thread:
-            self.backgroundFunctions.append((func,args))
-        else:
-            print(f'\t - [!] Background thread is disabled.')
     
     def _update(self, target:pg.SurfaceType=None):
         """
@@ -479,22 +426,17 @@ class PyGameEngine:
                     self.input_query.insert_query(event)
             self.input_query.update(self.delta_time)
             
-    def update(self, target:pg.SurfaceType=None,runBackground:bool=False):
+    def update(self, target:pg.SurfaceType=None):
         """
         Update the screen if there is one, if not try to update the target
-        
-        *If run_background_thread is True, this function will be called in a background thread*
         
         Parameters:
             target(Optional):pg.SurfaceType
         Returns:
             None
         """
-        if self.run_background_thread and runBackground:
-            self.backgroundFunctions.append((self._update,(target,)))
-        else:
-            self._update(target)
-            self.BgFnCanRun:bool = True
+        self._update(target)
+            
         
                     
         
@@ -875,7 +817,7 @@ class PyGameEngine:
             if widget.enable:
                 widget.draw()
                 
-    def draw_rect(self, pos:tuple[int,int], size:tuple[int,int], color:reqColor, border_width:int=0, border_color:reqColor=None, surface:pg.SurfaceType=None, alpha:int=255,align:Literal['center', 'topleft', 'topright', 'bottomleft', 'bottomright'] = 'topleft') -> pg.Rect:
+    def draw_rect(self, pos:tuple[int,int], size:tuple[int,int], color:reqColor, border_width:int=0, border_color:reqColor=None, surface:pg.SurfaceType=None, alpha:int=255,root_point:Literal['center', 'topleft', 'topright', 'bottomleft', 'bottomright'] = 'topleft') -> pg.Rect:
         """
         Draw a rect on the surface
         
@@ -886,28 +828,28 @@ class PyGameEngine:
             border_width(Optional):int
             surface(Optional):pg.SurfaceType
             alpha(Optional):int
+            root_point(Optional):'center', 'topleft', 'topright', 'bottomleft', 'bottomright'
         Returns:
             Rect
         """
         if not self.hasScreen():
             return None
         
+        root_point = str(root_point).lower()
         rect = pg.Rect(*pos, *size)
-        if align == 'center':
+        if root_point == 'center':
             rect.center = pos
-        elif align == 'topleft':
+        elif root_point == 'topleft':
             rect.topleft = pos
-        elif align == 'topright':
+        elif root_point == 'topright':
             rect.topright = pos
-        elif align == 'bottomleft':
+        elif root_point == 'bottomleft':
             rect.bottomleft = pos
-        elif align == 'bottomright':
+        elif root_point == 'bottomright':
             rect.bottomright = pos
         else:
-            raise(InvalidAlignParameter(align))
+            raise(InvalidAlignParameter(root_point))
             
-        color = self.getColor(color)
-        
         if surface is None:
             surface = self.getScreen()
         
@@ -916,7 +858,9 @@ class PyGameEngine:
             pg.draw.rect(surface, b_color, rect, border_width)
         
         s = pg.Surface(rect.size, pg.SRCALPHA)
-        s.fill(color)
+        if color:
+            color = self.getColor(color)
+            s.fill(color)
         s.set_alpha(alpha)
         surface.blit(s, rect.topleft)
         
@@ -947,7 +891,7 @@ class PyGameEngine:
             return rect
         return None
 
-    def draw_text(self, position: tuple[int, int], text: str, font: pg.font.FontType, color: reqColor, surface: pg.SurfaceType = None, bgColor: reqColor = None, border_width: int = 0, border_color: reqColor = None, alpha: int = 255, align:Literal['center','topleft','topright','bottomleft','bottomright'] = 'topleft') -> pg.Rect:
+    def draw_text(self, position: tuple[int, int], text: str, font: pg.font.FontType, color: reqColor, surface: pg.SurfaceType = None, bgColor: reqColor = None, border_width: int = 0, border_color: reqColor = None, alpha: int = 255, root_point:Literal['center','topleft','topright','bottomleft','bottomright'] = 'topleft') -> pg.Rect:
         """
         Draw text on the surface
 
@@ -959,7 +903,7 @@ class PyGameEngine:
             surface (Optional): pg.SurfaceType
             bgColor (Optional): reqColor
             alpha (Optional): int
-            align (Optional): 'center','topleft','topright','bottomleft','bottomright'
+            root_point (Optional): 'center','topleft','topright','bottomleft','bottomright'
         Returns:
             Rect
         """
@@ -967,7 +911,7 @@ class PyGameEngine:
         color = self.getColor(color)
         bgColor = self.getColor(bgColor) if bgColor is not None else None
 
-        text_id = hash((text, color, bgColor, border_width, border_color, alpha, align))
+        text_id = hash((text, color, bgColor, border_width, border_color, alpha, root_point))
         if text_id in self.text_cache:
             text_surface = self.text_cache[text_id][0]
         else:
@@ -978,22 +922,22 @@ class PyGameEngine:
             self.text_cache[text_id] = (text_surface, time.time())
 
         rect:pg.rect.RectType = Rect(0,0,*text_surface.get_size())
-        align = str(align).lower()
+        root_point = str(root_point).lower()
         
-        if align == 'center':
+        if root_point == 'center':
             rect.center = position
-        elif align == 'topleft':
+        elif root_point == 'topleft':
             rect.top = position[1]
             rect.left = position[0]
-        elif align == 'topright':
+        elif root_point == 'topright':
             rect.top = position[1]
             rect.right = position[0]
-        elif align == 'bottomleft':
+        elif root_point == 'bottomleft':
             rect.bottomleft = position
-        elif align == 'bottomright':
+        elif root_point == 'bottomright':
             rect.bottomright = position
         else:
-            raise(InvalidAlignParameter(align))
+            raise(InvalidAlignParameter(root_point))
             
         if surface is None:
             surface = self.getScreen()

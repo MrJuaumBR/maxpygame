@@ -1,6 +1,6 @@
 from .widgets import *
 from .objects import color as reqColor
-import requests, json
+import json, urllib.request
 import random
 
 Git_Colors_JS = 'https://mrjuaumbr.github.io/database/data/colors.json'
@@ -23,10 +23,11 @@ class Colors:
     
     def add_colors_from_json(self):
         if not self.only_native_colors:
-            colors = requests.get(Git_Colors_JS)
-            succ = self.load_colors_from_json(colors)
-            if not succ:
-                print('\t\t - [!] Some colors cannot be loaded from online json.')
+            with urllib.request.urlopen(Git_Colors_JS) as url:
+                colors = json.loads(url.read().decode())
+                succ = self.load_colors_from_json(colors)
+                if not succ:
+                    print('\t\t - [!] Some colors cannot be loaded from online json.')
             # if colors:
             #     colors = colors.json()
             #     for color in colors.keys():
@@ -37,12 +38,6 @@ class Colors:
         self.add_aliases()
         
     def load_colors_from_json(self, json_file:dict):
-        if type(json_file) == requests.Response:
-            try:
-                json_file = json_file.json()
-            except:
-                print('\t - [!] colors cannot be loaded from the provided json.')
-                return False
         try:
             colors = json_file
             if colors:

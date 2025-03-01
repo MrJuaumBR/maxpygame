@@ -110,6 +110,10 @@
 - [x] Slider on_change event;
 - [x] Textbox on_change event;
 - [x] Align Feature to Text & Rect;
+- [x] No more *Requests* librarie dependancy;
+- [x] "None" On "color" paramater in *draw_rect* will draw only border;
+- [x] HSV_selector example;
+- [ ] Dropdown when pass screen go to another direction;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.
@@ -142,4 +146,5 @@
 - [x] Fill Function small changes;
 - [x] textarea_example.py updates;
 - [x] General Optmizations;
+- [x] HSV Converter to reqColor/Color types;
 - [ ] Total GPU in use;

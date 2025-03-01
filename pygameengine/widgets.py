@@ -1061,15 +1061,10 @@ class Dropdown(Widget):
                 self.on_change(self)
     
     def build_widget_display(self):
+        width,height = max(self.font.size(text) for text in self.texts)
+        
         # Set the rect for the new one
-        self.rect = pg.Rect(*self.position, self.font.size(self.texts[self.current_text])[0]+4, self.font.size(self.texts[self.current_text])[1]+2)
-        
-        width,height = self.rect.size
-        
-        # Set width to be the width of the longest text
-        for text in self.texts:
-            if self.font.size(text)[0]+4 > width:
-                width = self.font.size(text)[0]+4
+        self.rect = pg.Rect(*self.position, width, height)
         
         self.surface = pg.Surface((width,height), pg.SRCALPHA)
         
@@ -1360,4 +1355,5 @@ class Textarea(Widget):
             self.text_changed = False
             
         self.engine.screen.blit(self.surface, self.position)
-        return super().draw()
+        return super().draw()    
+    

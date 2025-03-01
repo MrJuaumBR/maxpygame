@@ -13,7 +13,7 @@
 The idea for creating this project is to make more easier to develop in PyGame without having to make multiples "widgets" and some functions every time when you will create a project.<br>
 Currently we have multiple functions for use, like: CreateSreen, CreateSysFont, CreateFont and etc...<br>
 for the future we want to improve perfomance and have how many functions that you can imagine!<br>
-Over +4500 Lines of pure code!
+Over +4700 Lines of pure code!
 
 <button style="background-color: #232323; color: #C7C1C1; border-radius: 10px">[<i class="bi bi-window"></i> Test PyPi](https://test.pypi.org/project/maxpygame/)</button>
 
