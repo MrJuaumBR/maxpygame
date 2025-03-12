@@ -102,8 +102,8 @@ class Tip():
         self.text_lines = []
         current_line = ''
         for word in ' '.join(lines).split(' '):
-            if self.font.size(current_line + ' ' + word)[0] <= max_x:
-                current_line += ' ' + word
+            if self.font.size(f'{current_line} {word}')[0] <= max_x:
+                current_line += f' {word}'
             else:
                 self.text_lines.append(current_line)
                 current_line = word
@@ -191,14 +191,13 @@ class Widget(pg.sprite.Sprite):
         self.engine = engine
         self.engine.addWidget(self)
         
-        if id in [' ','',None,'None']:
+        if id in {' ', '', None, 'None'}:
             self._id = f'{self._type}{len(self.engine.widgets)}'
         else:
             self._id = id
             
-        if tip is not None:
-            if type(tip) in [list, tuple]:
-                self.tip = self.engine.create_tip(*tip)
+        if tip is not None and type(tip) in [list, tuple]:
+            self.tip = self.engine.create_tip(*tip)
     
     def build_widget_display(self):
         pass
@@ -208,9 +207,8 @@ class Widget(pg.sprite.Sprite):
     
     def hovered(self):
         m_pos = self.engine.mouse.pos
-        if self.rect.collidepoint(m_pos):
-            if self.tip is not None:
-                self.tip.draw()
+        if self.rect.collidepoint(m_pos) and self.tip is not None:
+            self.tip.draw()
     
     def draw(self):
         if self.enable:
@@ -380,9 +378,8 @@ class Checkbox(Widget):
         Returns:
             None
         """
-        if self.on_change:
-            if callable(self.on_change):
-                self.on_change(self)
+        if self.on_change and callable(self.on_change):
+            self.on_change(self)
     
     def update(self):
         if self.rect.collidepoint(self.engine.mouse.pos) and self.engine.mouse.left and self.click_time_counter <= 0:
@@ -477,15 +474,13 @@ class Slider(Widget):
         self.circle = pg.Rect(self.currentPosition[0] - self.ball_size / 2, self.currentPosition[1] - self.ball_size / 2, self.ball_size, self.ball_size)
     
     def on_change(self):
-        if self._on_change:
-            if callable(self._on_change):
-                self._on_change(self)
+        if self._on_change and callable(self._on_change):
+            self._on_change(self)
     
     def update(self):
         mouse_pos = self.engine.mouse.pos
         if self.change_on_scroll and (self.engine.mouse.collidePoint(self.rect) or self.engine.mouse.collidePoint(self.circle)):
-            scroll = self.engine.mouse.scroll
-            if scroll:
+            if scroll := self.engine.mouse.scroll:
                 self.currentPosition[0] = max(
                     self.rect.x + self.circle.width // 2,
                     min(self.currentPosition[0] + scroll * 5, self.rect.right - self.circle.width // 2),
@@ -520,7 +515,7 @@ class Slider(Widget):
             if self.fill_passed:
                 w = self.currentPosition[0]-self.rect.x
                 self.engine.draw_rect((self.rect.x, self.rect.y), (0 if w < 0 else w+self.ball_size/2, self.rect.height), self.colors[0], alpha=self.alpha, surface=self.engine.screen)
-            self.engine.draw_circle(self.currentPosition,self.ball_size, self.colors[0], alpha=self.alpha, surface=self.engine.screen)
+            self.engine.draw_circle(self.currentPosition,int(self.ball_size), self.colors[0], alpha=self.alpha, surface=self.engine.screen)
         return super().draw()
 
 class Select(Widget):
@@ -599,9 +594,8 @@ class Select(Widget):
         Returns:
             None
         """    
-        if self.on_change:
-            if callable(self.on_change):
-                self.on_change(self)
+        if self.on_change and callable(self.on_change):
+            self.on_change(self)
     
     def fix_list(self):
         self.value %= len(self.items)
@@ -734,11 +728,8 @@ class Longtext(Widget):
                         y += rect[1]
                     else:
                         line += f' {word}'
-                self.engine.draw_text((0, y), line, self.font, self.colors[0], alpha=self.alpha, surface=self.image)
-                y += rect[1]
-            else:
-                self.engine.draw_text((0, y), line, self.font, self.colors[0], alpha=self.alpha, surface=self.image)
-                y += rect[1]
+            self.engine.draw_text((0, y), line, self.font, self.colors[0], alpha=self.alpha, surface=self.image)
+            y += rect[1]
             
     def draw(self):
         if self.image and self.rect:
@@ -912,45 +903,43 @@ class Textbox(Widget):
             self.value = self.text
             
             # Get mouse and update if is active or no
-            if self.engine.mouse.left:
-                if self.click_counter <= 0:
-                    if self.rect.collidepoint(self.engine.mouse.pos):
-                        if not self.active:
-                            self.click_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
-                            self.active = True
-                    else:
-                        self.active = False
+            if self.engine.mouse.left and self.click_counter <= 0:
+                if self.rect.collidepoint(self.engine.mouse.pos):
+                    if not self.active:
+                        self.click_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
+                        self.active = True
+                else:
+                    self.active = False
             
-            if self.active:
-                if self.key_press_counter <= 0 or self.del_press_counter <= 0:    
-                    keys:pg.key.ScancodeWrapper = self.engine.getKeys() # Get Keys pressed
-                    if keys[pg.K_BACKSPACE] and self.del_press_counter <= 0:
-                        self.text = self.text[:-1] # Remove last character
-                        self.del_press_counter = self.engine.TimeSys.s2f(self.del_press_time)
-                    elif keys[pg.K_RETURN] and self.key_press_counter <= 0:
-                        self.active = False
-                        self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
-                    elif self.key_press_counter <= 0:
-                        if not self.engine.input_query_enable:
-                            for ev in self.engine.events:
-                                if ev.type == pg.KEYDOWN:
-                                    if not (ev.key in self.blacklist):
-                                        self.text += ev.unicode
-                                    self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)                   
-                        else:
-                            ipq:InputQuery = self.engine.input_query
-                            for index, key, event in ipq.GetQuery():
-                                index:int
-                                key:int
-                                event:pg.event.EventType
-                                if not (key in self.blacklist):
-                                    self.text += event.unicode
-                                ipq.RemoveFromQuery(index) # Prevents Dupe
+            if self.active and (self.key_press_counter <= 0 or self.del_press_counter <= 0):
+                keys:pg.key.ScancodeWrapper = self.engine.getKeys() # Get Keys pressed
+                if keys[pg.K_BACKSPACE] and self.del_press_counter <= 0:
+                    self.text = self.text[:-1] # Remove last character
+                    self.del_press_counter = self.engine.TimeSys.s2f(self.del_press_time)
+                elif keys[pg.K_RETURN] and self.key_press_counter <= 0:
+                    self.active = False
+                    self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)
+                elif self.key_press_counter <= 0:
+                    if not self.engine.input_query_enable:
+                        for ev in self.engine.events:
+                            if ev.type == pg.KEYDOWN:
+                                if ev.key not in self.blacklist:
+                                    self.text += ev.unicode
                                 self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)                   
-            
-                    if self.text != self.value:
-                        self.on_change()
-                        
+                    else:
+                        ipq:InputQuery = self.engine.input_query
+                        for index, key, event in ipq.GetQuery():
+                            index:int
+                            key:int
+                            event:pg.event.EventType
+                            if ev.key not in self.blacklist:
+                                self.text += event.unicode
+                            ipq.RemoveFromQuery(index) # Prevents Dupe
+                            self.key_press_counter = self.engine.TimeSys.s2f(self.key_press_time)                   
+        
+                if self.text != self.value:
+                    self.on_change()
+                    
         return super().update()
     
     def cooldown_refresh(self):
@@ -964,14 +953,11 @@ class Textbox(Widget):
     
     def draw(self):
         if self.image:
-            if self.active:
-                color = self.colors[1]
-            else:
-                color = self.colors[0]
+            color = self.colors[1] if self.active else self.colors[0]
             self.engine.draw_rect(self.rect.topleft, self.rect.size, color, border_width=3 if len(self.colors) > 3 else 0, border_color=self.colors[2] if len(self.colors) > 3 else None,alpha=self.alpha)
             self.engine.draw_text((self.rect.x+2.5, self.rect.y+1),self.text, self.font, self.colors[2],alpha=self.alpha)
             
-            if self.placeholder_text and (len(str(self.text)) == 0 or not self.text):
+            if self.placeholder_text and (not str(self.text) or not self.text):
                 r1 = pg.Rect(0, 0, *self.font.size(self.placeholder_text))
                 r1.center = self.rect.topleft
                 r1.left += 5
@@ -979,8 +965,7 @@ class Textbox(Widget):
         return super().draw()
     
     def on_change(self):
-        if self._on_change:
-            if callable(self._on_change):
+        if self._on_change and callable(self._on_change):
                 self._on_change(self)
     
 class Dropdown(Widget):
@@ -1056,8 +1041,7 @@ class Dropdown(Widget):
         """  
         self.value = self.current_text
         self.text = self.texts[self.current_text]
-        if self.on_change:
-            if callable(self.on_change):
+        if self.on_change and callable(self.on_change):
                 self.on_change(self)
     
     def build_widget_display(self):
@@ -1094,8 +1078,7 @@ class Dropdown(Widget):
         self.build_widget_display()
     
     def hovered(self):
-        if (self.change_on_scroll and self.Click_Time_counter <= 0 and self.rect.collidepoint(self.engine.mouse.pos)): # Check if the mouse is in the rect, change on scroll True and click time counter <= 0
-            if self.engine.mouse.scroll != 0: # Check if the mouse is scrolling
+        if self.change_on_scroll and self.Click_Time_counter <= 0 and self.rect.collidepoint(self.engine.mouse.pos) and self.engine.mouse.scroll != 0: # Check if the mouse is in the rect, change on scroll True and click time counter <= 0
                 self.Click_Time_counter = self.engine.TimeSys.s2f(cfgtimes.WD_DPDW_CLICK_TIME)
                 change = self.engine.mouse.scroll * -1
                 change = 1 if change > 0 else -1
@@ -1240,7 +1223,7 @@ class Textarea(Widget):
             words = line.split(' ')
             current_line = ''
             for x,word in enumerate(words):
-                if self.font.size(current_line + ' ' + word)[0] >= max_x:
+                if self.font.size(f'{current_line} {word}')[0] >= max_x:
                     lines_copy.append(current_line)
                     current_line = word
                     self.build_widget_display()
@@ -1270,8 +1253,7 @@ class Textarea(Widget):
         
         # Get mouse and update if is active or no
         if self.editable:
-            if self.engine.mouse.left: # Left Mouse Click Active ?
-                if self.click_counter <= 0: # Isn't in Click Cooldown
+            if self.engine.mouse.left and self.click_counter <= 0: # Left Mouse Click Active ?
                     if self.engine.mouse.collidePoint(self.rect): # Mouse on Widget ?
                         if not self.active: # Isn't Active
                             self.click_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
@@ -1330,7 +1312,7 @@ class Textarea(Widget):
     def draw(self):
         if self.surface is None or self.text_changed:
             self.strip_text()
-            if self.placeholder_text and (len(str(self.text)) == 0 or not self.text):
+            if self.placeholder_text and (not str(self.text) or not self.text):
                 self.total_size = [int(i*1.15) for i in self.font.size(self.placeholder_text)]
             elif (self.total_size[0] < self.min_size[0] or self.total_size[1] < self.min_size[1]):
                 self.total_size = self.min_size
@@ -1346,7 +1328,7 @@ class Textarea(Widget):
                 self.engine.draw_text((1.5, 1+(ind*self.font.get_height())),line, self.font, self.colors[2], alpha=self.alpha, surface=self.surface)
             
             # Draw placeholder text at center of the widget with alpha
-            if self.placeholder_text and (len(str(self.text)) == 0 or not self.text):
+            if self.placeholder_text and (not str(self.text) or not self.text):
                 r1 = pg.Rect(0, 0, *self.font.size(self.placeholder_text))
                 r1.center = self.surface.get_rect().topleft
                 r1.left += 5

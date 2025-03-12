@@ -6,7 +6,7 @@ pge = pyge.PyGameEngine()
 
 # Create Screen
 S_W,S_H = (400,420)
-screen = pge.createScreen(S_W,S_H, pyge.pg.HWSURFACE)
+screen = pge.createScreen(S_W,S_H, pyge.pg.HWSURFACE|pyge.pg.RESIZABLE)
 pge.setScreenTitle("Hello, World!")
 
 # Create a font

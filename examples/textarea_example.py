@@ -19,6 +19,8 @@ pge = pyge.PyGameEngine()
 screen = pge.createScreen(1024, 720)
 pge.setScreenTitle("Hello, World!")
 
+pge.setFPS(1000)
+
 pge.input_query_enable = True
 
 # Create a font
@@ -34,7 +36,7 @@ if len(sys.argv) > 1:
         text:bytes = f.read()
     text = text.decode()
     
-Textarea:pyge.Textarea = pge.create_widget(pyge.Textarea, (10, 15), [pge.Colors.LIGHTBLUE, pge.Colors.DARKGRAY,pge.Colors.WHITE, pge.Colors.LIGHTGRAY], arial16, text,placeholder='Textarea Placeholder', id='textbox1')
+Textarea:pyge.Textarea = pge.create_widget(pyge.Textarea, (10, 30), [pge.Colors.LIGHTBLUE, pge.Colors.DARKGRAY,pge.Colors.WHITE, pge.Colors.LIGHTGRAY], arial16, text,placeholder='Textarea Placeholder', id='textbox1')
 
 # You can now disable textarea edit:
 Textarea.editable = True
@@ -55,3 +57,4 @@ while True:
     
     pge.fill(pge.Colors.BLACK)
     pge.draw_widgets()
+    pge.draw_text((5,5), f'Avg FPS: {int(pge.getAvgFPS())}', arial16, pge.Colors.WHITE)

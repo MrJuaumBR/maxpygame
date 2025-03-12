@@ -1,3 +1,5 @@
+@echo off
+
 echo Building "setup.py"
 python setup.py build
 

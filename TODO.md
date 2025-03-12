@@ -32,6 +32,8 @@
 - [x] Screen Argument in some examples;
 - [x] Trail Color Fix;
 - [x] Spritesheet converting to non-alpha surface;
+- [x] Fix Slider radius error;
+- [x] Fix getAvgFps first frame "0";
 
 ## Addeds
 - [x] Slider fill when pass;
@@ -147,4 +149,6 @@
 - [x] textarea_example.py updates;
 - [x] General Optmizations;
 - [x] HSV Converter to reqColor/Color types;
+- [x] humanize_seconds now supports milliseconds;
+- [x] Some Optimization;
 - [ ] Total GPU in use;

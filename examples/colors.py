@@ -55,7 +55,7 @@ while True:
                 x = 0
                 ii = 0
                 y += color_rect.height
-    pge.draw_text((S_W-300,S_H-20), f'X: {X_SHIFT}, Y: {Y_SHIFT}, Zoom: {round(zoom,4)}, Colors: {pge.Colors.number_of_colors()}, Aliases: {len(pge.Colors.aliases)}, FPS: {int(pge.getFPS())}', arial12, pge.Colors.WHITE, surface=screen)
+    pge.draw_text((S_W-320,S_H-20), f'X: {X_SHIFT}, Y: {Y_SHIFT}, Zoom: {round(zoom,2)}, Colors: {pge.Colors.number_of_colors()}, Aliases: {len(pge.Colors.aliases)}, FPS: {int(pge.getAvgFPS())}', arial12, pge.Colors.WHITE, surface=screen)
     
     if pge.joystick.mainController:
         x,y = pge.joystick.mainController.getAxisByString('left')

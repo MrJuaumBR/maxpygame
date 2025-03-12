@@ -113,7 +113,7 @@ while True:
                 pge.input_query_enable = not pge.input_query_enable
             
     # Update the screen
-    pge.draw_text((0,0), f'FPS: {int(pge.getFPS())}, Avg FPS: {int(pge.getAvgFPS())}, Cached Text: {len(pge.text_cache.keys())}, Delta Time: {pge.delta_time}', arial16, pge.Colors.WHITE)
+    pge.draw_text((0,0), f'FPS: {int(pge.getFPS())}, Avg FPS: {int(pge.getAvgFPS())}, Cached Text: {len(pge.text_cache.keys())}, Elapsed Time: {pge.getElapsedTime()}', arial16, pge.Colors.WHITE)
     pge.draw_widgets()
     pge.screen.blit(pge.icon.surf, (896, 592))
     if pge.hasKeyPressed(pyge.K_LSHIFT) or pge.hasKeyPressed(pyge.K_RSHIFT):

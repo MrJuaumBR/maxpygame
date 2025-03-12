@@ -1,7 +1,7 @@
 from .required import *
 
 # Metadata
-_version = "0.3.6"
+_version = "0.3.7"
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
@@ -253,16 +253,19 @@ class VideoInfo:
     current_h: int
     current_w: int
 
-def humanize_seconds(seconds:int) -> dict:
+def humanize_seconds(seconds:float,ms:bool=False) -> dict:
     """
     This command will humanize seconds
     Like: Days, Hours, Minutes, Seconds
     """
-    s, ms = divmod(seconds, 1000)
+    s, ms = divmod(seconds, 1)
     m, s = divmod(s, 60)
     h, m = divmod(m, 60)
     d, h = divmod(h, 24)
-    return {'days':d, 'hours':h, 'minutes':m, 'seconds':s}
+    x = {'days':int(d), 'hours':int(h), 'minutes':int(m), 'seconds':int(s)}
+    if ms:
+        x['milliseconds'] = int(ms*1000)
+    return x
 
 class RGB:
     _r:int = 0

@@ -99,15 +99,6 @@ class PyGameEngine:
             else:
                 print(f'\t - Updated version.')
                 return True
-        #         except: # Cant convert to int
-        #             if 'fix' in self.meta.version:
-        #                 ver = int(self.meta.splitver().replace('fix',''))
-        #                 if data_online['version'] > ver:
-        #                     print(f'\t - [!] New version available, please go to: {self.meta.github}')
-        #                 elif data_online['version'] < ver:
-        #                     print(f'\t - [!] You are using an unknown version, please go to: {self.meta.github}')
-        #                 else:
-        #                     print(f'\t - Updated version.')
         
         
         return False
@@ -122,8 +113,7 @@ class PyGameEngine:
         Returns:
             dict
         """
-        x = humanize_seconds((datetime.now() - self.started_time).seconds)
-        return x
+        return humanize_seconds(self.delta_time.total_seconds())
     
     def getElapsedTime(self) -> str:
         """
@@ -135,18 +125,7 @@ class PyGameEngine:
             str
         """
         x = self._getElapsedTime()
-        s_ = []
-        s = ''
-        for key in x.keys():
-            if x[key] > 0:
-                s_.append(f'{x[key]} {key}')
-        
-        for index,item in enumerate(s_):
-            if index == len(s_)-1:
-                s += item
-            else:
-                s += f'{item}, '
-        return s
+        return ', '.join(f'{x[key]} {key}' for key in x if x[key] > 0)
     
     @property
     def delta_time(self) -> timedelta:
@@ -162,7 +141,7 @@ class PyGameEngine:
     
     @delta_time.setter
     def delta_time(self, value:float):
-        print("Delta time can't get be changed.")
+        raise AttributeError("delta_time is a read-only property")
     
     def getMonitorSize(self) -> tuple[int,int]:
         """
@@ -198,7 +177,7 @@ class PyGameEngine:
         else:
             try:
                 return color.rgb
-            except: print(f'The {color} (type: {type(color)}) is a type that cannot be converted to a rgb color.')
+            except AttributeError: print(f'The {color} (type: {type(color)}) is a type that cannot be converted to a rgb color.')
     
     # Screen System
     def hasScreen(self) -> bool:
@@ -221,9 +200,7 @@ class PyGameEngine:
         Returns:
             pg.SurfaceType
         """
-        if self.screen is None:
-            return pg.display.get_surface()
-        return self.screen
+        return pg.display.get_surface() if self.screen is None else self.screen
     
     @property
     def screen_size(self) -> tuple[int,int]:
@@ -294,26 +271,27 @@ class PyGameEngine:
     
     # Event System
     
-    def getEvents(self) -> list[pg.event.Event,]:
+    def getEvents(self) -> list[pg.event.EventType]:
         """
         Get all the events of PyGame
         
         Parameters:
             None
         Returns:
-            list[pg.event.Event,]
+            list[pg.event.EventType]
         """
         events = pg.event.get()
-        if len(events) == 0: # If there are no events
+        has_events = bool(events)
+        
+        if not has_events:
             self.mouse.scroll_slow_down()
         else:
+            if resize_event := next((e for e in events if e.type == pg.VIDEORESIZE), None):
+                self.screen_size = self.screen.get_size()
             for event in events:
                 if event.type == MOUSEWHEEL:
                     self.mouse.scroll_detector(event)
-                elif event.type == VIDEORESIZE:
-                    self.screen_size = self.screen.get_size()
-                else:
-                    self.mouse.scroll_slow_down()
+
         return events
     def getKeys(self) -> pg.key.ScancodeWrapper:
         """
@@ -385,16 +363,12 @@ class PyGameEngine:
         """
         try:
             if target is None:
-                pg.display.update(self.screen)
+                pg.display.flip()
             else:
                 pg.display.update(target)
-        except Exception as ex:
-            try:
-                # Tries Flip
-                pg.display.flip()
-            except Exception as ex:
-                raise ex    
-        
+        except Exception as e:
+            raise(e)
+            print(f'Error trying to update the screen: {e}')
     
     def _update(self, target:pg.SurfaceType=None):
         """
@@ -466,7 +440,7 @@ class PyGameEngine:
         """
         self.clock.tick(self.fps)
         self._rfps = self.clock.get_fps()
-        current_time = time.time()
+        current_time = self.delta_time.total_seconds()
         if self.LastFPSCount and current_time - self.LastFPSCount[0] >= 1:
             self.LastFPSCount = (current_time, self._rfps)
         elif not self.LastFPSCount:
@@ -488,13 +462,12 @@ class PyGameEngine:
         Returns:
             float
         """
-        current_time = time.time()
-        
-        if self.LastAvgFPSCount is None:
-            self.LastAvgFPSCount = (current_time, self._rfps)
-            return self._rfps
-        
-        if self.LastFPSCount and current_time - self.LastFPSCount[0] >= 0.9:
+        current_time = self.delta_time.total_seconds()
+        if self.LastAvgFPSCount is None or current_time < 1.1:
+            r = self._rfps if self._rfps <= 0 else self.fps
+            self.LastAvgFPSCount = (current_time, r)
+            return r
+        elif (self.LastFPSCount and current_time - self.LastFPSCount[0] >= 1):
             avg_fps = (self.LastAvgFPSCount[1] * 2 + self._rfps + self.LastFPSCount[1]) / 4
             self.LastAvgFPSCount = (current_time, avg_fps)
             return avg_fps
@@ -686,16 +659,15 @@ class PyGameEngine:
             Widget
         """
         # Get the widget
-        if type(widget_type) != str:
-            if inspect.isclass(widget_type):
-                widget = widget_type
-            else:
-                raise(CreateWidgetTypeError(str(widget_type)))
+        if type(widget_type) == str:
+            widget = getattr(sys.modules[__name__], widget_type.capitalize())
+        elif inspect.isclass(widget_type):
+            widget = widget_type
         else:
-            widget = getattr(sys.modules[__name__], str(widget_type).capitalize())
+            raise(CreateWidgetTypeError(widget_type))
         if widget:
-            aargs = args
-            return widget(self, *aargs, **kwargs)
+            args = args
+            return widget(self, *args, **kwargs)
         return None
     
     def SetLimitWidget(self, limit:int=30):
@@ -720,7 +692,7 @@ class PyGameEngine:
         """
         self.limit_error_active = state
         
-    def findWidgetById(self, id:str) -> Widget:
+    def findWidgetById(self, widget_id:str) -> Widget:
         """
         Find a widget by its id and then return it
         
@@ -729,13 +701,8 @@ class PyGameEngine:
         Returns:
             Widget
         """
-        if type(id) in [str,int]:
-            id = str(id)
-            for widget in self.widgets:
-                if str(widget._id) == id:
-                    return self.widgets[self.widgets.index(widget)]
-        
-        return None
+        widget_id = str(widget_id)
+        return next((widget for widget in self.widgets if widget._id == widget_id), None)
 
     def DeleteWidget(self, widget:Widget):
         """
@@ -773,8 +740,7 @@ class PyGameEngine:
         Returns:
             pg.SurfaceType
         """
-        x = pg.transform.flip(surface, x_axis, y_axis)
-        return x
+        return pg.transform.flip(surface, x_axis, y_axis)
     
     def rotate(self, surface:pg.SurfaceType, rect:pg.Rect, angle:int) -> tuple[pg.SurfaceType, pg.Rect]:
         """
@@ -837,16 +803,17 @@ class PyGameEngine:
         
         root_point = str(root_point).lower()
         rect = pg.Rect(*pos, *size)
-        if root_point == 'center':
+        if root_point == 'bottomleft':
+            rect.bottomleft = pos
+        elif root_point == 'bottomright':
+            rect.bottomright = pos
+        elif root_point == 'center':
             rect.center = pos
         elif root_point == 'topleft':
             rect.topleft = pos
         elif root_point == 'topright':
             rect.topright = pos
-        elif root_point == 'bottomleft':
-            rect.bottomleft = pos
-        elif root_point == 'bottomright':
-            rect.bottomright = pos
+        
         else:
             raise(InvalidAlignParameter(root_point))
             
@@ -886,7 +853,7 @@ class PyGameEngine:
             if surface is None:
                 surface = self.getScreen()
             
-            pg.draw.ellipse(surface, color, rect, radius)
+            pg.draw.circle(surface, color, rect.center, radius)
             
             return rect
         return None
@@ -919,7 +886,8 @@ class PyGameEngine:
             render = font.render(text, True, color, bgColor)
             render.set_alpha(alpha)
             text_surface.blit(render, (border_width, border_width))
-            self.text_cache[text_id] = (text_surface, time.time())
+            
+        self.text_cache[text_id] = (text_surface, self.delta_time.total_seconds())
 
         rect:pg.rect.RectType = Rect(0,0,*text_surface.get_size())
         root_point = str(root_point).lower()
@@ -951,7 +919,7 @@ class PyGameEngine:
         self.text_cache.clear()
 
     def _clean_text_cache(self):
-        current_time = time.time()
+        current_time = self.delta_time.total_seconds()
         for Text_Id, (surf, timestamp) in list(self.text_cache.items()):
             if current_time - timestamp > self.cache_cleanup_time:
                 del self.text_cache[Text_Id]

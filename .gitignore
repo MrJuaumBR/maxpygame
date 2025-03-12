@@ -1,3 +1,7 @@
+# vscode config
+.vscode
+.prettierrc
+
 # Git ignore for JPyDB
 # Data Stores
 *.pydb
