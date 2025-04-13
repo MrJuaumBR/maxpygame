@@ -245,6 +245,8 @@ class Button(Widget):
     click_time:int = cfgtimes.WD_BTN_CLICK_TIME
     click_time_counter:int = 0
     
+    
+    enable:bool = True
     value:bool = False
     def __init__(self,engine, position:pg.Vector2, font:int or pg.font.FontType, text:str, colors:list[reqColor,reqColor,],id:str=None,alpha:int=255, tip:Tip=None): # type: ignore
         """
@@ -287,7 +289,7 @@ class Button(Widget):
         self.rect = pg.Rect(*self.position, *self.size)
         
     def update(self):
-        if self.engine.mouse.collidePoint(self.rect) and self.engine.mouse.left and self.click_time_counter <= 0:
+        if self.engine.mouse.collidePoint(self.rect) and self.engine.mouse.left and self.click_time_counter <= 0 and self.enable:
             self.click_time_counter = self.engine.TimeSys.s2f(self.click_time) # Reset Timer
             self.value = True
         else:
@@ -300,7 +302,7 @@ class Button(Widget):
             self.click_time_counter -= 1
             
     def draw(self):
-        if self.image and self.rect:
+        if self.image and self.rect and self.enable:
             self.engine.screen.blit(self.image, self.rect)
         
         return super().draw()
@@ -1000,6 +1002,7 @@ class Dropdown(Widget):
     active:bool = False
     change_on_scroll:bool = True
     on_change:object = None
+    overflow_screen_h:int = 0
     
     update_delay_count:int = 0
     Click_Time_counter:int = 0
@@ -1054,6 +1057,7 @@ class Dropdown(Widget):
         
         if self.active:
             self.texts_rects.clear()
+            self.rect.top -= self.overflow_screen_h
             height += (self.font.size(self.texts[self.current_text])[1]*((len(self.texts)-1) if len(self.texts) > 1 else 1))+2
             
             self.surface = pg.Surface((width,height), pg.SRCALPHA)
@@ -1063,7 +1067,7 @@ class Dropdown(Widget):
             for x,line in enumerate(self.texts):
                 if x != self.current_text:
                     r = self.engine.draw_text((pos[0], pos[1]), str(line), self.font, self.colors[0], surface=self.surface, alpha=self.alpha)
-                    r.topleft = (pos[0]+self.position[0],pos[1]+self.position[1])
+                    r.topleft = (pos[0]+self.position[0],(pos[1]+self.position[1])-self.overflow_screen_h)
                     self.texts_rects.append((r,x))
                     pos[1] += self.font.size(line)[1]
         
@@ -1076,7 +1080,18 @@ class Dropdown(Widget):
     
     def update_wd(self):
         self.build_widget_display()
-    
+            
+    def calculate_size_of_rect(self) -> tuple[int,int]:
+        if len(self.texts_rects) > 0:
+            if len(self.texts_rects) > 1:
+                baseHeight = max(*[text[0].height for text in self.texts_rects])
+            else:
+                baseHeight = self.texts_rects[0][0].height
+            return baseHeight*len(self.texts_rects), baseHeight
+        else:
+            return 0,0
+            
+        
     def hovered(self):
         if self.change_on_scroll and self.Click_Time_counter <= 0 and self.rect.collidepoint(self.engine.mouse.pos) and self.engine.mouse.scroll != 0: # Check if the mouse is in the rect, change on scroll True and click time counter <= 0
                 self.Click_Time_counter = self.engine.TimeSys.s2f(cfgtimes.WD_DPDW_CLICK_TIME)
@@ -1095,6 +1110,7 @@ class Dropdown(Widget):
             else:
                 if self.active:
                     passed:bool = False
+                    
                     for rect, index in self.texts_rects:
                         if rect.collidepoint(self.engine.mouse.pos):
                             self.current_text = index
@@ -1112,10 +1128,17 @@ class Dropdown(Widget):
         if self.Click_Time_counter > 0:
             self.Click_Time_counter -= 1
         
+        h, h2 = self.calculate_size_of_rect() # Returns H = Height of all texts, H2 = Height of one text
+        if self.rect.bottom + h + 2 > self.engine.screen_size[1]:
+            self.overflow_screen_h = h-h2
+        
         super().update()
     
     def draw(self):
-        self.engine.screen.blit(self.surface, self.rect.topleft)
+        if self.rect.bottom + self.calculate_size_of_rect()[0] + 2 > self.engine.screen_size[1] and self.active:
+            self.engine.screen.blit(self.surface, (self.rect.left, self.engine.screen_size[1]-(self.rect.height+4+self.calculate_size_of_rect()[0])))
+        else:
+            self.engine.screen.blit(self.surface, self.rect.topleft)
         return super().draw()
     
 class Textarea(Widget):

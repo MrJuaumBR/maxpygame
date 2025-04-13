@@ -1,7 +1,7 @@
 from .required import *
 
 # Metadata
-_version = "0.3.7"
+_version = "0.3.8"
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"

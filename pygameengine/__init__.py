@@ -54,6 +54,8 @@ class PyGameEngine:
 
     
     text_cache:dict
+    extra_process:bool = False
+    extra_process_query:list[object, ] = []
     
     MonitorInfo:VideoInfo = None
     def __init__(self,screen:pg.SurfaceType=None):
@@ -81,6 +83,9 @@ class PyGameEngine:
     
         self.text_cache:dict = {}
         self.cache_cleanup_time:float = 0.7
+        
+        if self.extra_process:
+            threading.Thread(target=self.extra_process_do_query).start()
     
     def detect_version(self) -> bool:
         with urllib.request.urlopen('https://raw.githubusercontent.com/MrJuaumBR/maxpygame/main/data.json') as resp:
@@ -102,7 +107,17 @@ class PyGameEngine:
         
         
         return False
-        
+    def extra_process_do_query(self):
+        if self.extra_process:
+            while self.is_running:
+                if len(self.extra_process_query) > 0:
+                    for query, args in self.extra_process_query:
+                        try:
+                            query(*args)
+                        except Exception as e:
+                            print(f'Error in extra process: {e}')
+                self.clock.tick(self.fps*0.95)
+    
     
     def _getElapsedTime(self) -> dict:
         """
@@ -394,11 +409,18 @@ class PyGameEngine:
             self.joystick.update()
 
         if self.input_query_enable:
-            self.events = [event for event in self.events if event.type != pg.KEYUP]
-            for event in self.events:
-                if event.type == pg.KEYDOWN:
-                    self.input_query.insert_query(event)
-            self.input_query.update(self.delta_time)
+            if self.extra_process:
+                self.extra_process_query.append((self.input_query_process, ()))
+            else:
+                self.input_query_process()
+            
+    def input_query_process(self):
+        self.events = [event for event in self.events if event.type != pg.KEYUP]
+        for event in self.events:
+            if event.type == pg.KEYDOWN:
+                self.input_query.insert_query(event)
+        self.input_query.update(self.delta_time)
+            
             
     def update(self, target:pg.SurfaceType=None):
         """
@@ -911,13 +933,17 @@ class PyGameEngine:
             surface = self.getScreen()
         surface.blit(text_surface, rect.topleft)
 
-        self._clean_text_cache()
+        self.clean_text_cache()
         
         return rect
 
     def clear_cache(self):
         self.text_cache.clear()
-
+    def clean_text_cache(self):
+        if self.extra_process:
+            self.extra_process_query.append((self._clean_text_cache, ()))
+        else:
+            self._clean_text_cache()
     def _clean_text_cache(self):
         current_time = self.delta_time.total_seconds()
         for Text_Id, (surf, timestamp) in list(self.text_cache.items()):

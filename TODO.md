@@ -115,7 +115,8 @@
 - [x] No more *Requests* librarie dependancy;
 - [x] "None" On "color" paramater in *draw_rect* will draw only border;
 - [x] HSV_selector example;
-- [ ] Dropdown when pass screen go to another direction;
+- [x] Extra Process to optmize engine;
+- [x] Dropdown when pass screen go to another direction;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.
