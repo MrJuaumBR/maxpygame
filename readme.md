@@ -13,7 +13,7 @@
 The idea for creating this project is to make more easier to develop in PyGame without having to make multiples "widgets" and some functions every time when you will create a project.<br>
 Currently we have multiple functions for use, like: CreateSreen, CreateSysFont, CreateFont and etc...<br>
 for the future we want to improve perfomance and have how many functions that you can imagine!<br>
-Over +4700 Lines of pure code!
+Over +5000 Lines of pure code!
 
 <button style="background-color: #232323; color: #C7C1C1; border-radius: 10px">[<i class="bi bi-window"></i> Test PyPi](https://test.pypi.org/project/maxpygame/)</button>
 
@@ -85,7 +85,15 @@ Currently the engine has some widgets
 - Basic Functions of PyGame;
 - Screen Resize Detector;
 - Own Color System;
+- Particles¹;
+- Controllers/Joysticks²;
 - And More...
+
+<small>
+¹Particles system is experimental
+
+²Also is a experiemental feature, so it can be buggy or removed in future
+</small>
 
 # Controller Support
 **Experiemental**
@@ -97,7 +105,7 @@ Currently Supports only Xbox 360 Controller!
 
 # Credits
 - [PyGame](https://www.pygame.org/news) for developing the base lib;
-- @MrJuaumBR for trying to make more easier to create games;
+- @MrJuaumBR head developer;
 - @vendramin96 for testing and giving tips.
 
 # Contacts
@@ -105,7 +113,7 @@ Currently Supports only Xbox 360 Controller!
 
 [GitHub](https://github.com/MrJuaumBR)
 
-[Site](https://mrjuaumbr.github.io)
+[Site](https://mrjuaumbr.github.io) or [Site 2](https://mrjuaumbr.github.io/maxpygame/)
 
 [TestPyPi](https://test.pypi.org/user/MrJuaumBR/)
 

@@ -34,6 +34,7 @@
 - [x] Spritesheet converting to non-alpha surface;
 - [x] Fix Slider radius error;
 - [x] Fix getAvgFps first frame "0";
+- [x] Fixed [site](https://mrjuaumbr.github.io/maxpygame);
 
 ## Addeds
 - [x] Slider fill when pass;
@@ -117,6 +118,7 @@
 - [x] HSV_selector example;
 - [x] Extra Process to optmize engine;
 - [x] Dropdown when pass screen go to another direction;
+- [x] Particles System;
 - [ ] Create a documentation;
 - [ ] Music Support;
 - [ ] Sounds Support.

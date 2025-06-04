@@ -1,7 +1,7 @@
 from .required import *
 
 # Metadata
-_version = "0.3.8"
+_version = "0.3.9"
 class Metadata:
     name = "PyGameEngine"
     author = "MrJuaumBR"
@@ -1047,3 +1047,183 @@ class cfgtips:
     border_width:int = 2
     alpha:int = 200
     refresh_time = 0.05 # Default -> 0.05s
+    
+### PARTICLES ###
+PARTICLES_PRESETS = {
+    'fire':[
+        color(255,0,0),
+        color(255,69,0),
+        color(255,140,0),
+        color(200,69,0),
+        color(200,140,0)
+    ],
+    'rainbow':[
+        color(255, 0, 0),
+        color(255, 165, 0),
+        color(255, 255, 0),
+        color(0, 255, 0),
+        color(0, 255, 255),
+        color(0, 0, 255),
+        color(128, 0, 128)
+    ],
+    'water':[
+        color(0, 0, 255),
+        color(0, 0, 128),
+        color(0, 0, 64),
+        color(120,140,255),
+        color(0,60,128)
+    ],
+    'smoke':[
+        color(128, 128, 128),
+        color(192, 192, 192),
+        color(200,200,200),
+        color(100,100,100)
+    ],
+    'purple':[
+        color(128, 0, 128),
+        color(160, 32, 160),
+        color(192, 64, 192),
+        color(224, 96, 224),
+    ],
+    'green':[
+        color(0, 128, 0),
+        color(0, 160, 0),
+        color(0, 192, 0),
+        color(0, 224, 0),
+    ]
+        
+}
+
+class ParticleNode(pg.sprite.Sprite):
+    """
+    A class representing a particle.
+    This class represents a single particle with its own properties and behavior.
+    It can be used to create complex particle systems by combining multiple particles.
+
+    Parameters:
+        engine (object): The engine object.
+        position (Tuple[float, float]): The position of the particle.
+        lifetime (float): The lifetime of the particle.
+        colors (List[Tuple[int, int, int]]): The colors of the particle.
+        size (float): The size of the particle.
+        velocity (Tuple[float, float]): The velocity of the particle.
+        fade_out (bool): Whether the particle should fade out.
+
+    Returns:
+        None
+    """
+    
+    __slots__ = ('engine','position', 'lifetime', 'color', 'size', 'velocity', 'fade_out', 'start_time', 'surface')
+    def __init__(self, engine, position, lifetime, colors, size, velocity, fade_out=True):
+        super().__init__()
+        self.engine = engine
+        self.position = pg.Vector2(position)
+        self.lifetime = lifetime
+        self.start_time = self.engine.delta_time
+        self.color = random.choice(colors)
+        self.size = size
+        self.velocity = pg.Vector2(velocity)
+        self.fade_out = fade_out
+        
+        self.setup_surface()
+    def setup_surface(self):
+        self.surface = pg.surface.Surface((self.size, self.size), pg.SRCALPHA)
+        pg.draw.circle(self.surface, self.color if type(self.color) in [tuple, list] else self.color.rgb, (self.size // 2, self.size // 2), self.size // 2)
+        
+        self.surface.set_alpha(255)
+    def update(self):
+        self.position += self.velocity * (self.engine.clock.get_time() / 1000)
+    
+    def render(self):
+        t = (self.engine.delta_time - self.start_time).total_seconds() / self.lifetime
+        alpha = int(255 - t * 255) if self.fade_out else 255
+        
+        self.surface.set_alpha(alpha)
+        self.engine.screen.blit(self.surface, self.position)
+        
+class Particle:
+    """
+    A base class for particles.
+
+    This class represents a base particle that can be used to create different types of particles.
+    It provides a basic structure for particles and can be extended to create more complex particles.
+    
+    Parameters:
+        engine (object): The engine object.
+        position (Tuple[float, float]): The initial position of the particle.
+        lifetime (float): The lifetime of the particle.
+        colors (List[Tuple[int, int, int]]): The colors of the particle.
+        quantity (int): The number of particles to create.
+        size (float): The size of the particle.
+        speed (float): The speed of the particle.
+        direction (Literal['all', 'up', 'down', 'left', 'right']): The direction of the particle.
+        fade_out (bool, optional): Whether the particle should fade out. Defaults to True.
+        anchored (bool, optional): Whether the particle is anchored. Defaults to False.
+        respawn_threshold (float, optional): The threshold for respawning the particle. Defaults to 0.5.
+        continuity (bool, optional): Whether the particle should be continuous. Defaults to False.
+
+    Returns:
+        None
+    """
+
+    __slots__ = ('engine','position', 'lifetime', 'colors', 'quantity', 'size', 'speed', 'direction', 'fade_out', 'particles', 'anchored', 'respawn_threshold', 'continuity', 'start_time','can_render')
+
+    def __init__(self, engine, position, lifetime, colors, quantity, size, speed, direction: Literal['all', 'up', 'down', 'left', 'right'], anchored:bool=False,respawn_threshold:float=1,continuity:bool=False,fade_out:bool=True):
+        self.engine = engine
+        self.position = pg.Vector2(position)
+        self.lifetime = lifetime
+        self.start_time = self.engine.delta_time
+        self.colors = colors
+        self.quantity = quantity
+        self.size = size
+        self.speed = speed
+        self.direction = direction
+        self.fade_out = fade_out
+        self.particles: set[ParticleNode,] = set()
+        self.anchored = anchored
+        self.respawn_threshold = respawn_threshold
+        self.continuity = continuity
+        
+        self.can_render:bool = True
+        
+        self.create_particles()
+        
+    def create_particles(self):
+        """Initialize a set of particles with a specific direction."""
+        for i in range(self.quantity):
+            direction = self.get_direction()
+            velocity = direction.normalize() * (self.speed + (i / self.quantity) * -self.speed)
+            self.particles.add(ParticleNode(engine=self.engine,position=self.position,lifetime= self.lifetime,colors= self.colors,size= self.size,velocity= velocity,fade_out= self.fade_out))
+            
+    def get_direction(self):
+        if self.direction == 'up':
+            angle = -math.pi / 2 + random.uniform(-math.pi / 4, math.pi / 4)
+        elif self.direction == 'down':
+            angle = math.pi / 2 + random.uniform(-math.pi / 4, math.pi / 4)
+        elif self.direction == 'left':
+            angle = math.pi + random.uniform(-0.1, 0.1)
+        elif self.direction == 'right':
+            angle = random.uniform(-0.1, 0.1)
+        else:
+            angle = random.uniform(0, 2 * math.pi)
+            
+        direction = pg.Vector2(math.cos(angle), math.sin(angle))
+        return direction
+    
+    def update(self):
+        """Update all particles and remove expired ones."""
+        for p in self.particles.copy():
+            if (self.engine.delta_time - p.start_time).total_seconds() > self.lifetime: self.particles.remove(p)
+            else: p.update()
+
+        # Respawn particles at the starting position if anchored
+        if self.anchored:
+            # Continuously respawn particles at the anchor position
+            for _ in range(self.quantity // 10):  # Adjust this value to control the respawn rate
+                direction = self.get_direction()
+                velocity = direction.normalize() * random.uniform(1, self.speed*2)
+                self.particles.add(ParticleNode(engine=self.engine,position=self.position,lifetime= self.lifetime,colors= self.colors,size= self.size,velocity= velocity,fade_out= self.fade_out))
+                
+    def render(self):
+        for p in list(self.particles):
+            p.render()

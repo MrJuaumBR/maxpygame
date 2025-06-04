@@ -54,8 +54,11 @@ class PyGameEngine:
 
     
     text_cache:dict
-    extra_process:bool = False
+    extra_process:bool = True
     extra_process_query:list[object, ] = []
+    
+    # Particles
+    particles:set[Particle,] = set()
     
     MonitorInfo:VideoInfo = None
     def __init__(self,screen:pg.SurfaceType=None):
@@ -408,11 +411,16 @@ class PyGameEngine:
             self.joystick.main.mouse_emulate = self.joystick_mouse_emulate
             self.joystick.update()
 
-        if self.input_query_enable:
-            if self.extra_process:
+        if self.extra_process:
+            if self.input_query_enable:
                 self.extra_process_query.append((self.input_query_process, ()))
-            else:
+            if len(self.particles) > 0:
+                self.extra_process_query.append((self.particles_process, ()))
+        else:
+            if self.input_query_enable:
                 self.input_query_process()
+            if len(self.particles) > 0:
+                self.particles_process()
             
     def input_query_process(self):
         self.events = [event for event in self.events if event.type != pg.KEYUP]
@@ -420,7 +428,23 @@ class PyGameEngine:
             if event.type == pg.KEYDOWN:
                 self.input_query.insert_query(event)
         self.input_query.update(self.delta_time)
+    
+    def particles_process(self):
+        """
+        This function processes particles by updating their properties and removing them if they have
+        exceeded their lifetime.
+        """
+        for particle in self.particles.copy():
+            if not particle.anchored:
+                if (self.delta_time-particle.start_time).total_seconds() > particle.lifetime:
+                    self.particles.remove(particle)
+                    continue
+            particle.update()
             
+            
+    def particles_render(self):
+        for particle in self.particles.copy():
+            particle.render()
             
     def update(self, target:pg.SurfaceType=None):
         """
@@ -533,6 +557,7 @@ class PyGameEngine:
         if not self.hasScreen(): return None # No screen then no,no
         self.screen.fill(fill_color if type(fill_color) in [tuple, list] else self.getColor(fill_color))
         self.mouse_draw_trail()
+        self.particles_render()
         return True
     
     def mouse_draw_trail(self):
@@ -739,6 +764,30 @@ class PyGameEngine:
         w = self.widgets.index(self.findWidgetById(widget_id))
         self.widgets.pop(w)
 
+    def CreateParticle(self, position:tuple, lifetime:float, colors:list[reqColor,], nodes:int, size:float, speed:float, direction:Literal['all', 'up', 'down', 'left', 'right']='all', anchored:bool=False, respawn_threshold:float=1, continuity:bool=False, fade_out:bool=True) -> Particle:
+        """
+        Create a Particle of a type
+        
+        Parameters:
+            position:tuple
+            lifetime:float
+            colors:list[reqColor,]
+            nodes:int
+            size:float
+            speed:float
+            direction:Literal['all', 'up', 'down', 'left', 'right']
+            anchored:bool
+            respawn_threshold:float
+            continuity:bool
+            fade_out:bool
+        Returns:
+            Particle
+        """
+        
+        p = Particle(engine=self, position=position, lifetime=lifetime, colors=colors, quantity=nodes, size=size, speed=speed, direction=direction, anchored=anchored, respawn_threshold=respawn_threshold, continuity=continuity, fade_out=fade_out)
+        self.particles.add(p)
+        return p
+
     # Image System
     def loadImage(self, path:str) -> pg.SurfaceType:
         """
@@ -855,7 +904,7 @@ class PyGameEngine:
         
         return rect
 
-    def draw_circle(self, pos:tuple[int,int], radius:int, color:reqColor, surface:pg.SurfaceType=None, alpha:int=255) -> pg.Rect:
+    def draw_circle(self, pos:tuple[int,int], radius:int, color:reqColor, surface:pg.SurfaceType=None, width:int=0, alpha:int=255) -> pg.Rect:
         """
         Draw a circle on the surface
         
@@ -863,6 +912,7 @@ class PyGameEngine:
             rect:pg.Rect
             color:reqColor
             surface(Optional):pg.SurfaceType
+            width(Optional):int
             alpha(Optional):int
         Returns:
             Rect
@@ -875,7 +925,13 @@ class PyGameEngine:
             if surface is None:
                 surface = self.getScreen()
             
-            pg.draw.circle(surface, color, rect.center, radius)
+            # Create a surface with alpha channel
+            s = pg.Surface((radius*2, radius*2), pg.SRCALPHA)
+            pg.draw.circle(s, color, (radius, radius), radius, width)
+            s.set_alpha(alpha)
+            
+            # Blit the surface onto the target surface
+            surface.blit(s, pos)
             
             return rect
         return None
